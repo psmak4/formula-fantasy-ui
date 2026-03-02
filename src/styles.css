@@ -380,6 +380,67 @@ summary {
   gap: var(--space-4);
 }
 
+.predict-form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.predict-section {
+  display: grid;
+  gap: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.predict-section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.predict-section h3 {
+  margin: 0;
+}
+
+.predict-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.predict-fieldset legend {
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+.driver-picker-select {
+  min-height: 2.5rem;
+}
+
+.toggle-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.toggle-row input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+.predict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
 .league-grid {
   display: grid;
   grid-template-columns: minmax(220px, 1.05fr) minmax(340px, 1.6fr) minmax(220px, 1fr);
