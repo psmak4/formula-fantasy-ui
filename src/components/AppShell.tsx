@@ -67,8 +67,8 @@ export function AppShell() {
       <header
         className={
           inHeroContext
-            ? 'sticky top-0 z-40 border-b border-red-600/70 bg-transparent text-white transition-colors'
-            : 'sticky top-0 z-40 border-b border-red-600/60 bg-white/90 text-slate-900 backdrop-blur transition-colors'
+            ? 'sticky top-0 z-40 bg-transparent text-white transition-colors'
+            : 'sticky top-0 z-40 border-b border-slate-200 bg-white/90 text-slate-900 backdrop-blur transition-colors'
         }
       >
         <div className="mx-auto flex h-16 max-w-6xl items-center px-4 md:px-6 lg:px-8">
@@ -152,7 +152,7 @@ export function AppShell() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 lg:px-8">
+      <main className={isHome ? 'mx-auto w-full px-0 py-0' : 'mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 lg:px-8'}>
         <Outlet />
       </main>
     </div>
