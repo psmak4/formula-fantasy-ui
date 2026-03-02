@@ -71,7 +71,7 @@ export function AppShell() {
             : 'sticky top-0 z-40 border-b border-slate-200 bg-white/90 text-slate-900 backdrop-blur transition-colors'
         }
       >
-        <div className="mx-auto flex h-16 max-w-6xl items-center px-4 md:px-6 lg:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-6">
           <div className="flex flex-1 items-center">
             <Link to="/" className={brandClass}>
               Formula Fantasy
@@ -135,7 +135,7 @@ export function AppShell() {
           </div>
         </div>
 
-        <nav className="mx-auto flex max-w-6xl items-center gap-6 px-4 pb-3 md:hidden" aria-label="Primary mobile">
+        <nav className="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 pb-3 md:hidden" aria-label="Primary mobile">
           <NavLink
             to="/"
             end
@@ -152,7 +152,7 @@ export function AppShell() {
         </nav>
       </header>
 
-      <main className={isHome ? 'mx-auto w-full px-0 py-0' : 'mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8 lg:px-8'}>
+      <main className={isHome ? 'w-full' : 'w-full py-2'}>
         <Outlet />
       </main>
     </div>
