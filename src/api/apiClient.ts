@@ -1,5 +1,6 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const DEBUG_USER_STORAGE_KEY = 'ff_debug_user_id'
+const ALLOW_DEBUG_AUTH = import.meta.env.VITE_ALLOW_DEBUG_AUTH === 'true'
 
 if (!API_BASE_URL) {
   throw new Error('VITE_API_BASE_URL is not set')
@@ -10,11 +11,16 @@ type RequestOptions = Omit<RequestInit, 'body'> & {
 }
 
 function readStoredDebugUserId(): string {
-  if (!import.meta.env.DEV || typeof window === 'undefined') return ''
+  if (!import.meta.env.DEV || !ALLOW_DEBUG_AUTH || typeof window === 'undefined') return ''
   return window.localStorage.getItem(DEBUG_USER_STORAGE_KEY) ?? ''
 }
 
 let debugUserId = readStoredDebugUserId()
+let authTokenGetter: (() => Promise<string | null>) | null = null
+
+export function setAuthTokenGetter(getter: (() => Promise<string | null>) | null): void {
+  authTokenGetter = getter
+}
 
 export function getDebugUserId(): string {
   return debugUserId
@@ -24,7 +30,7 @@ export function setDebugUserId(value: string): void {
   const nextValue = value.trim()
   debugUserId = nextValue
 
-  if (!import.meta.env.DEV || typeof window === 'undefined') return
+  if (!import.meta.env.DEV || !ALLOW_DEBUG_AUTH || typeof window === 'undefined') return
 
   if (nextValue) {
     window.localStorage.setItem(DEBUG_USER_STORAGE_KEY, nextValue)
@@ -39,7 +45,11 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (options.body !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
-  if (import.meta.env.DEV && debugUserId && !headers.has('X-Debug-User-Id')) {
+  if (authTokenGetter && !headers.has('Authorization')) {
+    const token = await authTokenGetter()
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+  }
+  if (import.meta.env.DEV && ALLOW_DEBUG_AUTH && debugUserId && !headers.has('X-Debug-User-Id')) {
     headers.set('X-Debug-User-Id', debugUserId)
   }
 
