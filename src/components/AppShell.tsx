@@ -1,5 +1,5 @@
-import { useMemo } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { SignedIn, SignedOut, useClerk, useUser } from '@clerk/clerk-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
@@ -21,20 +21,59 @@ function initials(name?: string | null): string {
 }
 
 export function AppShell() {
+  const location = useLocation()
   const { user } = useUser()
   const { signOut } = useClerk()
+  const isHome = location.pathname === '/'
+  const [inHeroContext, setInHeroContext] = useState(isHome)
 
   const displayName = useMemo(
     () => user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress ?? 'Manager',
     [user]
   )
 
+  useEffect(() => {
+    if (!isHome) {
+      setInHeroContext(false)
+      return
+    }
+
+    const onScroll = () => {
+      setInHeroContext(window.scrollY < 360)
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [isHome])
+
+  const brandClass = inHeroContext
+    ? 'text-xl font-bold tracking-tight text-white'
+    : 'text-xl font-bold tracking-tight text-slate-900'
+
+  const navLinkClass = (isActive: boolean) => {
+    if (isActive) {
+      return inHeroContext
+        ? 'border-b-2 border-red-500 pb-1 font-semibold text-white'
+        : 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
+    }
+    return inHeroContext
+      ? 'border-b-2 border-transparent pb-1 font-medium text-white/80 hover:text-white'
+      : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <header
+        className={
+          inHeroContext
+            ? 'sticky top-0 z-40 border-b border-red-600/70 bg-transparent text-white transition-colors'
+            : 'sticky top-0 z-40 border-b border-red-600/60 bg-white/90 text-slate-900 backdrop-blur transition-colors'
+        }
+      >
         <div className="mx-auto flex h-16 max-w-6xl items-center px-4 md:px-6 lg:px-8">
           <div className="flex flex-1 items-center">
-            <Link to="/" className="text-xl font-bold tracking-tight text-slate-900">
+            <Link to="/" className={brandClass}>
               Formula Fantasy
             </Link>
           </div>
@@ -43,21 +82,13 @@ export function AppShell() {
             <NavLink
               to="/"
               end
-              className={({ isActive }) =>
-                isActive
-                  ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
-                  : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
-              }
+              className={({ isActive }) => navLinkClass(isActive)}
             >
               Home
             </NavLink>
             <NavLink
               to="/my-leagues"
-              className={({ isActive }) =>
-                isActive
-                  ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
-                  : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
-              }
+              className={({ isActive }) => navLinkClass(isActive)}
             >
               My Leagues
             </NavLink>
@@ -67,7 +98,11 @@ export function AppShell() {
             <SignedIn>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-10 w-10 rounded-full p-0" aria-label="Open user menu">
+                  <Button
+                    variant="ghost"
+                    className={inHeroContext ? 'h-10 w-10 rounded-full p-0 text-white hover:bg-white/10' : 'h-10 w-10 rounded-full p-0'}
+                    aria-label="Open user menu"
+                  >
                     <Avatar className="h-9 w-9">
                       <AvatarImage src={user?.imageUrl} alt={displayName} />
                       <AvatarFallback>{initials(displayName)}</AvatarFallback>
@@ -90,7 +125,7 @@ export function AppShell() {
               </DropdownMenu>
             </SignedIn>
             <SignedOut>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className={inHeroContext ? 'text-white hover:bg-white/10' : ''}>
                 <Link to="/sign-in">Sign in</Link>
               </Button>
               <Button asChild size="sm">
@@ -104,21 +139,13 @@ export function AppShell() {
           <NavLink
             to="/"
             end
-            className={({ isActive }) =>
-              isActive
-                ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
-                : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
-            }
+            className={({ isActive }) => navLinkClass(isActive)}
           >
             Home
           </NavLink>
           <NavLink
             to="/my-leagues"
-            className={({ isActive }) =>
-              isActive
-                ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
-                : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
-            }
+            className={({ isActive }) => navLinkClass(isActive)}
           >
             My Leagues
           </NavLink>
