@@ -4,6 +4,7 @@ import { apiClient } from "../api/apiClient";
 import { toastApiError } from "../lib/api-error";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
+import { HeroBackdrop } from "../components/HeroBackdrop";
 import {
   Card,
   CardContent,
@@ -298,8 +299,9 @@ export function HomePage() {
 
   return (
     <section className="w-full">
-      <section className="w-full bg-linear-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
-        <div className="mx-auto max-w-7xl px-6">
+      <section className="relative w-full overflow-hidden bg-linear-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
+        <HeroBackdrop />
+        <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
           <div className="overflow-hidden rounded-lg border border-neutral-200/20 bg-white/5 backdrop-blur">
             <div className="h-[3px] w-full bg-red-600" />
             <div className="space-y-7 p-10">
