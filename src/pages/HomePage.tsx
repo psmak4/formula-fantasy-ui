@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ApiError, apiClient } from '../api/apiClient'
+import { apiClient } from '../api/apiClient'
+import { toastApiError } from '../lib/api-error'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
 import { PageShell } from '../components/ui/PageShell'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 
 type NextRaceResponse = {
   id?: string
@@ -191,14 +195,6 @@ export function HomePage() {
     return { token: input }
   }
 
-  function formatApiError(err: unknown, fallback: string): string {
-    if (err instanceof ApiError) {
-      if (err.code) return `${err.message} (${err.code})`
-      return err.message
-    }
-    return err instanceof Error ? err.message : fallback
-  }
-
   async function handleCreateLeague() {
     setCreateState('creating')
 
@@ -218,7 +214,8 @@ export function HomePage() {
       setCreateState('created')
       navigate(`/league/${createdLeagueId}`)
     } catch (err: unknown) {
-      setCreateState(formatApiError(err, 'Failed to create league'))
+      const message = toastApiError(err, 'Create league failed', 'Failed to create league')
+      setCreateState(message)
     }
   }
 
@@ -245,7 +242,8 @@ export function HomePage() {
       setJoinState('joined')
       navigate(`/league/${joinedLeagueId ?? 'demo-league'}`)
     } catch (err: unknown) {
-      setJoinState(formatApiError(err, 'Failed to join league'))
+      const message = toastApiError(err, 'Join league failed', 'Failed to join league')
+      setJoinState(message)
     }
   }
 
@@ -254,6 +252,9 @@ export function HomePage() {
       <div className="flex items-center gap-3">
         <p className="text-3xl font-bold underline">Tailwind is working</p>
         <Button variant="secondary">shadcn Button</Button>
+        <Button variant="outline" onClick={() => toastApiError(new Error('Simulated API error'), 'Simulated error')}>
+          Simulate Error Toast
+        </Button>
       </div>
       {loading ? <p>Loading next race...</p> : null}
       {loading ? (
@@ -304,21 +305,23 @@ export function HomePage() {
         <Card>
           <h3>Create League</h3>
           <p>Start a private league and invite your friends.</p>
-          <input
+          <Label htmlFor="leagueName">League name</Label>
+          <Input
+            id="leagueName"
             placeholder="League name"
             value={leagueName}
             onChange={(event) => setLeagueName(event.target.value)}
           />
-          <label className="stack">
-            Visibility
-            <select
-              value={leagueVisibility}
-              onChange={(event) => setLeagueVisibility(event.target.value as LeagueVisibility)}
-            >
-              <option value="private">Private</option>
-              <option value="public">Public</option>
-            </select>
-          </label>
+          <Label htmlFor="leagueVisibility">Visibility</Label>
+          <Select value={leagueVisibility} onValueChange={(value) => setLeagueVisibility(value as LeagueVisibility)}>
+            <SelectTrigger id="leagueVisibility">
+              <SelectValue placeholder="Select visibility" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="private">Private</SelectItem>
+              <SelectItem value="public">Public</SelectItem>
+            </SelectContent>
+          </Select>
           <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
             {createState === 'creating' ? 'Creating...' : 'Create League'}
           </Button>
@@ -330,7 +333,9 @@ export function HomePage() {
         <Card>
           <h3>Join League</h3>
           <p>Paste an invite token or full invite link to join instantly.</p>
-          <input
+          <Label htmlFor="inviteInput">Invite token or link</Label>
+          <Input
+            id="inviteInput"
             placeholder="Invite token or link"
             value={inviteInput}
             onChange={(event) => setInviteInput(event.target.value)}

@@ -17,6 +17,8 @@ import { LeaguePage } from './pages/LeaguePage'
 import { LeaguePredictPage } from './pages/LeaguePredictPage'
 import { LeagueLeaderboardPage } from './pages/LeagueLeaderboardPage'
 import { MyLeaguesPage } from './pages/MyLeaguesPage'
+import { Button } from './components/ui/Button'
+import { Toaster } from './components/ui/sonner'
 import './styles.css'
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -71,7 +73,7 @@ function UserMenu() {
     <div className="user-menu">
       <span className="user-name">{user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress ?? 'User'}</span>
       <SignOutButton>
-        <button type="button" className="ui-button ui-button-ghost">Sign out</button>
+        <Button type="button" variant="ghost">Sign out</Button>
       </SignOutButton>
     </div>
   )
@@ -109,6 +111,7 @@ function AppLayout() {
       <main className="app-main">
         <Outlet />
       </main>
+      <Toaster />
     </div>
   )
 }

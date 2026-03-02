@@ -4,6 +4,7 @@ import { ApiError, apiClient } from '../api/apiClient'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { Input } from '../components/ui/input'
 import { PageShell } from '../components/ui/PageShell'
 import { Table } from '../components/ui/Table'
 
@@ -264,7 +265,7 @@ export function LeaguePage() {
 
               {inviteLink ? (
                 <div className="invite-row">
-                  <input value={inviteLink} readOnly aria-label="Invite link" />
+                  <Input value={inviteLink} readOnly aria-label="Invite link" />
                   <Button variant="ghost" onClick={handleCopyInvite}>Copy</Button>
                 </div>
               ) : null}
