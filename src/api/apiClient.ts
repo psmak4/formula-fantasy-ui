@@ -10,6 +10,26 @@ type RequestOptions = Omit<RequestInit, 'body'> & {
   body?: unknown
 }
 
+type ApiErrorResponse = {
+  error?: {
+    code?: string
+    message?: string
+  }
+  message?: string
+}
+
+export class ApiError extends Error {
+  code?: string
+  status: number
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.code = code
+  }
+}
+
 function readStoredDebugUserId(): string {
   if (!import.meta.env.DEV || !ALLOW_DEBUG_AUTH || typeof window === 'undefined') return ''
   return window.localStorage.getItem(DEBUG_USER_STORAGE_KEY) ?? ''
@@ -60,7 +80,22 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    let apiMessage = `API request failed: ${response.status} ${response.statusText}`
+    let apiCode: string | undefined
+
+    try {
+      const data = (await response.json()) as ApiErrorResponse
+      if (data?.error?.message) {
+        apiMessage = data.error.message
+      } else if (data?.message) {
+        apiMessage = data.message
+      }
+      apiCode = data?.error?.code
+    } catch {
+      // Keep default message when response body is not JSON.
+    }
+
+    throw new ApiError(apiMessage, response.status, apiCode)
   }
 
   if (response.status === 204) {
