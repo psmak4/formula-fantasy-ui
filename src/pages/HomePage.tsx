@@ -292,8 +292,8 @@ export function HomePage() {
   }
 
   return (
-    <section>
-      <div className="bg-gradient-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
+    <section className="w-full">
+      <section className="w-full bg-gradient-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
         <div className="mx-auto max-w-7xl px-6">
           <div className="overflow-hidden rounded-lg border border-neutral-200/20 bg-white/5 backdrop-blur">
             <div className="h-[3px] w-full bg-red-600" />
@@ -393,9 +393,9 @@ export function HomePage() {
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-background pb-12 pt-20">
+      <section className="w-full bg-background pb-12 pt-20">
         <div className="mx-auto max-w-7xl space-y-8 px-6">
           <div className="space-y-2">
             <div className="mb-4 h-[2px] w-12 bg-red-600" />
@@ -473,7 +473,7 @@ export function HomePage() {
             </Card>
           </div>
         </div>
-      </div>
+      </section>
     </section>
   );
 }

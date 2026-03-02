@@ -40,7 +40,7 @@ export function AppShell() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-50 h-16 border-b border-neutral-800 bg-neutral-950">
+      <header className="sticky top-0 z-50 h-16 w-full border-b border-neutral-800 bg-neutral-950">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
           <div className="flex flex-1 items-center">
             <Link to="/" className="flex items-center font-semibold tracking-tight text-white">
