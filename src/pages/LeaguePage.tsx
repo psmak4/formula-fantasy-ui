@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../api/apiClient'
+import { Badge } from '../components/ui/Badge'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { PageShell } from '../components/ui/PageShell'
+import { Table } from '../components/ui/Table'
 
 type Member = {
   id?: string
@@ -94,16 +99,15 @@ export function LeaguePage() {
   }
 
   return (
-    <section>
-      <h2>League</h2>
+    <PageShell title="League">
       <p>
         League ID: <code>{leagueId}</code>
       </p>
 
       <p>
-        <button type="button" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
+        <Button onClick={handleJoinLeague} disabled={joinState === 'joining'}>
           {joinState === 'joining' ? 'Joining...' : 'Join league'}
-        </button>
+        </Button>
       </p>
       {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
         <p>{joinState}</p>
@@ -113,7 +117,7 @@ export function LeaguePage() {
       {error ? <p>{error}</p> : null}
 
       {!loading && !error ? (
-        <div className="card">
+        <Card>
           <h3>Members</h3>
           {members.length === 0 ? <p>No members yet</p> : null}
           {members.length > 0 ? (
@@ -125,7 +129,7 @@ export function LeaguePage() {
               ))}
             </ul>
           ) : null}
-        </div>
+        </Card>
       ) : null}
 
       <p>
@@ -133,39 +137,37 @@ export function LeaguePage() {
       </p>
 
       {!loading && !error ? (
-        <div className="card">
+        <Card>
           <h3>Next race leaderboard</h3>
-          {leaderboard?.scoring?.available === false ? <p>Scoring pending</p> : null}
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Display Name</th>
-                  <th>Points</th>
+          {leaderboard?.scoring?.available === false ? <Badge tone="warning">Scoring pending</Badge> : null}
+          <Table ariaLabel="Next race leaderboard">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Display Name</th>
+                <th>Points</th>
+              </tr>
+            </thead>
+            <tbody>
+              {leaderboardRows.map((entry) => (
+                <tr key={`${entry.rank}-${entry.displayName}`}>
+                  <td>{entry.rank}</td>
+                  <td>{entry.displayName}</td>
+                  <td>{entry.points}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {leaderboardRows.map((entry) => (
-                  <tr key={`${entry.rank}-${entry.displayName}`}>
-                    <td>{entry.rank}</td>
-                    <td>{entry.displayName}</td>
-                    <td>{entry.points}</td>
-                  </tr>
-                ))}
-                {leaderboardRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={3}>No leaderboard data yet</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+              ))}
+              {leaderboardRows.length === 0 ? (
+                <tr>
+                  <td colSpan={3}>No leaderboard data yet</td>
+                </tr>
+              ) : null}
+            </tbody>
+          </Table>
           <p>
             <Link to={`/league/${leagueId}/races/next/leaderboard`}>Open full leaderboard</Link>
           </p>
-        </div>
+        </Card>
       ) : null}
-    </section>
+    </PageShell>
   )
 }

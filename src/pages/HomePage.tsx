@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { API_BASE_URL, apiClient } from '../api/apiClient'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { PageShell } from '../components/ui/PageShell'
 
 type NextRaceResponse = {
   id?: string
@@ -121,8 +124,7 @@ export function HomePage() {
   }
 
   return (
-    <section>
-      <h2>Home</h2>
+    <PageShell title="Home">
       <p>
         API base URL: <code>{API_BASE_URL}</code>
       </p>
@@ -140,22 +142,22 @@ export function HomePage() {
         </div>
       ) : null}
 
-      <div className="card">
+      <Card>
         <h3>Create League</h3>
         <input
           placeholder="League name"
           value={leagueName}
           onChange={(event) => setLeagueName(event.target.value)}
         />
-        <button type="button" onClick={handleCreateLeague} disabled={createState === 'creating'}>
+        <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
           {createState === 'creating' ? 'Creating...' : 'Create League'}
-        </button>
+        </Button>
         {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
           <p>{createState}</p>
         ) : null}
-      </div>
+      </Card>
 
-      <div className="card">
+      <Card>
         <h3>Open League</h3>
         <input
           placeholder="League ID"
@@ -167,11 +169,11 @@ export function HomePage() {
             Go to league
           </Link>
         </p>
-      </div>
+      </Card>
 
       <p>
         <Link to="/league/demo-league">Demo league</Link>
       </p>
-    </section>
+    </PageShell>
   )
 }

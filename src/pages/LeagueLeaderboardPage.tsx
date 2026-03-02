@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../api/apiClient'
+import { Badge } from '../components/ui/Badge'
+import { PageShell } from '../components/ui/PageShell'
+import { Table } from '../components/ui/Table'
 
 type Scoring = {
   available: boolean
@@ -66,8 +69,7 @@ export function LeagueLeaderboardPage() {
   const scoringAvailable = data?.scoring?.available ?? true
 
   return (
-    <section>
-      <h2>Leaderboard</h2>
+    <PageShell title="Leaderboard">
       <p>
         League: <code>{leagueId}</code> | Race: <code>{raceId}</code>
       </p>
@@ -77,46 +79,44 @@ export function LeagueLeaderboardPage() {
 
       {loading ? <p>Loading leaderboard...</p> : null}
       {error ? <p>{error}</p> : null}
-      {!loading && !error && !scoringAvailable ? <p>Scoring pending</p> : null}
+      {!loading && !error && !scoringAvailable ? <Badge tone="warning">Scoring pending</Badge> : null}
 
       {!loading && !error && (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Display Name</th>
-                <th>Points</th>
-                <th>Details</th>
+        <Table ariaLabel="Race leaderboard">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Display Name</th>
+              <th>Points</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={`${row.rank}-${row.displayName}`}>
+                <td>{row.rank}</td>
+                <td>{row.displayName}</td>
+                <td>{row.points}</td>
+                <td>
+                  {row.breakdown ? (
+                    <details>
+                      <summary>Show</summary>
+                      <pre>{breakdownText(row.breakdown)}</pre>
+                    </details>
+                  ) : (
+                    'N/A'
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={`${row.rank}-${row.displayName}`}>
-                  <td>{row.rank}</td>
-                  <td>{row.displayName}</td>
-                  <td>{row.points}</td>
-                  <td>
-                    {row.breakdown ? (
-                      <details>
-                        <summary>Show</summary>
-                        <pre>{breakdownText(row.breakdown)}</pre>
-                      </details>
-                    ) : (
-                      'N/A'
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={4}>No leaderboard entries yet</td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={4}>No leaderboard entries yet</td>
+              </tr>
+            ) : null}
+          </tbody>
+        </Table>
       )}
-    </section>
+    </PageShell>
   )
 }

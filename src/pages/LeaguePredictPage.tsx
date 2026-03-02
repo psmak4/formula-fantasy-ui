@@ -1,6 +1,10 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ApiError, apiClient } from '../api/apiClient'
+import { Badge } from '../components/ui/Badge'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { PageShell } from '../components/ui/PageShell'
 
 type Driver = {
   id?: string
@@ -210,8 +214,7 @@ export function LeaguePredictPage() {
   }
 
   return (
-    <section>
-      <h2>League Predict</h2>
+    <PageShell title="League Predict">
       <p>
         League ID: <code>{leagueId}</code>
       </p>
@@ -230,7 +233,8 @@ export function LeaguePredictPage() {
       {error ? <p>{error}</p> : null}
 
       {!loading && !error ? (
-        <form onSubmit={handleSubmit} className="card">
+        <Card>
+          <form onSubmit={handleSubmit} className="stack">
           <h3>Predict Top 3</h3>
 
           {['P1', 'P2', 'P3'].map((slot, index) => (
@@ -261,22 +265,23 @@ export function LeaguePredictPage() {
           {missingRequiredPick ? <p>Please select all three drivers.</p> : null}
           {duplicatePick ? <p>Each pick must be a different driver.</p> : null}
 
-          <button
+          <Button
             type="submit"
             disabled={!isOpen || missingRequiredPick || duplicatePick || saveState === 'saving'}
           >
             {saveState === 'saving' ? 'Submitting...' : 'Submit prediction'}
-          </button>
-          {saveState === 'saved' ? <p>Prediction saved.</p> : null}
+          </Button>
+          {saveState === 'saved' ? <Badge tone="success">Prediction saved.</Badge> : null}
           {saveState !== 'idle' && saveState !== 'saving' && saveState !== 'saved' ? (
-            <p>{saveState}</p>
+            <Badge tone="danger">{saveState}</Badge>
           ) : null}
-        </form>
+          </form>
+        </Card>
       ) : null}
 
       <p>
         <Link to={`/league/${leagueId}`}>Back to league page</Link>
       </p>
-    </section>
+    </PageShell>
   )
 }
