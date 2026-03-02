@@ -91,6 +91,7 @@ function rankDelta(entry: LeaderboardEntry): number | null {
 
 export function LeaguePage() {
   const { leagueId } = useParams<{ leagueId: string }>()
+  const [reloadTick, setReloadTick] = useState(0)
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -163,7 +164,7 @@ export function LeaguePage() {
     return () => {
       cancelled = true
     }
-  }, [leagueId, joinState])
+  }, [leagueId, joinState, reloadTick])
 
   const leaderboardRows = useMemo(
     () => (leaderboard?.entries ?? leaderboard?.leaderboard ?? []).slice(0, 10),
@@ -212,8 +213,32 @@ export function LeaguePage() {
 
   return (
     <PageShell title="League" subtitle="Track members, race standings, and your prediction status in one place.">
-      {loading ? <p>Loading league...</p> : null}
-      {error ? <p>{error}</p> : null}
+      {loading ? (
+        <div className="league-grid">
+          <Card>
+            <div className="skeleton-line skeleton-md" />
+            <div className="skeleton-line skeleton-sm" />
+            <div className="skeleton-line skeleton-sm" />
+          </Card>
+          <Card>
+            <div className="skeleton-line skeleton-md" />
+            <div className="skeleton-table" />
+          </Card>
+          <Card>
+            <div className="skeleton-line skeleton-md" />
+            <div className="skeleton-line skeleton-sm" />
+          </Card>
+        </div>
+      ) : null}
+      {error ? (
+        <Card>
+          <h3>Couldn&apos;t load league</h3>
+          <p>{error}</p>
+          <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
+            Retry
+          </Button>
+        </Card>
+      ) : null}
 
       {!loading && !error ? (
         <div className="league-grid">
@@ -249,7 +274,7 @@ export function LeaguePage() {
 
             <div>
               <h4>Members</h4>
-              {members.length === 0 ? <p>No members yet</p> : null}
+              {members.length === 0 ? <p>No members yet—invite friends</p> : null}
               {members.length > 0 ? (
                 <ul>
                   {members.map((member, index) => (
@@ -323,7 +348,7 @@ export function LeaguePage() {
             <p>
               {entrySubmitted
                 ? 'Your prediction is in for the next race.'
-                : 'You have not submitted a prediction for the next race.'}
+                : 'You haven’t submitted—make your picks'}
             </p>
             <p>
               <Link className="ui-button ui-button-secondary" to={`/league/${leagueId}/predict`}>

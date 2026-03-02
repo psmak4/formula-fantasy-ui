@@ -33,6 +33,7 @@ type PredictionStatus = 'open' | 'opens_soon' | 'locked'
 
 export function HomePage() {
   const navigate = useNavigate()
+  const [reloadTick, setReloadTick] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [nextRace, setNextRace] = useState<NextRaceResponse | null>(null)
@@ -63,7 +64,7 @@ export function HomePage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [reloadTick])
 
   const raceName = useMemo(
     () => nextRace?.name ?? nextRace?.raceName ?? nextRace?.grandPrixName ?? 'TBD',
@@ -242,7 +243,22 @@ export function HomePage() {
   return (
     <PageShell title="Home" subtitle="Predict race results with your friends and climb the leaderboard.">
       {loading ? <p>Loading next race...</p> : null}
-      {error ? <p>{error}</p> : null}
+      {loading ? (
+        <Card className="next-race-hero">
+          <div className="skeleton-line skeleton-lg" />
+          <div className="skeleton-line skeleton-md" />
+          <div className="skeleton-line skeleton-sm" />
+        </Card>
+      ) : null}
+      {error ? (
+        <Card>
+          <h3>Couldn&apos;t load next race</h3>
+          <p>{error}</p>
+          <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
+            Retry
+          </Button>
+        </Card>
+      ) : null}
 
       {!loading && !error ? (
         <Card className="next-race-hero">
@@ -271,7 +287,7 @@ export function HomePage() {
         </Card>
       ) : null}
 
-      <div className="home-cta-grid">
+      {!loading && !error ? <div className="home-cta-grid">
         <Card>
           <h3>Create League</h3>
           <p>Start a private league and invite your friends.</p>
@@ -303,7 +319,7 @@ export function HomePage() {
             <p>{joinState}</p>
           ) : null}
         </Card>
-      </div>
+      </div> : null}
     </PageShell>
   )
 }

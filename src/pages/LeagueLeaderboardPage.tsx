@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { apiClient } from '../api/apiClient'
 import { Badge } from '../components/ui/Badge'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
 import { PageShell } from '../components/ui/PageShell'
 import { Table } from '../components/ui/Table'
 
@@ -38,6 +40,7 @@ function rankDelta(row: LeaderboardRow): number | null {
 
 export function LeagueLeaderboardPage() {
   const { leagueId, raceId } = useParams<{ leagueId: string; raceId: string }>()
+  const [reloadTick, setReloadTick] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<LeaderboardResponse | null>(null)
@@ -71,7 +74,7 @@ export function LeagueLeaderboardPage() {
     return () => {
       cancelled = true
     }
-  }, [leagueId, raceId])
+  }, [leagueId, raceId, reloadTick])
 
   const rows = useMemo(() => data?.entries ?? data?.leaderboard ?? [], [data])
   const scoringAvailable = data?.scoring?.available ?? true
@@ -86,8 +89,21 @@ export function LeagueLeaderboardPage() {
         <Link to={`/league/${leagueId}`}>Back to league</Link>
       </p>
 
-      {loading ? <p>Loading leaderboard...</p> : null}
-      {error ? <p>{error}</p> : null}
+      {loading ? (
+        <Card>
+          <div className="skeleton-line skeleton-md" />
+          <div className="skeleton-table" />
+        </Card>
+      ) : null}
+      {error ? (
+        <Card>
+          <h3>Couldn&apos;t load leaderboard</h3>
+          <p>{error}</p>
+          <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
+            Retry
+          </Button>
+        </Card>
+      ) : null}
       {!loading && !error && !scoringAvailable ? <Badge tone="warning">Scoring pending</Badge> : null}
       {!loading && !error && scoringAvailable && topScorer ? (
         <Badge tone="success">Manager of the race: {topScorer.displayName}</Badge>

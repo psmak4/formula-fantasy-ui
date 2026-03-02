@@ -484,6 +484,52 @@ summary {
   color: #475569;
 }
 
+.skeleton-line,
+.skeleton-table {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: #e8edf7;
+}
+
+.skeleton-line::after,
+.skeleton-table::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+  animation: shimmer 1.2s infinite;
+}
+
+.skeleton-line {
+  height: 0.9rem;
+}
+
+.skeleton-line.skeleton-lg {
+  height: 1.4rem;
+  width: 64%;
+}
+
+.skeleton-line.skeleton-md {
+  height: 1.1rem;
+  width: 48%;
+}
+
+.skeleton-line.skeleton-sm {
+  width: 36%;
+}
+
+.skeleton-table {
+  height: 10rem;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .league-grid {
   display: grid;
   grid-template-columns: minmax(220px, 1.05fr) minmax(340px, 1.6fr) minmax(220px, 1fr);
