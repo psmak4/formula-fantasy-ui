@@ -35,7 +35,7 @@ export function AppShell() {
     if (isActive) {
       return 'relative text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-red-600'
     }
-    return 'relative text-neutral-400 hover:text-white'
+    return 'relative text-neutral-300 hover:text-white'
   }
 
   return (
@@ -43,7 +43,7 @@ export function AppShell() {
       <header className="sticky top-0 z-50 h-16 w-full border-b border-neutral-800 bg-neutral-950">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
           <div className="flex flex-1 items-center">
-            <Link to="/" className="flex items-center font-semibold tracking-tight text-white">
+            <Link to="/" className="flex items-center text-lg font-semibold tracking-tight text-white md:text-xl">
               <span className="mr-2 h-2 w-2 bg-red-600" />
               Formula Fantasy
             </Link>
