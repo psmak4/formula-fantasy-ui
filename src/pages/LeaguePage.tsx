@@ -10,6 +10,11 @@ export function LeaguePage() {
       <p>
         <Link to={`/league/${leagueId}/predict`}>Go to prediction page</Link>
       </p>
+      <p>
+        <Link to={`/league/${leagueId}/races/demo-race/leaderboard`}>
+          View leaderboard (demo race)
+        </Link>
+      </p>
     </section>
   )
 }

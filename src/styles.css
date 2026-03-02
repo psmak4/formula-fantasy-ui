@@ -51,3 +51,39 @@ code {
   border-radius: 4px;
   padding: 0.1rem 0.35rem;
 }
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th,
+td {
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.6rem 0.5rem;
+}
+
+th {
+  font-weight: 700;
+}
+
+summary {
+  cursor: pointer;
+}
+
+pre {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.5rem;
+  max-width: 32rem;
+  white-space: pre-wrap;
+}

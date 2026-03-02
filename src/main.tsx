@@ -4,6 +4,7 @@ import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import { HomePage } from './pages/HomePage'
 import { LeaguePage } from './pages/LeaguePage'
 import { LeaguePredictPage } from './pages/LeaguePredictPage'
+import { LeagueLeaderboardPage } from './pages/LeagueLeaderboardPage'
 import './styles.css'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
             <Link to="/">Home</Link>
             <Link to="/league/demo-league">League</Link>
             <Link to="/league/demo-league/predict">Predict</Link>
+            <Link to="/league/demo-league/races/demo-race/leaderboard">Leaderboard</Link>
           </nav>
         </header>
 
@@ -24,6 +26,10 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/league/:leagueId" element={<LeaguePage />} />
             <Route path="/league/:leagueId/predict" element={<LeaguePredictPage />} />
+            <Route
+              path="/league/:leagueId/races/:raceId/leaderboard"
+              element={<LeagueLeaderboardPage />}
+            />
           </Routes>
         </main>
       </div>
