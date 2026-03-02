@@ -1,86 +1,101 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { apiClient } from '../api/apiClient'
-import { toastApiError } from '../lib/api-error'
-import { Badge } from '../components/ui/Badge'
-import { Button } from '../components/ui/Button'
-import { Card } from '../components/ui/Card'
-import { Input } from '../components/ui/input'
-import { Label } from '../components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { apiClient } from "../api/apiClient";
+import { toastApiError } from "../lib/api-error";
+import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 type NextRaceResponse = {
-  id?: string
-  raceId?: string
-  name?: string
-  raceName?: string
-  grandPrixName?: string
-  startsAt?: string
-  startTime?: string
-  raceAt?: string
-  raceStartAt?: string
-  scheduledAt?: string
-  date?: string
-  entryOpensAt?: string
-  predictionOpensAt?: string
-  openAt?: string
-  entryClosesAt?: string
-  predictionClosesAt?: string
-  lockAt?: string
-  predictionLocked?: boolean
-  entriesLocked?: boolean
-  lockStatus?: 'open' | 'locked'
-}
+  id?: string;
+  raceId?: string;
+  name?: string;
+  raceName?: string;
+  grandPrixName?: string;
+  startsAt?: string;
+  startTime?: string;
+  raceAt?: string;
+  raceStartAt?: string;
+  scheduledAt?: string;
+  date?: string;
+  entryOpensAt?: string;
+  predictionOpensAt?: string;
+  openAt?: string;
+  entryClosesAt?: string;
+  predictionClosesAt?: string;
+  lockAt?: string;
+  predictionLocked?: boolean;
+  entriesLocked?: boolean;
+  lockStatus?: "open" | "locked";
+};
 
-type PredictionStatus = 'open' | 'opens_soon' | 'locked'
-type LeagueVisibility = 'private' | 'public'
+type PredictionStatus = "open" | "opens_soon" | "locked";
+type LeagueVisibility = "private" | "public";
 
-function assertLeagueVisibility(value: string): asserts value is LeagueVisibility {
-  if (value !== 'private' && value !== 'public') {
-    throw new Error(`Invalid league visibility: ${value}`)
+function assertLeagueVisibility(
+  value: string,
+): asserts value is LeagueVisibility {
+  if (value !== "private" && value !== "public") {
+    throw new Error(`Invalid league visibility: ${value}`);
   }
 }
 
 export function HomePage() {
-  const navigate = useNavigate()
-  const [reloadTick, setReloadTick] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [nextRace, setNextRace] = useState<NextRaceResponse | null>(null)
-  const [countdown, setCountdown] = useState('')
-  const [leagueName, setLeagueName] = useState('')
-  const [leagueVisibility, setLeagueVisibility] = useState<LeagueVisibility>('private')
-  const [inviteInput, setInviteInput] = useState('')
-  const [createState, setCreateState] = useState<'idle' | 'creating' | 'created' | string>('idle')
-  const [joinState, setJoinState] = useState<'idle' | 'joining' | 'joined' | string>('idle')
+  const navigate = useNavigate();
+  const [reloadTick, setReloadTick] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [nextRace, setNextRace] = useState<NextRaceResponse | null>(null);
+  const [countdown, setCountdown] = useState("");
+  const [leagueName, setLeagueName] = useState("");
+  const [leagueVisibility, setLeagueVisibility] =
+    useState<LeagueVisibility>("private");
+  const [inviteInput, setInviteInput] = useState("");
+  const [createState, setCreateState] = useState<
+    "idle" | "creating" | "created" | string
+  >("idle");
+  const [joinState, setJoinState] = useState<
+    "idle" | "joining" | "joined" | string
+  >("idle");
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     apiClient
-      .get<NextRaceResponse>('/f1/next-race')
+      .get<NextRaceResponse>("/f1/next-race")
       .then((data) => {
-        if (!cancelled) setNextRace(data)
+        if (!cancelled) setNextRace(data);
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          const message = err instanceof Error ? err.message : 'Failed to load next race'
-          setError(message)
+          const message =
+            err instanceof Error ? err.message : "Failed to load next race";
+          setError(message);
         }
       })
       .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
+        if (!cancelled) setLoading(false);
+      });
 
     return () => {
-      cancelled = true
-    }
-  }, [reloadTick])
+      cancelled = true;
+    };
+  }, [reloadTick]);
 
   const raceName = useMemo(
-    () => nextRace?.name ?? nextRace?.raceName ?? nextRace?.grandPrixName ?? 'TBD',
-    [nextRace]
-  )
+    () =>
+      nextRace?.name ?? nextRace?.raceName ?? nextRace?.grandPrixName ?? "TBD",
+    [nextRace],
+  );
 
   const startsAt = useMemo(
     () =>
@@ -90,159 +105,189 @@ export function HomePage() {
       nextRace?.raceStartAt ??
       nextRace?.scheduledAt ??
       nextRace?.date,
-    [nextRace]
-  )
+    [nextRace],
+  );
 
   const entryOpensAt = useMemo(
-    () => nextRace?.entryOpensAt ?? nextRace?.predictionOpensAt ?? nextRace?.openAt,
-    [nextRace]
-  )
+    () =>
+      nextRace?.entryOpensAt ?? nextRace?.predictionOpensAt ?? nextRace?.openAt,
+    [nextRace],
+  );
 
   const entryClosesAt = useMemo(
-    () => nextRace?.entryClosesAt ?? nextRace?.predictionClosesAt ?? nextRace?.lockAt,
-    [nextRace]
-  )
+    () =>
+      nextRace?.entryClosesAt ??
+      nextRace?.predictionClosesAt ??
+      nextRace?.lockAt,
+    [nextRace],
+  );
 
   const predictionStatus = useMemo<PredictionStatus>(() => {
-    const openTs = entryOpensAt ? new Date(entryOpensAt).getTime() : NaN
-    const closeTs = entryClosesAt ? new Date(entryClosesAt).getTime() : NaN
-    const now = Date.now()
+    const openTs = entryOpensAt ? new Date(entryOpensAt).getTime() : NaN;
+    const closeTs = entryClosesAt ? new Date(entryClosesAt).getTime() : NaN;
+    const now = Date.now();
 
     const lockedByApi =
       nextRace?.predictionLocked === true ||
       nextRace?.entriesLocked === true ||
-      nextRace?.lockStatus === 'locked'
+      nextRace?.lockStatus === "locked";
 
-    if (lockedByApi || (!Number.isNaN(closeTs) && now >= closeTs)) return 'locked'
-    if (!Number.isNaN(openTs) && now < openTs) return 'opens_soon'
-    return 'open'
-  }, [entryClosesAt, entryOpensAt, nextRace?.entriesLocked, nextRace?.lockStatus, nextRace?.predictionLocked])
+    if (lockedByApi || (!Number.isNaN(closeTs) && now >= closeTs))
+      return "locked";
+    if (!Number.isNaN(openTs) && now < openTs) return "opens_soon";
+    return "open";
+  }, [
+    entryClosesAt,
+    entryOpensAt,
+    nextRace?.entriesLocked,
+    nextRace?.lockStatus,
+    nextRace?.predictionLocked,
+  ]);
 
   useEffect(() => {
     if (!startsAt) {
-      setCountdown('Start time not available')
-      return
+      setCountdown("Start time not available");
+      return;
     }
 
-    const raceStartMs = new Date(startsAt).getTime()
+    const raceStartMs = new Date(startsAt).getTime();
     if (Number.isNaN(raceStartMs)) {
-      setCountdown('Start time not available')
-      return
+      setCountdown("Start time not available");
+      return;
     }
 
     const tick = () => {
-      const deltaMs = raceStartMs - Date.now()
+      const deltaMs = raceStartMs - Date.now();
       if (deltaMs <= 0) {
-        setCountdown('Race weekend live')
-        return
+        setCountdown("Race weekend live");
+        return;
       }
 
-      const totalMinutes = Math.floor(deltaMs / 60000)
-      const days = Math.floor(totalMinutes / (24 * 60))
-      const hours = Math.floor((totalMinutes % (24 * 60)) / 60)
-      const minutes = totalMinutes % 60
-      setCountdown(`${days}d ${hours}h ${minutes}m`)
-    }
+      const totalMinutes = Math.floor(deltaMs / 60000);
+      const days = Math.floor(totalMinutes / (24 * 60));
+      const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+      const minutes = totalMinutes % 60;
+      setCountdown(`${days}d ${hours}h ${minutes}m`);
+    };
 
-    tick()
-    const interval = window.setInterval(tick, 30000)
-    return () => window.clearInterval(interval)
-  }, [startsAt])
+    tick();
+    const interval = window.setInterval(tick, 30000);
+    return () => window.clearInterval(interval);
+  }, [startsAt]);
 
   const localRaceTime = useMemo(() => {
-    if (!startsAt) return 'Time TBD'
-    const date = new Date(startsAt)
-    if (Number.isNaN(date.getTime())) return 'Time TBD'
-    return date.toLocaleString()
-  }, [startsAt])
+    if (!startsAt) return "Time TBD";
+    const date = new Date(startsAt);
+    if (Number.isNaN(date.getTime())) return "Time TBD";
+    return date.toLocaleString();
+  }, [startsAt]);
 
   const utcRaceTime = useMemo(() => {
-    if (!startsAt) return 'UTC TBD'
-    const date = new Date(startsAt)
-    if (Number.isNaN(date.getTime())) return 'UTC TBD'
-    return date.toUTCString()
-  }, [startsAt])
+    if (!startsAt) return "UTC TBD";
+    const date = new Date(startsAt);
+    if (Number.isNaN(date.getTime())) return "UTC TBD";
+    return date.toUTCString();
+  }, [startsAt]);
 
-  function parseInviteTokenOrLeagueId(raw: string): { token?: string; leagueId?: string } {
-    const input = raw.trim()
-    if (!input) return {}
+  function parseInviteTokenOrLeagueId(raw: string): {
+    token?: string;
+    leagueId?: string;
+  } {
+    const input = raw.trim();
+    if (!input) return {};
 
     const readFromPath = (value: string) => {
-      const leagueFromPath = value.match(/\/league\/([^/?#]+)/)?.[1]
-      const inviteFromPath = value.match(/\/invite\/([^/?#]+)/)?.[1]
-      if (leagueFromPath) return { leagueId: leagueFromPath }
-      if (inviteFromPath) return { token: inviteFromPath }
-      return null
-    }
+      const leagueFromPath = value.match(/\/league\/([^/?#]+)/)?.[1];
+      const inviteFromPath = value.match(/\/invite\/([^/?#]+)/)?.[1];
+      if (leagueFromPath) return { leagueId: leagueFromPath };
+      if (inviteFromPath) return { token: inviteFromPath };
+      return null;
+    };
 
-    if (!input.includes('://')) {
-      const fromPath = readFromPath(input)
-      return fromPath ?? { token: input }
+    if (!input.includes("://")) {
+      const fromPath = readFromPath(input);
+      return fromPath ?? { token: input };
     }
 
     try {
-      const url = new URL(input)
-      const fromPath = readFromPath(url.pathname)
-      if (fromPath) return fromPath
+      const url = new URL(input);
+      const fromPath = readFromPath(url.pathname);
+      if (fromPath) return fromPath;
 
-      const inviteFromQuery = url.searchParams.get('invite') ?? url.searchParams.get('token')
-      if (inviteFromQuery) return { token: inviteFromQuery }
+      const inviteFromQuery =
+        url.searchParams.get("invite") ?? url.searchParams.get("token");
+      if (inviteFromQuery) return { token: inviteFromQuery };
     } catch {
-      return { token: input }
+      return { token: input };
     }
 
-    return { token: input }
+    return { token: input };
   }
 
   async function handleCreateLeague() {
-    setCreateState('creating')
+    setCreateState("creating");
 
     try {
-      assertLeagueVisibility(leagueVisibility)
-      const payload = { name: leagueName.trim() || 'My League', visibility: leagueVisibility }
-      const result = await apiClient.post<{ id?: string; leagueId?: string; league?: { id?: string } }>(
-        '/leagues',
-        payload
-      )
+      assertLeagueVisibility(leagueVisibility);
+      const payload = {
+        name: leagueName.trim() || "My League",
+        visibility: leagueVisibility,
+      };
+      const result = await apiClient.post<{
+        id?: string;
+        leagueId?: string;
+        league?: { id?: string };
+      }>("/leagues", payload);
 
-      const createdLeagueId = result.id ?? result.leagueId ?? result.league?.id
+      const createdLeagueId = result.id ?? result.leagueId ?? result.league?.id;
       if (!createdLeagueId) {
-        throw new Error('Create league succeeded but no league id returned')
+        throw new Error("Create league succeeded but no league id returned");
       }
 
-      setCreateState('created')
-      navigate(`/league/${createdLeagueId}`)
+      setCreateState("created");
+      navigate(`/league/${createdLeagueId}`);
     } catch (err: unknown) {
-      const message = toastApiError(err, 'Create league failed', 'Failed to create league')
-      setCreateState(message)
+      const message = toastApiError(
+        err,
+        "Create league failed",
+        "Failed to create league",
+      );
+      setCreateState(message);
     }
   }
 
   async function handleJoinLeague() {
-    const parsed = parseInviteTokenOrLeagueId(inviteInput)
+    const parsed = parseInviteTokenOrLeagueId(inviteInput);
 
     if (!parsed.token && !parsed.leagueId) {
-      setJoinState('Paste an invite token or league link')
-      return
+      setJoinState("Paste an invite token or league link");
+      return;
     }
 
     if (parsed.leagueId) {
-      setJoinState('joined')
-      navigate(`/league/${parsed.leagueId}`)
-      return
+      setJoinState("joined");
+      navigate(`/league/${parsed.leagueId}`);
+      return;
     }
 
-    setJoinState('joining')
+    setJoinState("joining");
     try {
-      const result = await apiClient.post<{ leagueId?: string; league?: { id?: string } }>('/leagues/join', {
-        inviteToken: parsed.token
-      })
-      const joinedLeagueId = result.leagueId ?? result.league?.id
-      setJoinState('joined')
-      navigate(`/league/${joinedLeagueId ?? 'demo-league'}`)
+      const result = await apiClient.post<{
+        leagueId?: string;
+        league?: { id?: string };
+      }>("/leagues/join", {
+        inviteToken: parsed.token,
+      });
+      const joinedLeagueId = result.leagueId ?? result.league?.id;
+      setJoinState("joined");
+      navigate(`/league/${joinedLeagueId ?? "demo-league"}`);
     } catch (err: unknown) {
-      const message = toastApiError(err, 'Join league failed', 'Failed to join league')
-      setJoinState(message)
+      const message = toastApiError(
+        err,
+        "Join league failed",
+        "Failed to join league",
+      );
+      setJoinState(message);
     }
   }
 
@@ -256,11 +301,14 @@ export function HomePage() {
               <div className="space-y-2">
                 <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
                 <p className="text-slate-300">
-                  Predict race results with your friends and climb the leaderboard.
+                  Predict race results with your friends and climb the
+                  leaderboard.
                 </p>
               </div>
 
-              {loading ? <p className="text-slate-300">Loading next race...</p> : null}
+              {loading ? (
+                <p className="text-slate-300">Loading next race...</p>
+              ) : null}
               {loading ? (
                 <div className="space-y-4">
                   <div className="h-8 w-2/3 animate-pulse rounded bg-white/10" />
@@ -270,9 +318,14 @@ export function HomePage() {
               ) : null}
               {error ? (
                 <div className="space-y-3">
-                  <h3 className="text-xl font-semibold">Couldn&apos;t load next race</h3>
+                  <h3 className="text-xl font-semibold">
+                    Couldn&apos;t load next race
+                  </h3>
                   <p className="text-slate-300">{error}</p>
-                  <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setReloadTick((v) => v + 1)}
+                  >
                     Retry
                   </Button>
                 </div>
@@ -282,7 +335,9 @@ export function HomePage() {
                 <>
                   <div className="space-y-3">
                     <p className="hero-kicker text-slate-300">Next Race</p>
-                    <h2 className="text-5xl font-extrabold tracking-tight md:text-6xl">{raceName}</h2>
+                    <h2 className="text-5xl font-extrabold tracking-tight md:text-6xl">
+                      {raceName}
+                    </h2>
                   </div>
 
                   <p>
@@ -291,13 +346,17 @@ export function HomePage() {
 
                   <div className="hero-metrics">
                     <div>
-                      <span className="hero-metric-label text-slate-300">Countdown</span>
-                      <strong className="text-3xl font-semibold tracking-[0.04em]">{countdown}</strong>
+                      <span className="hero-metric-label text-slate-300">
+                        Countdown
+                      </span>
+                      <strong className="text-3xl font-semibold tracking-[0.04em]">
+                        {countdown}
+                      </strong>
                     </div>
                   </div>
 
                   <div className="hero-chips">
-                    {predictionStatus === 'open' ? (
+                    {predictionStatus === "open" ? (
                       <Badge
                         variant="outline"
                         className="border-green-500/30 bg-green-500/20 text-green-400"
@@ -305,8 +364,12 @@ export function HomePage() {
                         Predictions Open
                       </Badge>
                     ) : null}
-                    {predictionStatus === 'opens_soon' ? <Badge tone="info">Predictions Open Soon</Badge> : null}
-                    {predictionStatus === 'locked' ? <Badge tone="danger">Predictions Locked</Badge> : null}
+                    {predictionStatus === "opens_soon" ? (
+                      <Badge tone="info">Predictions Open Soon</Badge>
+                    ) : null}
+                    {predictionStatus === "locked" ? (
+                      <Badge tone="danger">Predictions Locked</Badge>
+                    ) : null}
                     {entryClosesAt ? (
                       <Badge
                         variant="outline"
@@ -320,7 +383,7 @@ export function HomePage() {
                   <div>
                     <Button
                       asChild
-                      className="h-auto bg-red-600 px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-red-700"
+                      className="h-auto bg-red-600 px-8 py-3 text-base font-semibold text-white! shadow-lg ring-2 ring-red-400/40 transition hover:-translate-y-0.5 hover:bg-red-700"
                     >
                       <Link to="#create-league">Create League</Link>
                     </Button>
@@ -346,34 +409,47 @@ export function HomePage() {
             <Card className="rounded-xl border border-slate-200 bg-background p-8 transition hover:border-slate-300">
               <h3 className="text-xl font-semibold">Create League</h3>
               <p>Start a private league and invite your friends.</p>
-            <Label htmlFor="leagueName">League name</Label>
-            <Input
-              id="leagueName"
-              placeholder="League name"
-              value={leagueName}
-              onChange={(event) => setLeagueName(event.target.value)}
-            />
-            <Label htmlFor="leagueVisibility">Visibility</Label>
-            <Select value={leagueVisibility} onValueChange={(value) => setLeagueVisibility(value as LeagueVisibility)}>
-              <SelectTrigger id="leagueVisibility">
-                <SelectValue placeholder="Select visibility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-              </SelectContent>
-            </Select>
-              <Button className="w-full" onClick={handleCreateLeague} disabled={createState === 'creating'}>
-                {createState === 'creating' ? 'Creating...' : 'Create League'}
+              <Label htmlFor="leagueName">League name</Label>
+              <Input
+                id="leagueName"
+                placeholder="League name"
+                value={leagueName}
+                onChange={(event) => setLeagueName(event.target.value)}
+              />
+              <Label htmlFor="leagueVisibility">Visibility</Label>
+              <Select
+                value={leagueVisibility}
+                onValueChange={(value) =>
+                  setLeagueVisibility(value as LeagueVisibility)
+                }
+              >
+                <SelectTrigger id="leagueVisibility">
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="private">Private</SelectItem>
+                  <SelectItem value="public">Public</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                className="w-full"
+                onClick={handleCreateLeague}
+                disabled={createState === "creating"}
+              >
+                {createState === "creating" ? "Creating..." : "Create League"}
               </Button>
-              {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
+              {createState !== "idle" &&
+              createState !== "creating" &&
+              createState !== "created" ? (
                 <p>{createState}</p>
               ) : null}
             </Card>
 
             <Card className="rounded-xl border border-slate-200 bg-background p-8 transition hover:border-slate-300">
               <h3 className="text-xl font-semibold">Join League</h3>
-              <p>Paste an invite token or full invite link to join instantly.</p>
+              <p>
+                Paste an invite token or full invite link to join instantly.
+              </p>
               <Label htmlFor="inviteInput">Invite token or link</Label>
               <Input
                 id="inviteInput"
@@ -381,10 +457,17 @@ export function HomePage() {
                 value={inviteInput}
                 onChange={(event) => setInviteInput(event.target.value)}
               />
-              <Button className="w-full" variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
-                {joinState === 'joining' ? 'Joining...' : 'Join League'}
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={handleJoinLeague}
+                disabled={joinState === "joining"}
+              >
+                {joinState === "joining" ? "Joining..." : "Join League"}
               </Button>
-              {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
+              {joinState !== "idle" &&
+              joinState !== "joining" &&
+              joinState !== "joined" ? (
                 <p>{joinState}</p>
               ) : null}
             </Card>
@@ -392,5 +475,5 @@ export function HomePage() {
         </div>
       </div>
     </section>
-  )
+  );
 }
