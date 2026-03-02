@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { API_BASE_URL, apiClient } from '../api/apiClient'
+import { useNavigate } from 'react-router-dom'
+import { ApiError, apiClient } from '../api/apiClient'
+import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { PageShell } from '../components/ui/PageShell'
@@ -17,7 +18,18 @@ type NextRaceResponse = {
   raceStartAt?: string
   scheduledAt?: string
   date?: string
+  entryOpensAt?: string
+  predictionOpensAt?: string
+  openAt?: string
+  entryClosesAt?: string
+  predictionClosesAt?: string
+  lockAt?: string
+  predictionLocked?: boolean
+  entriesLocked?: boolean
+  lockStatus?: 'open' | 'locked'
 }
+
+type PredictionStatus = 'open' | 'opens_soon' | 'locked'
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -26,8 +38,9 @@ export function HomePage() {
   const [nextRace, setNextRace] = useState<NextRaceResponse | null>(null)
   const [countdown, setCountdown] = useState('')
   const [leagueName, setLeagueName] = useState('')
-  const [leagueIdInput, setLeagueIdInput] = useState('')
-  const [createState, setCreateState] = useState('idle')
+  const [inviteInput, setInviteInput] = useState('')
+  const [createState, setCreateState] = useState<'idle' | 'creating' | 'created' | string>('idle')
+  const [joinState, setJoinState] = useState<'idle' | 'joining' | 'joined' | string>('idle')
 
   useEffect(() => {
     let cancelled = false
@@ -68,6 +81,31 @@ export function HomePage() {
     [nextRace]
   )
 
+  const entryOpensAt = useMemo(
+    () => nextRace?.entryOpensAt ?? nextRace?.predictionOpensAt ?? nextRace?.openAt,
+    [nextRace]
+  )
+
+  const entryClosesAt = useMemo(
+    () => nextRace?.entryClosesAt ?? nextRace?.predictionClosesAt ?? nextRace?.lockAt,
+    [nextRace]
+  )
+
+  const predictionStatus = useMemo<PredictionStatus>(() => {
+    const openTs = entryOpensAt ? new Date(entryOpensAt).getTime() : NaN
+    const closeTs = entryClosesAt ? new Date(entryClosesAt).getTime() : NaN
+    const now = Date.now()
+
+    const lockedByApi =
+      nextRace?.predictionLocked === true ||
+      nextRace?.entriesLocked === true ||
+      nextRace?.lockStatus === 'locked'
+
+    if (lockedByApi || (!Number.isNaN(closeTs) && now >= closeTs)) return 'locked'
+    if (!Number.isNaN(openTs) && now < openTs) return 'opens_soon'
+    return 'open'
+  }, [entryClosesAt, entryOpensAt, nextRace?.entriesLocked, nextRace?.lockStatus, nextRace?.predictionLocked])
+
   useEffect(() => {
     if (!startsAt) {
       setCountdown('Start time not available')
@@ -83,22 +121,74 @@ export function HomePage() {
     const tick = () => {
       const deltaMs = raceStartMs - Date.now()
       if (deltaMs <= 0) {
-        setCountdown('Race started')
+        setCountdown('Race weekend live')
         return
       }
 
-      const totalSeconds = Math.floor(deltaMs / 1000)
-      const days = Math.floor(totalSeconds / 86400)
-      const hours = Math.floor((totalSeconds % 86400) / 3600)
-      const minutes = Math.floor((totalSeconds % 3600) / 60)
-      const seconds = totalSeconds % 60
-      setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`)
+      const totalMinutes = Math.floor(deltaMs / 60000)
+      const days = Math.floor(totalMinutes / (24 * 60))
+      const hours = Math.floor((totalMinutes % (24 * 60)) / 60)
+      const minutes = totalMinutes % 60
+      setCountdown(`${days}d ${hours}h ${minutes}m`)
     }
 
     tick()
-    const interval = window.setInterval(tick, 1000)
+    const interval = window.setInterval(tick, 30000)
     return () => window.clearInterval(interval)
   }, [startsAt])
+
+  const localRaceTime = useMemo(() => {
+    if (!startsAt) return 'Time TBD'
+    const date = new Date(startsAt)
+    if (Number.isNaN(date.getTime())) return 'Time TBD'
+    return date.toLocaleString()
+  }, [startsAt])
+
+  const utcRaceTime = useMemo(() => {
+    if (!startsAt) return 'UTC TBD'
+    const date = new Date(startsAt)
+    if (Number.isNaN(date.getTime())) return 'UTC TBD'
+    return date.toUTCString()
+  }, [startsAt])
+
+  function parseInviteTokenOrLeagueId(raw: string): { token?: string; leagueId?: string } {
+    const input = raw.trim()
+    if (!input) return {}
+
+    const readFromPath = (value: string) => {
+      const leagueFromPath = value.match(/\/league\/([^/?#]+)/)?.[1]
+      const inviteFromPath = value.match(/\/invite\/([^/?#]+)/)?.[1]
+      if (leagueFromPath) return { leagueId: leagueFromPath }
+      if (inviteFromPath) return { token: inviteFromPath }
+      return null
+    }
+
+    if (!input.includes('://')) {
+      const fromPath = readFromPath(input)
+      return fromPath ?? { token: input }
+    }
+
+    try {
+      const url = new URL(input)
+      const fromPath = readFromPath(url.pathname)
+      if (fromPath) return fromPath
+
+      const inviteFromQuery = url.searchParams.get('invite') ?? url.searchParams.get('token')
+      if (inviteFromQuery) return { token: inviteFromQuery }
+    } catch {
+      return { token: input }
+    }
+
+    return { token: input }
+  }
+
+  function formatApiError(err: unknown, fallback: string): string {
+    if (err instanceof ApiError) {
+      if (err.code) return `${err.message} (${err.code})`
+      return err.message
+    }
+    return err instanceof Error ? err.message : fallback
+  }
 
   async function handleCreateLeague() {
     setCreateState('creating')
@@ -118,62 +208,102 @@ export function HomePage() {
       setCreateState('created')
       navigate(`/league/${createdLeagueId}`)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create league'
-      setCreateState(message)
+      setCreateState(formatApiError(err, 'Failed to create league'))
+    }
+  }
+
+  async function handleJoinLeague() {
+    const parsed = parseInviteTokenOrLeagueId(inviteInput)
+
+    if (!parsed.token && !parsed.leagueId) {
+      setJoinState('Paste an invite token or league link')
+      return
+    }
+
+    if (parsed.leagueId) {
+      setJoinState('joined')
+      navigate(`/league/${parsed.leagueId}`)
+      return
+    }
+
+    setJoinState('joining')
+    try {
+      const result = await apiClient.post<{ leagueId?: string; league?: { id?: string } }>('/leagues/join', {
+        inviteToken: parsed.token
+      })
+      const joinedLeagueId = result.leagueId ?? result.league?.id
+      setJoinState('joined')
+      navigate(`/league/${joinedLeagueId ?? 'demo-league'}`)
+    } catch (err: unknown) {
+      setJoinState(formatApiError(err, 'Failed to join league'))
     }
   }
 
   return (
-    <PageShell title="Home">
-      <p>
-        API base URL: <code>{API_BASE_URL}</code>
-      </p>
-
+    <PageShell title="Home" subtitle="Predict race results with your friends and climb the leaderboard.">
       {loading ? <p>Loading next race...</p> : null}
       {error ? <p>{error}</p> : null}
+
       {!loading && !error ? (
-        <div>
+        <Card className="next-race-hero">
+          <div className="hero-headline">
+            <p className="hero-kicker">Next Race</p>
+            <h3>{raceName}</h3>
+          </div>
+
           <p>
-            Next race: <strong>{raceName}</strong>
+            <strong title={utcRaceTime}>{localRaceTime}</strong>
           </p>
-          <p>
-            Countdown: <strong>{countdown}</strong>
-          </p>
-        </div>
+
+          <div className="hero-metrics">
+            <div>
+              <span className="hero-metric-label">Countdown</span>
+              <strong>{countdown}</strong>
+            </div>
+          </div>
+
+          <div className="hero-chips">
+            {predictionStatus === 'open' ? <Badge tone="success">Predictions Open</Badge> : null}
+            {predictionStatus === 'opens_soon' ? <Badge tone="info">Predictions Open Soon</Badge> : null}
+            {predictionStatus === 'locked' ? <Badge tone="danger">Predictions Locked</Badge> : null}
+            {entryClosesAt ? <Badge tone="neutral">Locks at {new Date(entryClosesAt).toLocaleString()}</Badge> : null}
+          </div>
+        </Card>
       ) : null}
 
-      <Card>
-        <h3>Create League</h3>
-        <input
-          placeholder="League name"
-          value={leagueName}
-          onChange={(event) => setLeagueName(event.target.value)}
-        />
-        <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
-          {createState === 'creating' ? 'Creating...' : 'Create League'}
-        </Button>
-        {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
-          <p>{createState}</p>
-        ) : null}
-      </Card>
+      <div className="home-cta-grid">
+        <Card>
+          <h3>Create League</h3>
+          <p>Start a private league and invite your friends.</p>
+          <input
+            placeholder="League name"
+            value={leagueName}
+            onChange={(event) => setLeagueName(event.target.value)}
+          />
+          <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
+            {createState === 'creating' ? 'Creating...' : 'Create League'}
+          </Button>
+          {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
+            <p>{createState}</p>
+          ) : null}
+        </Card>
 
-      <Card>
-        <h3>Open League</h3>
-        <input
-          placeholder="League ID"
-          value={leagueIdInput}
-          onChange={(event) => setLeagueIdInput(event.target.value)}
-        />
-        <p>
-          <Link to={leagueIdInput.trim() ? `/league/${leagueIdInput.trim()}` : '/league/demo-league'}>
-            Go to league
-          </Link>
-        </p>
-      </Card>
-
-      <p>
-        <Link to="/league/demo-league">Demo league</Link>
-      </p>
+        <Card>
+          <h3>Join League</h3>
+          <p>Paste an invite token or full invite link to join instantly.</p>
+          <input
+            placeholder="Invite token or link"
+            value={inviteInput}
+            onChange={(event) => setInviteInput(event.target.value)}
+          />
+          <Button variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
+            {joinState === 'joining' ? 'Joining...' : 'Join League'}
+          </Button>
+          {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
+            <p>{joinState}</p>
+          ) : null}
+        </Card>
+      </div>
     </PageShell>
   )
 }
