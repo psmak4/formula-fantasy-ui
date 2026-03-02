@@ -1,20 +1,22 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, NavLink, Outlet, Route, Routes } from 'react-router-dom'
 import {
   ClerkProvider,
   SignIn,
   SignUp,
+  SignOutButton,
   SignedIn,
   SignedOut,
-  UserButton,
-  useAuth
+  useAuth,
+  useUser
 } from '@clerk/clerk-react'
 import { getDebugUserId, setAuthTokenGetter, setDebugUserId } from './api/apiClient'
 import { HomePage } from './pages/HomePage'
 import { LeaguePage } from './pages/LeaguePage'
 import { LeaguePredictPage } from './pages/LeaguePredictPage'
 import { LeagueLeaderboardPage } from './pages/LeagueLeaderboardPage'
+import { MyLeaguesPage } from './pages/MyLeaguesPage'
 import './styles.css'
 
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
@@ -62,18 +64,38 @@ function DevUserSelector() {
   )
 }
 
-function App() {
+function UserMenu() {
+  const { user } = useUser()
+
   return (
-    <BrowserRouter>
-      <AuthSync />
-      <div className="app-shell">
-        <header>
-          <h1>Formula Fantasy UI</h1>
+    <div className="user-menu">
+      <span className="user-name">{user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress ?? 'User'}</span>
+      <SignOutButton>
+        <button type="button" className="ui-button ui-button-ghost">Sign out</button>
+      </SignOutButton>
+    </div>
+  )
+}
+
+function AppLayout() {
+  return (
+    <div className="app-shell">
+      <header className="app-header">
+        <div className="app-brand">Formula Fantasy</div>
+
+        <nav className="app-nav" aria-label="Primary">
+          <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : undefined)}>
+            Home
+          </NavLink>
+          <NavLink to="/my-leagues" className={({ isActive }) => (isActive ? 'active' : undefined)}>
+            My Leagues
+          </NavLink>
+        </nav>
+
+        <div className="app-user-zone">
           <DevUserSelector />
           <SignedIn>
-            <div className="auth-row">
-              <UserButton />
-            </div>
+            <UserMenu />
           </SignedIn>
           <SignedOut>
             <div className="auth-row">
@@ -81,28 +103,34 @@ function App() {
               <Link to="/sign-up">Sign up</Link>
             </div>
           </SignedOut>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/league/demo-league">League</Link>
-            <Link to="/league/demo-league/predict">Predict</Link>
-            <Link to="/league/demo-league/races/next/leaderboard">Leaderboard</Link>
-          </nav>
-        </header>
+        </div>
+      </header>
 
-        <main>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
-            <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
-            <Route path="/league/:leagueId" element={<LeaguePage />} />
-            <Route path="/league/:leagueId/predict" element={<LeaguePredictPage />} />
-            <Route
-              path="/league/:leagueId/races/:raceId/leaderboard"
-              element={<LeagueLeaderboardPage />}
-            />
-          </Routes>
-        </main>
-      </div>
+      <main className="app-main">
+        <Outlet />
+      </main>
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthSync />
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/my-leagues" element={<MyLeaguesPage />} />
+          <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
+          <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
+          <Route path="/league/:leagueId" element={<LeaguePage />} />
+          <Route path="/league/:leagueId/predict" element={<LeaguePredictPage />} />
+          <Route
+            path="/league/:leagueId/races/:raceId/leaderboard"
+            element={<LeagueLeaderboardPage />}
+          />
+        </Route>
+      </Routes>
     </BrowserRouter>
   )
 }
