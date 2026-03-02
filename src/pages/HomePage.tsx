@@ -397,8 +397,8 @@ export function HomePage() {
 
       <div className="mt-6 bg-background py-12">
         <div className="mx-auto max-w-7xl space-y-8 px-6">
-          <div className="space-y-3 border-t-2 border-neutral-200 pt-6">
-            <div className="h-[2px] w-14 bg-red-600" />
+          <div className="space-y-2">
+            <div className="mb-4 h-[2px] w-12 bg-red-600" />
             <h2 className="text-3xl font-semibold">Start Competing</h2>
             <p className="text-muted-foreground text-slate-600">
               Create or join a league and challenge your friends.
