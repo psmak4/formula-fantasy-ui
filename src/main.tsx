@@ -2,9 +2,8 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import {
+  AuthenticateWithRedirectCallback,
   ClerkProvider,
-  SignIn,
-  SignUp,
   useAuth
 } from '@clerk/clerk-react'
 import { setAuthTokenGetter } from './api/apiClient'
@@ -14,6 +13,8 @@ import { LeaguePage } from './pages/LeaguePage'
 import { LeaguePredictPage } from './pages/LeaguePredictPage'
 import { LeagueLeaderboardPage } from './pages/LeagueLeaderboardPage'
 import { MyLeaguesPage } from './pages/MyLeaguesPage'
+import { SignInPage } from './pages/SignInPage'
+import { SignUpPage } from './pages/SignUpPage'
 import { Toaster } from './components/ui/sonner'
 import './styles.css'
 
@@ -38,8 +39,9 @@ function App() {
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/my-leagues" element={<MyLeaguesPage />} />
-          <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
-          <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/sso-callback" element={<AuthenticateWithRedirectCallback />} />
           <Route path="/league/:leagueId" element={<LeaguePage />} />
           <Route path="/league/:leagueId/predict" element={<LeaguePredictPage />} />
           <Route
