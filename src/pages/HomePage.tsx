@@ -248,66 +248,86 @@ export function HomePage() {
 
   return (
     <section className="space-y-10 py-10">
-      <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 bg-neutral-950 py-16 text-white">
+      <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 bg-gradient-to-br from-neutral-950 via-neutral-900 to-black py-16 text-white">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="space-y-8 rounded-2xl bg-white/5 p-10 backdrop-blur">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
-              <p className="text-slate-300">
-                Predict race results with your friends and climb the leaderboard.
-              </p>
-            </div>
-
-            {loading ? <p className="text-slate-300">Loading next race...</p> : null}
-            {loading ? (
-              <div className="space-y-4">
-                <div className="h-8 w-2/3 animate-pulse rounded bg-white/10" />
-                <div className="h-6 w-1/3 animate-pulse rounded bg-white/10" />
-                <div className="h-6 w-1/4 animate-pulse rounded bg-white/10" />
-              </div>
-            ) : null}
-            {error ? (
-              <div className="space-y-3">
-                <h3 className="text-xl font-semibold">Couldn&apos;t load next race</h3>
-                <p className="text-slate-300">{error}</p>
-                <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
-                  Retry
-                </Button>
-              </div>
-            ) : null}
-
-            {!loading && !error ? (
-              <>
-                <div className="space-y-3">
-                  <p className="hero-kicker text-slate-300">Next Race</p>
-                  <h2 className="text-5xl font-bold tracking-tight">{raceName}</h2>
-                </div>
-
-                <p>
-                  <strong title={utcRaceTime}>{localRaceTime}</strong>
+          <div className="overflow-hidden rounded-2xl bg-white/5 backdrop-blur">
+            <div className="h-[3px] w-full bg-red-600" />
+            <div className="space-y-8 p-12">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
+                <p className="text-slate-300">
+                  Predict race results with your friends and climb the leaderboard.
                 </p>
+              </div>
 
-                <div className="hero-metrics">
-                  <div>
-                    <span className="hero-metric-label text-slate-300">Countdown</span>
-                    <strong className="text-3xl font-semibold tracking-wide">{countdown}</strong>
-                  </div>
+              {loading ? <p className="text-slate-300">Loading next race...</p> : null}
+              {loading ? (
+                <div className="space-y-4">
+                  <div className="h-8 w-2/3 animate-pulse rounded bg-white/10" />
+                  <div className="h-6 w-1/3 animate-pulse rounded bg-white/10" />
+                  <div className="h-6 w-1/4 animate-pulse rounded bg-white/10" />
                 </div>
-
-                <div className="hero-chips">
-                  {predictionStatus === 'open' ? <Badge tone="success">Predictions Open</Badge> : null}
-                  {predictionStatus === 'opens_soon' ? <Badge tone="info">Predictions Open Soon</Badge> : null}
-                  {predictionStatus === 'locked' ? <Badge tone="danger">Predictions Locked</Badge> : null}
-                  {entryClosesAt ? <Badge tone="neutral">Locks at {new Date(entryClosesAt).toLocaleString()}</Badge> : null}
-                </div>
-
-                <div>
-                  <Button asChild className="bg-red-600 text-white hover:bg-red-700">
-                    <Link to="#create-league">Create League</Link>
+              ) : null}
+              {error ? (
+                <div className="space-y-3">
+                  <h3 className="text-xl font-semibold">Couldn&apos;t load next race</h3>
+                  <p className="text-slate-300">{error}</p>
+                  <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
+                    Retry
                   </Button>
                 </div>
-              </>
-            ) : null}
+              ) : null}
+
+              {!loading && !error ? (
+                <>
+                  <div className="space-y-3">
+                    <p className="hero-kicker text-slate-300">Next Race</p>
+                    <h2 className="text-5xl font-extrabold tracking-tight md:text-6xl">{raceName}</h2>
+                  </div>
+
+                  <p>
+                    <strong title={utcRaceTime}>{localRaceTime}</strong>
+                  </p>
+
+                  <div className="hero-metrics">
+                    <div>
+                      <span className="hero-metric-label text-slate-300">Countdown</span>
+                      <strong className="text-3xl font-semibold tracking-[0.04em]">{countdown}</strong>
+                    </div>
+                  </div>
+
+                  <div className="hero-chips">
+                    {predictionStatus === 'open' ? (
+                      <Badge
+                        variant="outline"
+                        className="border-green-500/30 bg-green-500/20 text-green-400"
+                      >
+                        Predictions Open
+                      </Badge>
+                    ) : null}
+                    {predictionStatus === 'opens_soon' ? <Badge tone="info">Predictions Open Soon</Badge> : null}
+                    {predictionStatus === 'locked' ? <Badge tone="danger">Predictions Locked</Badge> : null}
+                    {entryClosesAt ? (
+                      <Badge
+                        variant="outline"
+                        className="border-slate-400/30 bg-slate-400/10 text-slate-300"
+                      >
+                        Locks at {new Date(entryClosesAt).toLocaleString()}
+                      </Badge>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <Button
+                      asChild
+                      className="h-auto bg-red-600 px-8 py-3 text-base font-semibold text-white shadow-lg hover:bg-red-700"
+                    >
+                      <Link to="#create-league">Create League</Link>
+                    </Button>
+                  </div>
+                </>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
