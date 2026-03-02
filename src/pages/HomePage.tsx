@@ -332,17 +332,18 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="bg-background py-16">
+      <div className="mt-8 bg-background py-16">
         <div className="mx-auto max-w-7xl space-y-8 px-6">
-          <div className="space-y-2 border-t-2 border-neutral-200 pt-6">
-            <h2 className="text-2xl font-semibold">Start Competing</h2>
+          <div className="space-y-3 border-t-2 border-neutral-200 pt-6">
+            <div className="h-[2px] w-14 bg-red-600" />
+            <h2 className="text-3xl font-semibold">Start Competing</h2>
             <p className="text-muted-foreground text-slate-600">
               Create or join a league and challenge your friends.
             </p>
           </div>
 
           <div id="create-league" className="grid gap-8 md:grid-cols-2">
-            <Card className="rounded-2xl border border-slate-200 bg-background p-8 shadow-sm transition hover:shadow-md">
+            <Card className="rounded-xl border border-slate-200 bg-background p-8 transition hover:border-slate-300">
               <h3 className="text-xl font-semibold">Create League</h3>
               <p>Start a private league and invite your friends.</p>
             <Label htmlFor="leagueName">League name</Label>
@@ -370,7 +371,7 @@ export function HomePage() {
               ) : null}
             </Card>
 
-            <Card className="rounded-2xl border border-slate-200 bg-background p-8 shadow-sm transition hover:shadow-md">
+            <Card className="rounded-xl border border-slate-200 bg-background p-8 transition hover:border-slate-300">
               <h3 className="text-xl font-semibold">Join League</h3>
               <p>Paste an invite token or full invite link to join instantly.</p>
               <Label htmlFor="inviteInput">Invite token or link</Label>
