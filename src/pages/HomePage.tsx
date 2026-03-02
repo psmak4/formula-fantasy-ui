@@ -7,7 +7,6 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { PageShell } from '../components/ui/PageShell'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
 
 type NextRaceResponse = {
@@ -248,106 +247,116 @@ export function HomePage() {
   }
 
   return (
-    <PageShell title="Home" subtitle="Predict race results with your friends and climb the leaderboard.">
-      <div className="flex items-center gap-3">
-        <p className="text-3xl font-bold underline">Tailwind is working</p>
-        <Button variant="secondary">shadcn Button</Button>
-        <Button variant="outline" onClick={() => toastApiError(new Error('Simulated API error'), 'Simulated error')}>
-          Simulate Error Toast
-        </Button>
-      </div>
-      {loading ? <p>Loading next race...</p> : null}
-      {loading ? (
-        <Card className="next-race-hero">
-          <div className="skeleton-line skeleton-lg" />
-          <div className="skeleton-line skeleton-md" />
-          <div className="skeleton-line skeleton-sm" />
-        </Card>
-      ) : null}
-      {error ? (
-        <Card>
-          <h3>Couldn&apos;t load next race</h3>
-          <p>{error}</p>
-          <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
-            Retry
-          </Button>
-        </Card>
-      ) : null}
-
-      {!loading && !error ? (
-        <Card className="next-race-hero">
-          <div className="hero-headline">
-            <p className="hero-kicker">Next Race</p>
-            <h3>{raceName}</h3>
-          </div>
-
-          <p>
-            <strong title={utcRaceTime}>{localRaceTime}</strong>
+    <section className="mx-auto max-w-7xl py-10">
+      <div className="space-y-10 rounded-2xl bg-[hsl(var(--muted)/0.3)] p-6 md:p-8">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
+          <p className="text-muted-foreground text-slate-600">
+            Predict race results with your friends and climb the leaderboard.
           </p>
+        </div>
 
-          <div className="hero-metrics">
-            <div>
-              <span className="hero-metric-label">Countdown</span>
-              <strong>{countdown}</strong>
+        <div>
+          <Button variant="outline" onClick={() => toastApiError(new Error('Simulated API error'), 'Simulated error')}>
+            Simulate Error Toast
+          </Button>
+        </div>
+
+        {loading ? <p>Loading next race...</p> : null}
+        {loading ? (
+          <Card className="rounded-xl bg-background p-8 shadow-sm">
+            <div className="skeleton-line skeleton-lg" />
+            <div className="skeleton-line skeleton-md" />
+            <div className="skeleton-line skeleton-sm" />
+          </Card>
+        ) : null}
+        {error ? (
+          <Card className="rounded-xl bg-background p-8 shadow-sm">
+            <h3>Couldn&apos;t load next race</h3>
+            <p>{error}</p>
+            <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
+              Retry
+            </Button>
+          </Card>
+        ) : null}
+
+        {!loading && !error ? (
+          <Card className="next-race-hero rounded-xl bg-background p-8 shadow-sm">
+            <div className="hero-headline space-y-2">
+              <p className="hero-kicker">Next Race</p>
+              <h2 className="text-4xl font-bold">{raceName}</h2>
             </div>
+
+            <p>
+              <strong title={utcRaceTime}>{localRaceTime}</strong>
+            </p>
+
+            <div className="hero-metrics">
+              <div>
+                <span className="hero-metric-label">Countdown</span>
+                <strong className="text-2xl font-semibold">{countdown}</strong>
+              </div>
+            </div>
+
+            <div className="hero-chips">
+              {predictionStatus === 'open' ? <Badge tone="success">Predictions Open</Badge> : null}
+              {predictionStatus === 'opens_soon' ? <Badge tone="info">Predictions Open Soon</Badge> : null}
+              {predictionStatus === 'locked' ? <Badge tone="danger">Predictions Locked</Badge> : null}
+              {entryClosesAt ? <Badge tone="neutral">Locks at {new Date(entryClosesAt).toLocaleString()}</Badge> : null}
+            </div>
+          </Card>
+        ) : null}
+
+        {!loading && !error ? (
+          <div className="grid gap-8 md:grid-cols-2">
+            <Card className="rounded-xl bg-background p-8 shadow-sm">
+              <h3>Create League</h3>
+              <p>Start a private league and invite your friends.</p>
+              <Label htmlFor="leagueName">League name</Label>
+              <Input
+                id="leagueName"
+                placeholder="League name"
+                value={leagueName}
+                onChange={(event) => setLeagueName(event.target.value)}
+              />
+              <Label htmlFor="leagueVisibility">Visibility</Label>
+              <Select value={leagueVisibility} onValueChange={(value) => setLeagueVisibility(value as LeagueVisibility)}>
+                <SelectTrigger id="leagueVisibility">
+                  <SelectValue placeholder="Select visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="private">Private</SelectItem>
+                  <SelectItem value="public">Public</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
+                {createState === 'creating' ? 'Creating...' : 'Create League'}
+              </Button>
+              {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
+                <p>{createState}</p>
+              ) : null}
+            </Card>
+
+            <Card className="rounded-xl bg-background p-8 shadow-sm">
+              <h3>Join League</h3>
+              <p>Paste an invite token or full invite link to join instantly.</p>
+              <Label htmlFor="inviteInput">Invite token or link</Label>
+              <Input
+                id="inviteInput"
+                placeholder="Invite token or link"
+                value={inviteInput}
+                onChange={(event) => setInviteInput(event.target.value)}
+              />
+              <Button variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
+                {joinState === 'joining' ? 'Joining...' : 'Join League'}
+              </Button>
+              {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
+                <p>{joinState}</p>
+              ) : null}
+            </Card>
           </div>
-
-          <div className="hero-chips">
-            {predictionStatus === 'open' ? <Badge tone="success">Predictions Open</Badge> : null}
-            {predictionStatus === 'opens_soon' ? <Badge tone="info">Predictions Open Soon</Badge> : null}
-            {predictionStatus === 'locked' ? <Badge tone="danger">Predictions Locked</Badge> : null}
-            {entryClosesAt ? <Badge tone="neutral">Locks at {new Date(entryClosesAt).toLocaleString()}</Badge> : null}
-          </div>
-        </Card>
-      ) : null}
-
-      {!loading && !error ? <div className="home-cta-grid">
-        <Card>
-          <h3>Create League</h3>
-          <p>Start a private league and invite your friends.</p>
-          <Label htmlFor="leagueName">League name</Label>
-          <Input
-            id="leagueName"
-            placeholder="League name"
-            value={leagueName}
-            onChange={(event) => setLeagueName(event.target.value)}
-          />
-          <Label htmlFor="leagueVisibility">Visibility</Label>
-          <Select value={leagueVisibility} onValueChange={(value) => setLeagueVisibility(value as LeagueVisibility)}>
-            <SelectTrigger id="leagueVisibility">
-              <SelectValue placeholder="Select visibility" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="private">Private</SelectItem>
-              <SelectItem value="public">Public</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
-            {createState === 'creating' ? 'Creating...' : 'Create League'}
-          </Button>
-          {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
-            <p>{createState}</p>
-          ) : null}
-        </Card>
-
-        <Card>
-          <h3>Join League</h3>
-          <p>Paste an invite token or full invite link to join instantly.</p>
-          <Label htmlFor="inviteInput">Invite token or link</Label>
-          <Input
-            id="inviteInput"
-            placeholder="Invite token or link"
-            value={inviteInput}
-            onChange={(event) => setInviteInput(event.target.value)}
-          />
-          <Button variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
-            {joinState === 'joining' ? 'Joining...' : 'Join League'}
-          </Button>
-          {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
-            <p>{joinState}</p>
-          ) : null}
-        </Card>
-      </div> : null}
-    </PageShell>
+        ) : null}
+      </div>
+    </section>
   )
 }
