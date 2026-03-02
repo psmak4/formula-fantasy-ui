@@ -251,6 +251,7 @@ export function HomePage() {
 
   return (
     <PageShell title="Home" subtitle="Predict race results with your friends and climb the leaderboard.">
+      <p className="text-3xl font-bold underline">Tailwind is working</p>
       {loading ? <p>Loading next race...</p> : null}
       {loading ? (
         <Card className="next-race-hero">
