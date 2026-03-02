@@ -292,12 +292,12 @@ export function HomePage() {
   }
 
   return (
-    <section className="space-y-10 py-10">
-      <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 bg-gradient-to-br from-neutral-950 via-neutral-900 to-black py-16 text-white">
+    <section className="space-y-8 py-8">
+      <div className="relative left-1/2 right-1/2 w-screen -translate-x-1/2 bg-gradient-to-br from-neutral-950 via-neutral-900 to-black py-14 text-white">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="overflow-hidden rounded-2xl bg-white/5 backdrop-blur">
+          <div className="overflow-hidden rounded-lg border border-neutral-200/20 bg-white/5 backdrop-blur">
             <div className="h-[3px] w-full bg-red-600" />
-            <div className="space-y-8 p-12">
+            <div className="space-y-7 p-10">
               <div className="space-y-2">
                 <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
                 <p className="text-slate-300">
@@ -395,7 +395,7 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="mt-8 bg-background py-16">
+      <div className="mt-6 bg-background py-12">
         <div className="mx-auto max-w-7xl space-y-8 px-6">
           <div className="space-y-3 border-t-2 border-neutral-200 pt-6">
             <div className="h-[2px] w-14 bg-red-600" />
@@ -406,7 +406,7 @@ export function HomePage() {
           </div>
 
           <div id="create-league" className="grid gap-8 md:grid-cols-2">
-            <Card className="rounded-xl border border-slate-200 bg-background p-8 transition hover:border-slate-300">
+            <Card className="rounded-lg border border-neutral-200 bg-background p-7 transition hover:border-neutral-300">
               <h3 className="text-xl font-semibold">Create League</h3>
               <p>Start a private league and invite your friends.</p>
               <Label htmlFor="leagueName">League name</Label>
@@ -445,7 +445,7 @@ export function HomePage() {
               ) : null}
             </Card>
 
-            <Card className="rounded-xl border border-slate-200 bg-background p-8 transition hover:border-slate-300">
+            <Card className="rounded-lg border border-neutral-200 bg-background p-7 transition hover:border-neutral-300">
               <h3 className="text-xl font-semibold">Join League</h3>
               <p>
                 Paste an invite token or full invite link to join instantly.
