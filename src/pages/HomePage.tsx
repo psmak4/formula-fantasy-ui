@@ -332,11 +332,19 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl space-y-10 px-6">
-        <div id="create-league" className="grid gap-8 md:grid-cols-2">
-          <Card className="rounded-xl bg-background p-8 shadow-sm">
-            <h3>Create League</h3>
-            <p>Start a private league and invite your friends.</p>
+      <div className="bg-background py-16">
+        <div className="mx-auto max-w-7xl space-y-8 px-6">
+          <div className="space-y-2 border-t-2 border-neutral-200 pt-6">
+            <h2 className="text-2xl font-semibold">Start Competing</h2>
+            <p className="text-muted-foreground text-slate-600">
+              Create or join a league and challenge your friends.
+            </p>
+          </div>
+
+          <div id="create-league" className="grid gap-8 md:grid-cols-2">
+            <Card className="rounded-2xl border border-slate-200 bg-background p-8 shadow-sm transition hover:shadow-md">
+              <h3 className="text-xl font-semibold">Create League</h3>
+              <p>Start a private league and invite your friends.</p>
             <Label htmlFor="leagueName">League name</Label>
             <Input
               id="leagueName"
@@ -354,31 +362,32 @@ export function HomePage() {
                 <SelectItem value="public">Public</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
-              {createState === 'creating' ? 'Creating...' : 'Create League'}
-            </Button>
-            {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
-              <p>{createState}</p>
-            ) : null}
-          </Card>
+              <Button className="w-full" onClick={handleCreateLeague} disabled={createState === 'creating'}>
+                {createState === 'creating' ? 'Creating...' : 'Create League'}
+              </Button>
+              {createState !== 'idle' && createState !== 'creating' && createState !== 'created' ? (
+                <p>{createState}</p>
+              ) : null}
+            </Card>
 
-          <Card className="rounded-xl bg-background p-8 shadow-sm">
-            <h3>Join League</h3>
-            <p>Paste an invite token or full invite link to join instantly.</p>
-            <Label htmlFor="inviteInput">Invite token or link</Label>
-            <Input
-              id="inviteInput"
-              placeholder="Invite token or link"
-              value={inviteInput}
-              onChange={(event) => setInviteInput(event.target.value)}
-            />
-            <Button variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
-              {joinState === 'joining' ? 'Joining...' : 'Join League'}
-            </Button>
-            {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
-              <p>{joinState}</p>
-            ) : null}
-          </Card>
+            <Card className="rounded-2xl border border-slate-200 bg-background p-8 shadow-sm transition hover:shadow-md">
+              <h3 className="text-xl font-semibold">Join League</h3>
+              <p>Paste an invite token or full invite link to join instantly.</p>
+              <Label htmlFor="inviteInput">Invite token or link</Label>
+              <Input
+                id="inviteInput"
+                placeholder="Invite token or link"
+                value={inviteInput}
+                onChange={(event) => setInviteInput(event.target.value)}
+              />
+              <Button className="w-full" variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
+                {joinState === 'joining' ? 'Joining...' : 'Join League'}
+              </Button>
+              {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
+                <p>{joinState}</p>
+              ) : null}
+            </Card>
+          </div>
         </div>
       </div>
     </section>
