@@ -1,0 +1,53 @@
+:root {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: #1d2939;
+  background: linear-gradient(160deg, #f5f7fb 0%, #e8edf7 100%);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.app-shell {
+  width: min(900px, 100%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  padding: 1.25rem;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+a {
+  color: #1455cc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  background: #eef2ff;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+}
