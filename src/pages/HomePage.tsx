@@ -30,6 +30,13 @@ type NextRaceResponse = {
 }
 
 type PredictionStatus = 'open' | 'opens_soon' | 'locked'
+type LeagueVisibility = 'private' | 'public'
+
+function assertLeagueVisibility(value: string): asserts value is LeagueVisibility {
+  if (value !== 'private' && value !== 'public') {
+    throw new Error(`Invalid league visibility: ${value}`)
+  }
+}
 
 export function HomePage() {
   const navigate = useNavigate()
@@ -39,6 +46,7 @@ export function HomePage() {
   const [nextRace, setNextRace] = useState<NextRaceResponse | null>(null)
   const [countdown, setCountdown] = useState('')
   const [leagueName, setLeagueName] = useState('')
+  const [leagueVisibility, setLeagueVisibility] = useState<LeagueVisibility>('private')
   const [inviteInput, setInviteInput] = useState('')
   const [createState, setCreateState] = useState<'idle' | 'creating' | 'created' | string>('idle')
   const [joinState, setJoinState] = useState<'idle' | 'joining' | 'joined' | string>('idle')
@@ -195,7 +203,8 @@ export function HomePage() {
     setCreateState('creating')
 
     try {
-      const payload = { name: leagueName.trim() || 'My League' }
+      assertLeagueVisibility(leagueVisibility)
+      const payload = { name: leagueName.trim() || 'My League', visibility: leagueVisibility }
       const result = await apiClient.post<{ id?: string; leagueId?: string; league?: { id?: string } }>(
         '/leagues',
         payload
@@ -296,6 +305,16 @@ export function HomePage() {
             value={leagueName}
             onChange={(event) => setLeagueName(event.target.value)}
           />
+          <label className="stack">
+            Visibility
+            <select
+              value={leagueVisibility}
+              onChange={(event) => setLeagueVisibility(event.target.value as LeagueVisibility)}
+            >
+              <option value="private">Private</option>
+              <option value="public">Public</option>
+            </select>
+          </label>
           <Button onClick={handleCreateLeague} disabled={createState === 'creating'}>
             {createState === 'creating' ? 'Creating...' : 'Create League'}
           </Button>
