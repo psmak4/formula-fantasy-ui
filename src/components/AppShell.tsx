@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { SignedIn, SignedOut, useClerk, useUser } from '@clerk/clerk-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -25,60 +25,31 @@ export function AppShell() {
   const { user } = useUser()
   const { signOut } = useClerk()
   const isHome = location.pathname === '/'
-  const [inHeroContext, setInHeroContext] = useState(isHome)
 
   const displayName = useMemo(
     () => user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress ?? 'Manager',
     [user]
   )
 
-  useEffect(() => {
-    if (!isHome) {
-      setInHeroContext(false)
-      return
-    }
-
-    const onScroll = () => {
-      setInHeroContext(window.scrollY < 360)
-    }
-
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [isHome])
-
-  const brandClass = inHeroContext
-    ? 'text-xl font-bold tracking-tight text-white'
-    : 'text-xl font-bold tracking-tight text-slate-900'
-
   const navLinkClass = (isActive: boolean) => {
     if (isActive) {
-      return inHeroContext
-        ? 'border-b-2 border-red-500 pb-1 font-semibold text-white'
-        : 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
+      return 'relative text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-red-600'
     }
-    return inHeroContext
-      ? 'border-b-2 border-transparent pb-1 font-medium text-white/80 hover:text-white'
-      : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
+    return 'relative text-neutral-400 hover:text-white'
   }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header
-        className={
-          inHeroContext
-            ? 'sticky top-0 z-40 bg-transparent text-white transition-colors'
-            : 'sticky top-0 z-40 border-b border-slate-200 bg-white/90 text-slate-900 backdrop-blur transition-colors'
-        }
-      >
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center px-6">
+      <header className="sticky top-0 z-50 h-16 border-b border-neutral-800 bg-neutral-950">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-6">
           <div className="flex flex-1 items-center">
-            <Link to="/" className={brandClass}>
+            <Link to="/" className="flex items-center font-semibold tracking-tight text-white">
+              <span className="mr-2 h-2 w-2 bg-red-600" />
               Formula Fantasy
             </Link>
           </div>
 
-          <nav className="hidden flex-1 items-center justify-center gap-8 md:flex" aria-label="Primary">
+          <nav className="flex flex-1 items-center justify-center gap-8" aria-label="Primary">
             <NavLink
               to="/"
               end
@@ -100,7 +71,7 @@ export function AppShell() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className={inHeroContext ? 'h-10 w-10 rounded-full p-0 text-white hover:bg-white/10' : 'h-10 w-10 rounded-full p-0'}
+                    className="h-10 w-10 rounded-full p-0 text-white hover:bg-white/10"
                     aria-label="Open user menu"
                   >
                     <Avatar className="h-9 w-9">
@@ -125,31 +96,15 @@ export function AppShell() {
               </DropdownMenu>
             </SignedIn>
             <SignedOut>
-              <Button asChild variant="ghost" size="sm" className={inHeroContext ? 'text-white hover:bg-white/10' : ''}>
+              <Button asChild variant="ghost" size="sm" className="text-white hover:bg-white/10">
                 <Link to="/sign-in">Sign in</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="bg-red-600 text-white hover:bg-red-700">
                 <Link to="/sign-up">Sign up</Link>
               </Button>
             </SignedOut>
           </div>
         </div>
-
-        <nav className="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 pb-3 md:hidden" aria-label="Primary mobile">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) => navLinkClass(isActive)}
-          >
-            Home
-          </NavLink>
-          <NavLink
-            to="/my-leagues"
-            className={({ isActive }) => navLinkClass(isActive)}
-          >
-            My Leagues
-          </NavLink>
-        </nav>
       </header>
 
       <main className={isHome ? 'w-full' : 'w-full py-2'}>
