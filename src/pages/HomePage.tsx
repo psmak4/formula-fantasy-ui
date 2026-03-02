@@ -4,7 +4,12 @@ import { apiClient } from "../api/apiClient";
 import { toastApiError } from "../lib/api-error";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import {
@@ -293,7 +298,7 @@ export function HomePage() {
 
   return (
     <section className="w-full">
-      <section className="w-full bg-gradient-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
+      <section className="w-full bg-linear-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
         <div className="mx-auto max-w-7xl px-6">
           <div className="overflow-hidden rounded-lg border border-neutral-200/20 bg-white/5 backdrop-blur">
             <div className="h-[3px] w-full bg-red-600" />
@@ -406,70 +411,78 @@ export function HomePage() {
           </div>
 
           <div id="create-league" className="grid gap-8 md:grid-cols-2">
-            <Card className="rounded-lg border border-neutral-200 bg-background p-7 transition hover:border-neutral-300">
-              <h3 className="text-xl font-semibold">Create League</h3>
-              <p>Start a private league and invite your friends.</p>
-              <Label htmlFor="leagueName">League name</Label>
-              <Input
-                id="leagueName"
-                placeholder="League name"
-                value={leagueName}
-                onChange={(event) => setLeagueName(event.target.value)}
-              />
-              <Label htmlFor="leagueVisibility">Visibility</Label>
-              <Select
-                value={leagueVisibility}
-                onValueChange={(value) =>
-                  setLeagueVisibility(value as LeagueVisibility)
-                }
-              >
-                <SelectTrigger id="leagueVisibility">
-                  <SelectValue placeholder="Select visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="private">Private</SelectItem>
-                  <SelectItem value="public">Public</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                className="w-full"
-                onClick={handleCreateLeague}
-                disabled={createState === "creating"}
-              >
-                {createState === "creating" ? "Creating..." : "Create League"}
-              </Button>
-              {createState !== "idle" &&
-              createState !== "creating" &&
-              createState !== "created" ? (
-                <p>{createState}</p>
-              ) : null}
+            <Card className="rounded-lg border border-neutral-200 bg-background transition hover:border-neutral-300">
+              <CardHeader>
+                <CardTitle>Create League</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p>Start a private league and invite your friends.</p>
+                <Label htmlFor="leagueName">League name</Label>
+                <Input
+                  id="leagueName"
+                  placeholder="League name"
+                  value={leagueName}
+                  onChange={(event) => setLeagueName(event.target.value)}
+                />
+                <Label htmlFor="leagueVisibility">Visibility</Label>
+                <Select
+                  value={leagueVisibility}
+                  onValueChange={(value) =>
+                    setLeagueVisibility(value as LeagueVisibility)
+                  }
+                >
+                  <SelectTrigger id="leagueVisibility">
+                    <SelectValue placeholder="Select visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  className="w-full"
+                  onClick={handleCreateLeague}
+                  disabled={createState === "creating"}
+                >
+                  {createState === "creating" ? "Creating..." : "Create League"}
+                </Button>
+                {createState !== "idle" &&
+                createState !== "creating" &&
+                createState !== "created" ? (
+                  <p>{createState}</p>
+                ) : null}
+              </CardContent>
             </Card>
 
-            <Card className="rounded-lg border border-neutral-200 bg-background p-7 transition hover:border-neutral-300">
-              <h3 className="text-xl font-semibold">Join League</h3>
-              <p>
-                Paste an invite token or full invite link to join instantly.
-              </p>
-              <Label htmlFor="inviteInput">Invite token or link</Label>
-              <Input
-                id="inviteInput"
-                placeholder="Invite token or link"
-                value={inviteInput}
-                onChange={(event) => setInviteInput(event.target.value)}
-              />
-              <Button
-                className="w-full"
-                variant="secondary"
-                onClick={handleJoinLeague}
-                disabled={joinState === "joining"}
-              >
-                {joinState === "joining" ? "Joining..." : "Join League"}
-              </Button>
-              {joinState !== "idle" &&
-              joinState !== "joining" &&
-              joinState !== "joined" ? (
-                <p>{joinState}</p>
-              ) : null}
+            <Card className="rounded-lg border border-neutral-200 bg-background transition hover:border-neutral-300">
+              <CardHeader>
+                <CardTitle>Join League</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p>
+                  Paste an invite token or full invite link to join instantly.
+                </p>
+                <Label htmlFor="inviteInput">Invite token or link</Label>
+                <Input
+                  id="inviteInput"
+                  placeholder="Invite token or link"
+                  value={inviteInput}
+                  onChange={(event) => setInviteInput(event.target.value)}
+                />
+                <Button
+                  className="w-full"
+                  variant="secondary"
+                  onClick={handleJoinLeague}
+                  disabled={joinState === "joining"}
+                >
+                  {joinState === "joining" ? "Joining..." : "Join League"}
+                </Button>
+                {joinState !== "idle" &&
+                joinState !== "joining" &&
+                joinState !== "joined" ? (
+                  <p>{joinState}</p>
+                ) : null}
+              </CardContent>
             </Card>
           </div>
         </div>
