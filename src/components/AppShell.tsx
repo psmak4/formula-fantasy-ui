@@ -44,7 +44,9 @@ export function AppShell() {
               to="/"
               end
               className={({ isActive }) =>
-                isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-600 hover:text-slate-900'
+                isActive
+                  ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
+                  : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
               }
             >
               Home
@@ -52,7 +54,9 @@ export function AppShell() {
             <NavLink
               to="/my-leagues"
               className={({ isActive }) =>
-                isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-600 hover:text-slate-900'
+                isActive
+                  ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
+                  : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
               }
             >
               My Leagues
@@ -101,7 +105,9 @@ export function AppShell() {
             to="/"
             end
             className={({ isActive }) =>
-              isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-600 hover:text-slate-900'
+              isActive
+                ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
+                : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
             }
           >
             Home
@@ -109,7 +115,9 @@ export function AppShell() {
           <NavLink
             to="/my-leagues"
             className={({ isActive }) =>
-              isActive ? 'font-semibold text-slate-900' : 'font-medium text-slate-600 hover:text-slate-900'
+              isActive
+                ? 'border-b-2 border-red-600 pb-1 font-semibold text-slate-900'
+                : 'border-b-2 border-transparent pb-1 font-medium text-slate-600 hover:text-slate-900'
             }
           >
             My Leagues

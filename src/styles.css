@@ -23,17 +23,17 @@
   --color-border: #d5dce8;
   --color-text: #1f2937;
   --color-text-muted: #5b6474;
-  --color-primary: #0f4cc9;
+  --color-primary: #dc2626;
   --color-primary-contrast: #ffffff;
-  --color-focus: #2563eb;
+  --color-focus: #dc2626;
   --color-success-bg: #ecfdf3;
   --color-success-text: #166534;
   --color-warning-bg: #fff7ed;
   --color-warning-text: #9a3412;
   --color-danger-bg: #fff1f2;
   --color-danger-text: #9f1239;
-  --color-info-bg: #eff6ff;
-  --color-info-text: #1d4ed8;
+  --color-info-bg: #ffe4e6;
+  --color-info-text: #be123c;
 
   font-family: 'Avenir Next', 'Segoe UI', sans-serif;
 }
@@ -46,7 +46,7 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--color-text);
-  background: linear-gradient(160deg, #f9fbff 0%, var(--color-bg) 100%);
+  background: linear-gradient(160deg, #fafaf9 0%, var(--color-bg) 100%);
   font-size: var(--font-size-md);
 }
 
@@ -102,7 +102,7 @@ a:hover {
 }
 
 code {
-  background: #eef2ff;
+  background: #f1f5f9;
   border-radius: var(--radius-sm);
   padding: 0.1rem 0.35rem;
 }
@@ -259,7 +259,7 @@ summary {
 }
 
 .ui-badge-neutral {
-  background: #eef2ff;
+  background: #f1f5f9;
   color: #334155;
 }
 
@@ -482,7 +482,7 @@ summary {
 }
 
 .rank-delta.flat {
-  background: #eef2ff;
+  background: #f1f5f9;
   color: #475569;
 }
 
