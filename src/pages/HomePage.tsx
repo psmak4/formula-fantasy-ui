@@ -402,8 +402,17 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="w-full bg-background pb-12 pt-20">
-        <div className="mx-auto max-w-7xl space-y-8 px-6">
+      <section className="relative w-full overflow-hidden bg-background bg-linear-to-b from-neutral-50 to-white pb-12 pt-20">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
+            opacity: 0.02,
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
           <div className="space-y-2">
             <div className="mb-4 h-[2px] w-12 bg-red-600" />
             <h2 className="text-3xl font-semibold">Start Competing</h2>
