@@ -14,6 +14,9 @@ type LeaderboardRow = {
   displayName: string
   points: number
   breakdown?: unknown
+  rankChange?: number
+  movement?: number
+  delta?: number
 }
 
 type LeaderboardResponse = {
@@ -26,6 +29,11 @@ function breakdownText(breakdown: unknown): string {
   if (breakdown == null) return 'No breakdown provided'
   if (typeof breakdown === 'string') return breakdown
   return JSON.stringify(breakdown, null, 2)
+}
+
+function rankDelta(row: LeaderboardRow): number | null {
+  const value = row.rankChange ?? row.movement ?? row.delta
+  return typeof value === 'number' ? value : null
 }
 
 export function LeagueLeaderboardPage() {
@@ -67,6 +75,7 @@ export function LeagueLeaderboardPage() {
 
   const rows = useMemo(() => data?.entries ?? data?.leaderboard ?? [], [data])
   const scoringAvailable = data?.scoring?.available ?? true
+  const topScorer = rows[0]
 
   return (
     <PageShell title="Leaderboard">
@@ -80,6 +89,9 @@ export function LeagueLeaderboardPage() {
       {loading ? <p>Loading leaderboard...</p> : null}
       {error ? <p>{error}</p> : null}
       {!loading && !error && !scoringAvailable ? <Badge tone="warning">Scoring pending</Badge> : null}
+      {!loading && !error && scoringAvailable && topScorer ? (
+        <Badge tone="success">Manager of the race: {topScorer.displayName}</Badge>
+      ) : null}
 
       {!loading && !error && (
         <Table ariaLabel="Race leaderboard">
@@ -94,7 +106,26 @@ export function LeagueLeaderboardPage() {
           <tbody>
             {rows.map((row) => (
               <tr key={`${row.rank}-${row.displayName}`}>
-                <td>{row.rank}</td>
+                <td>
+                  <span className="rank-cell">
+                    <span>{row.rank}</span>
+                    {rankDelta(row) !== null ? (
+                      <span
+                        className={`rank-delta ${
+                          (rankDelta(row) as number) > 0
+                            ? 'up'
+                            : (rankDelta(row) as number) < 0
+                              ? 'down'
+                              : 'flat'
+                        }`}
+                        aria-label={`Rank change ${rankDelta(row)}`}
+                        title={`Rank change ${rankDelta(row)}`}
+                      >
+                        {(rankDelta(row) as number) > 0 ? `+${rankDelta(row)}` : `${rankDelta(row)}`}
+                      </span>
+                    ) : null}
+                  </span>
+                </td>
                 <td>{row.displayName}</td>
                 <td>{row.points}</td>
                 <td>

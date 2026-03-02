@@ -30,6 +30,9 @@ type LeaderboardEntry = {
   rank: number
   displayName: string
   points: number
+  rankChange?: number
+  movement?: number
+  delta?: number
 }
 
 type LeaderboardResponse = {
@@ -79,6 +82,11 @@ function resolveInviteLink(data: InviteResponse): string | null {
   const token = data.token ?? data.inviteToken
   if (!token || typeof window === 'undefined') return null
   return `${window.location.origin}/invite/${token}`
+}
+
+function rankDelta(entry: LeaderboardEntry): number | null {
+  const value = entry.rankChange ?? entry.movement ?? entry.delta
+  return typeof value === 'number' ? value : null
 }
 
 export function LeaguePage() {
@@ -161,6 +169,8 @@ export function LeaguePage() {
     () => (leaderboard?.entries ?? leaderboard?.leaderboard ?? []).slice(0, 10),
     [leaderboard]
   )
+  const topScorer = leaderboardRows[0]
+  const scoringAvailable = leaderboard?.scoring?.available !== false
 
   async function handleJoinLeague() {
     if (!leagueId) return
@@ -255,18 +265,42 @@ export function LeaguePage() {
           <Card>
             <h3>Leaderboard</h3>
             {leaderboard?.scoring?.available === false ? <Badge tone="warning">Scoring pending</Badge> : null}
+            {scoringAvailable && topScorer ? (
+              <Badge tone="success">Manager of the race: {topScorer.displayName}</Badge>
+            ) : null}
             <Table ariaLabel="League leaderboard top 10">
               <thead>
                 <tr>
                   <th>Rank</th>
-                  <th>Driver</th>
+                  <th>Manager</th>
                   <th>Points</th>
                 </tr>
               </thead>
               <tbody>
                 {leaderboardRows.map((entry) => (
                   <tr key={`${entry.rank}-${entry.displayName}`}>
-                    <td>{entry.rank}</td>
+                    <td>
+                      <span className="rank-cell">
+                        <span>{entry.rank}</span>
+                        {rankDelta(entry) !== null ? (
+                          <span
+                            className={`rank-delta ${
+                              (rankDelta(entry) as number) > 0
+                                ? 'up'
+                                : (rankDelta(entry) as number) < 0
+                                  ? 'down'
+                                  : 'flat'
+                            }`}
+                            aria-label={`Rank change ${rankDelta(entry)}`}
+                            title={`Rank change ${rankDelta(entry)}`}
+                          >
+                            {(rankDelta(entry) as number) > 0
+                              ? `+${rankDelta(entry)}`
+                              : `${rankDelta(entry)}`}
+                          </span>
+                        ) : null}
+                      </span>
+                    </td>
                     <td>{entry.displayName}</td>
                     <td>{entry.points}</td>
                   </tr>

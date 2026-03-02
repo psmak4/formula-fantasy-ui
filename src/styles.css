@@ -206,6 +206,13 @@ summary {
   padding: var(--space-4);
   display: grid;
   gap: var(--space-3);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.ui-card:hover {
+  transform: translateY(-2px);
+  border-color: #c3d1e7;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
 }
 
 .ui-button {
@@ -288,6 +295,14 @@ summary {
   text-align: left;
   border-bottom: 1px solid #e5e7eb;
   padding: 0.65rem 0.55rem;
+}
+
+.ui-table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.ui-table tbody tr:hover {
+  background: #f8fbff;
 }
 
 .ui-table th {
@@ -439,6 +454,34 @@ summary {
 .text-muted {
   color: var(--color-text-muted);
   margin: 0;
+}
+
+.rank-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rank-delta {
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.05rem 0.45rem;
+}
+
+.rank-delta.up {
+  background: var(--color-success-bg);
+  color: var(--color-success-text);
+}
+
+.rank-delta.down {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-text);
+}
+
+.rank-delta.flat {
+  background: #eef2ff;
+  color: #475569;
 }
 
 .league-grid {
