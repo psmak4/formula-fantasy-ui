@@ -1,98 +1,84 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth, useSignIn } from "@clerk/clerk-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { authClient } from "@/auth/authClient";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-type ClerkErrorLike = {
-  errors?: Array<{
-    message?: string;
-    longMessage?: string;
-  }>;
-};
-
-function getClerkErrorMessage(error: unknown): string {
-  if (typeof error === "object" && error !== null && "errors" in error) {
-    const errors = (error as ClerkErrorLike).errors;
-    const first = errors?.[0];
-    if (first?.longMessage) return first.longMessage;
-    if (first?.message) return first.message;
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (typeof error === "object" && error !== null && "message" in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === "string" && message.length > 0) {
+      return message;
+    }
   }
-  if (error instanceof Error) return error.message;
-  return "Unable to sign in. Please try again.";
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return fallback;
 }
 
 export function SignInPage() {
   const navigate = useNavigate();
-  const { isSignedIn } = useAuth();
-  const { isLoaded, signIn, setActive } = useSignIn();
+  const location = useLocation();
+  const { data: session, isPending } = authClient.useSession();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const redirect = new URLSearchParams(location.search).get("redirect");
+  const redirectTarget =
+    redirect && redirect.startsWith("/") ? redirect : "/";
 
   useEffect(() => {
-    if (isSignedIn) {
-      navigate("/", { replace: true });
+    if (session?.user) {
+      navigate(redirectTarget, { replace: true });
     }
-  }, [isSignedIn, navigate]);
+  }, [navigate, redirectTarget, session]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!isLoaded || !signIn) return;
-
     setIsSubmitting(true);
     setError(null);
 
     try {
-      const result = await signIn.create({
-        identifier: email.trim(),
-        password,
+      const result = await authClient.signIn.email({
+        email: email.trim(),
+        password
       });
 
-      if (result.status !== "complete" || !result.createdSessionId) {
-        setError("Additional authentication is required to finish signing in.");
+      if (result.error) {
+        setError(result.error.message ?? "Unable to sign in. Please try again.");
         return;
       }
 
-      await setActive({ session: result.createdSessionId });
-      navigate("/", { replace: true });
+      navigate(redirectTarget, { replace: true });
     } catch (err: unknown) {
-      setError(getClerkErrorMessage(err));
+      setError(getErrorMessage(err, "Unable to sign in. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleGoogleSignIn() {
-    if (!isLoaded || !signIn) return;
-
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
-      });
-    } catch (err: unknown) {
-      setError(getClerkErrorMessage(err));
-      setIsSubmitting(false);
-    }
-  }
-
   return (
-    <section className="w-full bg-white py-16">
-      <div className="mx-auto w-full max-w-7xl px-6">
+    <section className="relative w-full pb-12 pt-20">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
+          opacity: 0.02,
+        }}
+      />
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
         <div className="mx-auto w-full max-w-lg">
-          <Card className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <Card className="overflow-hidden">
             <div className="h-[3px] w-full bg-red-600" />
             <CardHeader className="space-y-2">
-              <CardTitle className="text-3xl font-semibold tracking-tight text-neutral-900">
+              <CardTitle className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-neutral-900">
                 Sign in
               </CardTitle>
               <p className="text-sm text-slate-600">
@@ -100,24 +86,6 @@ export function SignInPage() {
               </p>
             </CardHeader>
             <CardContent>
-              <Button
-                type="button"
-                variant="outline"
-                className="mb-4 w-full"
-                onClick={handleGoogleSignIn}
-                disabled={!isLoaded || isSubmitting}
-              >
-                Continue with Google
-              </Button>
-
-              <div className="mb-4 flex items-center gap-3">
-                <div className="h-px flex-1 bg-neutral-200" />
-                <span className="text-xs uppercase tracking-wide text-slate-500">
-                  or
-                </span>
-                <div className="h-px flex-1 bg-neutral-200" />
-              </div>
-
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="space-y-2">
                   <Label htmlFor="signInEmail">Email</Label>
@@ -149,14 +117,17 @@ export function SignInPage() {
                   </p>
                 ) : null}
 
-                <Button type="submit" className="w-full" disabled={!isLoaded || isSubmitting}>
+                <Button type="submit" className="w-full" disabled={isPending || isSubmitting}>
                   {isSubmitting ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
 
               <p className="mt-4 text-sm text-slate-600">
                 New to Formula Fantasy?{" "}
-                <Link to="/sign-up" className="font-medium text-red-600 hover:text-red-700">
+                <Link
+                  to={redirectTarget === "/" ? "/sign-up" : `/sign-up?redirect=${encodeURIComponent(redirectTarget)}`}
+                  className="font-medium text-red-600 hover:text-red-700"
+                >
                   Create an account
                 </Link>
               </p>

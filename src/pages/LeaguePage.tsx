@@ -1,364 +1,490 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { ApiError, apiClient } from '../api/apiClient'
-import { Badge } from '../components/ui/Badge'
-import { Button } from '../components/ui/Button'
-import { Card } from '../components/ui/Card'
-import { Input } from '../components/ui/input'
-import { PageShell } from '../components/ui/PageShell'
-import { Table } from '../components/ui/Table'
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useParams } from "react-router-dom";
+import { ApiError, apiClient } from "../api/apiClient";
+import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
+import { Input } from "../components/ui/input";
+import { Table } from "../components/ui/Table";
 
 type Member = {
-  id?: string
-  userId?: string
-  displayName?: string
-  name?: string
-  handle?: string
-}
+  id?: string;
+  userId?: string;
+  displayName?: string;
+  name?: string;
+  handle?: string;
+  role?: string;
+};
 
 type LeagueResponse = {
-  id?: string
-  name?: string
-  members?: Member[]
+  id?: string;
+  name?: string;
+  members?: Member[];
   league?: {
-    id?: string
-    name?: string
-    members?: Member[]
-  }
-}
+    id?: string;
+    name?: string;
+    members?: Member[];
+  };
+};
 
 type LeaderboardEntry = {
-  rank: number
-  displayName: string
-  points: number
-  rankChange?: number
-  movement?: number
-  delta?: number
-}
+  rank: number;
+  displayName: string;
+  points: number;
+  rankChange?: number;
+  movement?: number;
+  delta?: number;
+};
+
+type ApiLeaderboardRow = {
+  rank?: number;
+  user?: {
+    displayName?: string;
+  };
+  displayName?: string;
+  pointsTotal?: number;
+  points?: number;
+  rankChange?: number;
+  movement?: number;
+  delta?: number;
+};
 
 type LeaderboardResponse = {
-  scoring?: { available?: boolean }
-  entries?: LeaderboardEntry[]
-  leaderboard?: LeaderboardEntry[]
-}
+  scoring?: { available?: boolean };
+  rows?: ApiLeaderboardRow[];
+};
 
 type EntryResponse = {
-  driverIds?: string[]
-  predictions?: string[]
-  locked?: boolean
-  isLocked?: boolean
-  lockStatus?: 'open' | 'locked'
-}
+  picks?: {
+    P1?: string;
+    P2?: string;
+    P3?: string;
+    FASTEST_LAP?: string;
+    BIGGEST_GAINER?: string;
+    SAFETY_CAR?: boolean;
+  };
+  window?: {
+    isLocked?: boolean;
+  };
+  lockedAt?: string;
+};
 
 type NextRaceResponse = {
-  predictionLocked?: boolean
-  entriesLocked?: boolean
-  lockStatus?: 'open' | 'locked'
-  entryClosesAt?: string
-  predictionClosesAt?: string
-  lockAt?: string
-}
+  predictionLocked?: boolean;
+  entriesLocked?: boolean;
+  lockStatus?: "open" | "locked";
+  entryClosesAt?: string;
+  predictionClosesAt?: string;
+  lockAt?: string;
+};
 
 type InviteResponse = {
-  inviteUrl?: string
-  inviteLink?: string
-  url?: string
-  link?: string
-  token?: string
-  inviteToken?: string
-}
+  inviteUrl?: string;
+  inviteLink?: string;
+  url?: string;
+  link?: string;
+  token?: string;
+};
 
 function formatApiError(err: unknown, fallback: string): string {
   if (err instanceof ApiError) {
-    if (err.code) return `${err.message} (${err.code})`
-    return err.message
+    if (err.code) return `${err.message} (${err.code})`;
+    return err.message;
   }
-  return err instanceof Error ? err.message : fallback
+  return err instanceof Error ? err.message : fallback;
 }
 
 function resolveInviteLink(data: InviteResponse): string | null {
-  const link = data.inviteUrl ?? data.inviteLink ?? data.url ?? data.link
-  if (link) return link
+  const link = data.inviteUrl ?? data.inviteLink ?? data.url ?? data.link;
+  if (link) return link;
 
-  const token = data.token ?? data.inviteToken
-  if (!token || typeof window === 'undefined') return null
-  return `${window.location.origin}/invite/${token}`
+  const token = data.token;
+  if (!token || typeof window === "undefined") return null;
+  return `${window.location.origin}/invite/${token}`;
 }
 
 function rankDelta(entry: LeaderboardEntry): number | null {
-  const value = entry.rankChange ?? entry.movement ?? entry.delta
-  return typeof value === 'number' ? value : null
+  const value = entry.rankChange ?? entry.movement ?? entry.delta;
+  return typeof value === "number" ? value : null;
+}
+
+function normalizeLeaderboardRows(
+  data: LeaderboardResponse | null,
+): LeaderboardEntry[] {
+  if (!data) return [];
+  return (data.rows ?? []).map((row, index) => ({
+    rank: typeof row.rank === "number" ? row.rank : index + 1,
+    displayName: row.user?.displayName ?? row.displayName ?? "Unknown manager",
+    points: row.pointsTotal ?? row.points ?? 0,
+    rankChange: row.rankChange,
+    movement: row.movement,
+    delta: row.delta,
+  }));
 }
 
 export function LeaguePage() {
-  const { leagueId } = useParams<{ leagueId: string }>()
-  const [reloadTick, setReloadTick] = useState(0)
+  const { leagueId } = useParams<{ leagueId: string }>();
+  const queryClient = useQueryClient();
 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [joinState, setJoinState] = useState<
+    "idle" | "joining" | "joined" | string
+  >("idle");
+  const [inviteLink, setInviteLink] = useState("");
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
-  const [leagueName, setLeagueName] = useState('League')
-  const [members, setMembers] = useState<Member[]>([])
-  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null)
+  const {
+    data,
+    isLoading: loading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["league-page", leagueId],
+    enabled: Boolean(leagueId),
+    queryFn: async () => {
+      if (!leagueId) {
+        throw new Error("Missing league ID");
+      }
 
-  const [entrySubmitted, setEntrySubmitted] = useState(false)
-  const [entryLocked, setEntryLocked] = useState(false)
+      const [userData, leagueData, leaderboardData, entryData, nextRaceData] =
+        await Promise.all([
+          apiClient.get<{ userId: string }>("/me"),
+          apiClient.get<LeagueResponse>(`/leagues/${leagueId}`),
+          apiClient
+            .get<LeaderboardResponse>(
+              `/leagues/${leagueId}/races/next/leaderboard`,
+            )
+            .catch(() => ({}) as LeaderboardResponse),
+          apiClient
+            .get<EntryResponse>(`/leagues/${leagueId}/races/next/entry/me`)
+            .catch(() => ({}) as EntryResponse),
+          apiClient
+            .get<NextRaceResponse>("/f1/next-race")
+            .catch(() => ({}) as NextRaceResponse),
+        ]);
 
-  const [joinState, setJoinState] = useState<'idle' | 'joining' | 'joined' | string>('idle')
-  const [inviteState, setInviteState] = useState<'idle' | 'creating' | 'copied' | string>('idle')
-  const [inviteLink, setInviteLink] = useState('')
+      const closeAt =
+        nextRaceData.entryClosesAt ??
+        nextRaceData.predictionClosesAt ??
+        nextRaceData.lockAt;
+      const closeTs = closeAt ? new Date(closeAt).getTime() : NaN;
+      const lockedByTime = !Number.isNaN(closeTs) && Date.now() >= closeTs;
+      const entryLocked =
+        entryData.window?.isLocked === true ||
+        Boolean(entryData.lockedAt) ||
+        nextRaceData.predictionLocked === true ||
+        nextRaceData.entriesLocked === true ||
+        nextRaceData.lockStatus === "locked" ||
+        lockedByTime;
 
-  useEffect(() => {
-    if (!leagueId) {
-      setError('Missing league ID')
-      setLoading(false)
-      return
-    }
+      const entrySubmitted = Boolean(
+        entryData.picks &&
+        Object.values(entryData.picks).some(
+          (value) => value !== undefined && value !== null,
+        ),
+      );
 
-    let cancelled = false
-    setLoading(true)
-    setError(null)
+      return {
+        currentUserId: userData.userId ?? null,
+        leagueName: leagueData.name ?? leagueData.league?.name ?? "League",
+        members: leagueData.members ?? leagueData.league?.members ?? [],
+        leaderboard: leaderboardData,
+        entryLocked,
+        entrySubmitted,
+      };
+    },
+  });
 
-    Promise.all([
-      apiClient.get<LeagueResponse>(`/leagues/${leagueId}`),
-      apiClient
-        .get<LeaderboardResponse>(`/leagues/${leagueId}/races/next/leaderboard`)
-        .catch(() => ({} as LeaderboardResponse)),
-      apiClient
-        .get<EntryResponse>(`/leagues/${leagueId}/races/next/entry/me`)
-        .catch(() => ({} as EntryResponse)),
-      apiClient.get<NextRaceResponse>('/f1/next-race').catch(() => ({} as NextRaceResponse))
-    ])
-      .then(([leagueData, leaderboardData, entryData, nextRaceData]) => {
-        if (cancelled) return
-
-        const name = leagueData.name ?? leagueData.league?.name ?? 'League'
-        const list = leagueData.members ?? leagueData.league?.members ?? []
-        setLeagueName(name)
-        setMembers(list)
-        setLeaderboard(leaderboardData)
-
-        const picks = (entryData.driverIds?.length ? entryData.driverIds : entryData.predictions) ?? []
-        setEntrySubmitted(picks.length > 0)
-
-        const closeAt = nextRaceData.entryClosesAt ?? nextRaceData.predictionClosesAt ?? nextRaceData.lockAt
-        const closeTs = closeAt ? new Date(closeAt).getTime() : NaN
-        const lockedByTime = !Number.isNaN(closeTs) && Date.now() >= closeTs
-        const locked =
-          entryData.locked === true ||
-          entryData.isLocked === true ||
-          entryData.lockStatus === 'locked' ||
-          nextRaceData.predictionLocked === true ||
-          nextRaceData.entriesLocked === true ||
-          nextRaceData.lockStatus === 'locked' ||
-          lockedByTime
-
-        setEntryLocked(locked)
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) setError(formatApiError(err, 'Failed to load league'))
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [leagueId, joinState, reloadTick])
+  const currentUserId = data?.currentUserId ?? null;
+  const leagueName = data?.leagueName ?? "League";
+  const members = data?.members ?? [];
+  const leaderboard = data?.leaderboard ?? null;
+  const entrySubmitted = data?.entrySubmitted ?? false;
+  const entryLocked = data?.entryLocked ?? false;
 
   const leaderboardRows = useMemo(
-    () => (leaderboard?.entries ?? leaderboard?.leaderboard ?? []).slice(0, 10),
-    [leaderboard]
-  )
-  const topScorer = leaderboardRows[0]
-  const scoringAvailable = leaderboard?.scoring?.available !== false
+    () => normalizeLeaderboardRows(leaderboard).slice(0, 10),
+    [leaderboard],
+  );
+  const topScorer = leaderboardRows[0];
+  const scoringAvailable = leaderboard?.scoring?.available !== false;
 
-  async function handleJoinLeague() {
-    if (!leagueId) return
+  const isMember = useMemo(() => {
+    if (!currentUserId) return false;
+    return members.some(
+      (m) => m.userId === currentUserId || m.id === currentUserId,
+    );
+  }, [members, currentUserId]);
 
-    setJoinState('joining')
-    try {
-      await apiClient.post(`/leagues/${leagueId}/join`)
-      setJoinState('joined')
-    } catch (err: unknown) {
-      setJoinState(formatApiError(err, 'Failed to join league'))
-    }
+  const joinLeagueMutation = useMutation({
+    mutationFn: async () => {
+      if (!leagueId) {
+        throw new Error("Missing league ID");
+      }
+      await apiClient.post(`/leagues/${leagueId}/join`);
+    },
+    onMutate: () => setJoinState("joining"),
+    onSuccess: async () => {
+      setJoinState("joined");
+      await queryClient.invalidateQueries({
+        queryKey: ["league-page", leagueId],
+      });
+      await queryClient.invalidateQueries({ queryKey: ["leagues-page"] });
+    },
+    onError: (err: unknown) => {
+      setJoinState(formatApiError(err, "Failed to join league"));
+    },
+  });
+
+  const createInviteMutation = useMutation({
+    mutationFn: async () => {
+      if (!leagueId) {
+        throw new Error("Missing league ID");
+      }
+      return apiClient.post<InviteResponse>(`/leagues/${leagueId}/invites`);
+    },
+    onSuccess: (data) => {
+      const link = resolveInviteLink(data);
+      if (!link) {
+        return;
+      }
+      setInviteLink(link);
+      setIsInviteModalOpen(true);
+    },
+  });
+
+  function handleJoinLeague() {
+    void joinLeagueMutation.mutateAsync();
   }
 
-  async function handleCreateInvite() {
-    if (!leagueId) return
-
-    setInviteState('creating')
-    try {
-      const data = await apiClient.post<InviteResponse>(`/leagues/${leagueId}/invite`)
-      const link = resolveInviteLink(data)
-      if (!link) throw new Error('Invite created but no link returned')
-      setInviteLink(link)
-      setInviteState('idle')
-    } catch (err: unknown) {
-      setInviteState(formatApiError(err, 'Failed to create invite'))
-    }
+  function handleCreateInvite() {
+    void createInviteMutation.mutateAsync();
   }
 
   async function handleCopyInvite() {
-    if (!inviteLink) return
+    if (!inviteLink) return;
 
-    try {
-      await navigator.clipboard.writeText(inviteLink)
-      setInviteState('copied')
-    } catch {
-      setInviteState('Could not copy. Please copy manually.')
-    }
+    await navigator.clipboard.writeText(inviteLink);
   }
 
   return (
-    <PageShell title="League" subtitle="Track members, race standings, and your prediction status in one place.">
-      {loading ? (
-        <div className="league-grid">
-          <Card>
-            <div className="skeleton-line skeleton-md" />
-            <div className="skeleton-line skeleton-sm" />
-            <div className="skeleton-line skeleton-sm" />
-          </Card>
-          <Card>
-            <div className="skeleton-line skeleton-md" />
-            <div className="skeleton-table" />
-          </Card>
-          <Card>
-            <div className="skeleton-line skeleton-md" />
-            <div className="skeleton-line skeleton-sm" />
-          </Card>
-        </div>
-      ) : null}
-      {error ? (
-        <Card>
-          <h3>Couldn&apos;t load league</h3>
-          <p>{error}</p>
-          <Button variant="secondary" onClick={() => setReloadTick((v) => v + 1)}>
-            Retry
-          </Button>
-        </Card>
-      ) : null}
-
-      {!loading && !error ? (
-        <div className="league-grid">
-          <Card>
-            <h3>{leagueName}</h3>
-            <p>
-              League ID: <code>{leagueId}</code>
-            </p>
-
-            <div className="stack">
-              <Button variant="secondary" onClick={handleJoinLeague} disabled={joinState === 'joining'}>
-                {joinState === 'joining' ? 'Joining...' : 'Join League'}
-              </Button>
-              {joinState !== 'idle' && joinState !== 'joining' && joinState !== 'joined' ? (
-                <p>{joinState}</p>
-              ) : null}
+    <section className="pb-12 pt-20">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
+          opacity: 0.02,
+        }}
+      />
+      <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
+        {/* Header */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
+              {leagueName}
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {!isMember && (
+                <Button
+                  onClick={handleJoinLeague}
+                  disabled={
+                    joinState === "joining" || joinLeagueMutation.isPending
+                  }
+                  className="w-full sm:w-auto"
+                >
+                  {joinState === "joining" || joinLeagueMutation.isPending
+                    ? "Joining..."
+                    : "Join League"}
+                </Button>
+              )}
+              {isMember && (
+                <Button
+                  variant="default"
+                  onClick={handleCreateInvite}
+                  className="w-full sm:w-auto"
+                >
+                  Share
+                </Button>
+              )}
             </div>
+          </div>
+        </div>
 
-            <div className="stack">
-              <Button onClick={handleCreateInvite} disabled={inviteState === 'creating'}>
-                {inviteState === 'creating' ? 'Creating Invite...' : 'Invite'}
+        {/* Loading State */}
+        {loading ? (
+          <div className="grid gap-6 md:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse bg-background">
+                <CardHeader>
+                  <div className="h-6 w-3/4 rounded bg-neutral-200" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-4 w-1/2 rounded bg-neutral-200" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : null}
+
+        {/* Error State */}
+        {error ? (
+          <Card className="bg-red-50">
+            <CardContent className="py-4">
+              <p className="text-red-600">
+                {error instanceof Error
+                  ? error.message
+                  : "Failed to load league"}
+              </p>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-2"
+                onClick={() => void refetch()}
+              >
+                Retry
               </Button>
+            </CardContent>
+          </Card>
+        ) : null}
 
-              {inviteLink ? (
-                <div className="invite-row">
-                  <Input value={inviteLink} readOnly aria-label="Invite link" />
-                  <Button variant="ghost" onClick={handleCopyInvite}>Copy</Button>
+        {/* Content */}
+        {!loading && !error ? (
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Leaderboard */}
+            <Card className="md:col-span-3">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Leaderboard</CardTitle>
+                  {leaderboard?.scoring?.available === false && (
+                    <Badge tone="warning">Scoring pending</Badge>
+                  )}
+                  {scoringAvailable && topScorer && (
+                    <Badge tone="success">Top: {topScorer.displayName}</Badge>
+                  )}
                 </div>
-              ) : null}
-
-              {inviteState !== 'idle' && inviteState !== 'creating' ? <p>{inviteState}</p> : null}
-            </div>
-
-            <div>
-              <h4>Members</h4>
-              {members.length === 0 ? <p>No members yet—invite friends</p> : null}
-              {members.length > 0 ? (
-                <ul>
-                  {members.map((member, index) => (
-                    <li key={member.id ?? member.userId ?? `${member.displayName}-${index}`}>
-                      {member.displayName ?? member.name ?? member.handle ?? member.userId ?? member.id}
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </div>
-          </Card>
-
-          <Card>
-            <h3>Leaderboard</h3>
-            {leaderboard?.scoring?.available === false ? <Badge tone="warning">Scoring pending</Badge> : null}
-            {scoringAvailable && topScorer ? (
-              <Badge tone="success">Manager of the race: {topScorer.displayName}</Badge>
-            ) : null}
-            <Table ariaLabel="League leaderboard top 10">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Manager</th>
-                  <th>Points</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboardRows.map((entry) => (
-                  <tr key={`${entry.rank}-${entry.displayName}`}>
-                    <td>
-                      <span className="rank-cell">
-                        <span>{entry.rank}</span>
-                        {rankDelta(entry) !== null ? (
-                          <span
-                            className={`rank-delta ${
-                              (rankDelta(entry) as number) > 0
-                                ? 'up'
-                                : (rankDelta(entry) as number) < 0
-                                  ? 'down'
-                                  : 'flat'
-                            }`}
-                            aria-label={`Rank change ${rankDelta(entry)}`}
-                            title={`Rank change ${rankDelta(entry)}`}
-                          >
-                            {(rankDelta(entry) as number) > 0
-                              ? `+${rankDelta(entry)}`
-                              : `${rankDelta(entry)}`}
+              </CardHeader>
+              <CardContent>
+                <Table ariaLabel="League leaderboard top 10">
+                  <thead>
+                    <tr>
+                      <th className="w-16">Rank</th>
+                      <th>Manager</th>
+                      <th className="text-right">Points</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboardRows.map((entry) => (
+                      <tr key={`${entry.rank}-${entry.displayName}`}>
+                        <td>
+                          <span className="rank-cell">
+                            <span>{entry.rank}</span>
+                            {rankDelta(entry) !== null && (
+                              <span
+                                className={`rank-delta ${
+                                  (rankDelta(entry) as number) > 0
+                                    ? "up"
+                                    : (rankDelta(entry) as number) < 0
+                                      ? "down"
+                                      : "flat"
+                                }`}
+                              >
+                                {(rankDelta(entry) as number) > 0
+                                  ? `+${rankDelta(entry)}`
+                                  : `${rankDelta(entry)}`}
+                              </span>
+                            )}
                           </span>
-                        ) : null}
-                      </span>
-                    </td>
-                    <td>{entry.displayName}</td>
-                    <td>{entry.points}</td>
-                  </tr>
-                ))}
-                {leaderboardRows.length === 0 ? (
-                  <tr>
-                    <td colSpan={3}>No leaderboard data yet</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </Table>
-          </Card>
+                        </td>
+                        <td>{entry.displayName}</td>
+                        <td className="text-right font-semibold">
+                          {entry.points}
+                        </td>
+                      </tr>
+                    ))}
+                    {leaderboardRows.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={3}
+                          className="text-center text-slate-500 py-4"
+                        >
+                          No leaderboard data yet
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </CardContent>
+            </Card>
 
-          <Card>
-            <h3>Your Entry</h3>
-            <div className="stack">
-              {entrySubmitted ? <Badge tone="success">Submitted</Badge> : <Badge tone="warning">Not submitted</Badge>}
-              {entryLocked ? <Badge tone="danger">Locked</Badge> : <Badge tone="info">Open</Badge>}
-            </div>
-            <p>
-              {entrySubmitted
-                ? 'Your prediction is in for the next race.'
-                : 'You haven’t submitted—make your picks'}
-            </p>
-            <p>
-              <Link className="ui-button ui-button-secondary" to={`/league/${leagueId}/predict`}>
-                {entryLocked ? 'View Entry' : 'Edit Entry'}
-              </Link>
-            </p>
-          </Card>
-        </div>
-      ) : null}
-    </PageShell>
-  )
+            {/* Your Entry */}
+            <Card className="md:col-span-3">
+              <CardHeader>
+                <CardTitle>Your Entry</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    {entrySubmitted ? (
+                      <Badge tone="success">Submitted</Badge>
+                    ) : (
+                      <Badge tone="warning">Not submitted</Badge>
+                    )}
+                    {entryLocked ? (
+                      <Badge tone="danger">Locked</Badge>
+                    ) : (
+                      <Badge tone="info">Open</Badge>
+                    )}
+                  </div>
+                  <p className="text-slate-600">
+                    {entrySubmitted
+                      ? "Your prediction is in for the next race."
+                      : "You haven't submitted—make your picks"}
+                  </p>
+                  <Button asChild variant="secondary">
+                    <Link to={`/league/${leagueId}/predict`}>
+                      {entryLocked ? "View Entry" : "Edit Entry"}
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null}
+      </div>
+
+      <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Invite Link</DialogTitle>
+            <DialogDescription>
+              Share this URL to let someone join your league.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-3 flex gap-2">
+            <Input
+              value={inviteLink}
+              readOnly
+              aria-label="Invite link"
+              className="text-sm"
+            />
+            <Button onClick={handleCopyInvite}>Copy</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
 }

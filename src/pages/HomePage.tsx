@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { authClient } from "@/auth/authClient";
 import { apiClient } from "../api/apiClient";
 import { toastApiError } from "../lib/api-error";
 import { Badge } from "../components/ui/Badge";
@@ -13,13 +15,6 @@ import {
 } from "../components/ui/Card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
 
 type NextRaceResponse = {
   id?: string;
@@ -45,57 +40,90 @@ type NextRaceResponse = {
 };
 
 type PredictionStatus = "open" | "opens_soon" | "locked";
-type LeagueVisibility = "private" | "public";
+type League = {
+  id: string;
+  name: string;
+  memberCount?: number;
+  visibility?: "public" | "private";
+};
 
-function assertLeagueVisibility(
-  value: string,
-): asserts value is LeagueVisibility {
-  if (value !== "private" && value !== "public") {
-    throw new Error(`Invalid league visibility: ${value}`);
-  }
+type LeaguesResponse = {
+  leagues?: League[];
+};
+
+const leagueIconBackgrounds = [
+  "bg-red-600",
+  "bg-black",
+  "bg-blue-600",
+  "bg-emerald-600",
+  "bg-amber-500",
+];
+
+function leagueInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "L";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
+}
+
+function LeagueListRow({ league, index }: { league: League; index: number }) {
+  return (
+    <Link
+      to={`/league/${league.id}`}
+      className="group flex items-center gap-4 rounded-4xl border border-neutral-300 bg-white px-4 py-4 transition hover:border-neutral-400"
+    >
+      <div
+        className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-semibold text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
+      >
+        {leagueInitials(league.name)}
+      </div>
+
+      <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+        <p className="truncate font-['Orbitron'] text-3xl font-semibold leading-tight text-black">
+          {league.name}
+        </p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+          <span>{(league.visibility ?? "private").toUpperCase()}</span>
+          <span className="mx-3 text-slate-400">|</span>
+          <span>Total Players: {league.memberCount ?? 0}</span>
+        </p>
+      </div>
+
+      <div className="hidden items-center gap-3 pr-2 md:flex">
+        <span className="text-lg font-semibold text-slate-500">Rank</span>
+        <span className="font-['Orbitron'] text-lg font-bold text-black">
+          -
+        </span>
+      </div>
+    </Link>
+  );
 }
 
 export function HomePage() {
   const navigate = useNavigate();
-  const [reloadTick, setReloadTick] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [nextRace, setNextRace] = useState<NextRaceResponse | null>(null);
+  const queryClient = useQueryClient();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
+  const nextRaceQuery = useQuery({
+    queryKey: ["f1", "next-race"],
+    queryFn: () => apiClient.get<NextRaceResponse>("/f1/next-race"),
+  });
+  const nextRace = nextRaceQuery.data ?? null;
+  const loading = nextRaceQuery.isLoading;
+  const error =
+    nextRaceQuery.error instanceof Error ? nextRaceQuery.error.message : null;
   const [countdown, setCountdown] = useState("");
-  const [leagueName, setLeagueName] = useState("");
-  const [leagueVisibility, setLeagueVisibility] =
-    useState<LeagueVisibility>("private");
   const [inviteInput, setInviteInput] = useState("");
-  const [createState, setCreateState] = useState<
-    "idle" | "creating" | "created" | string
-  >("idle");
   const [joinState, setJoinState] = useState<
     "idle" | "joining" | "joined" | string
   >("idle");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    apiClient
-      .get<NextRaceResponse>("/f1/next-race")
-      .then((data) => {
-        if (!cancelled) setNextRace(data);
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          const message =
-            err instanceof Error ? err.message : "Failed to load next race";
-          setError(message);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadTick]);
+  const myLeaguesQuery = useQuery({
+    queryKey: ["home-my-leagues"],
+    enabled: Boolean(session?.user),
+    queryFn: async () => {
+      const data = await apiClient.getMyLeagues<LeaguesResponse>();
+      return data.leagues ?? [];
+    },
+  });
 
   const raceName = useMemo(
     () =>
@@ -127,6 +155,27 @@ export function HomePage() {
       nextRace?.lockAt,
     [nextRace],
   );
+
+  const localRaceTime = useMemo(() => {
+    if (!startsAt) return "Time TBD";
+    const date = new Date(startsAt);
+    if (Number.isNaN(date.getTime())) return "Time TBD";
+    return date.toLocaleString();
+  }, [startsAt]);
+
+  const utcRaceTime = useMemo(() => {
+    if (!startsAt) return "UTC TBD";
+    const date = new Date(startsAt);
+    if (Number.isNaN(date.getTime())) return "UTC TBD";
+    return date.toUTCString();
+  }, [startsAt]);
+
+  const lockAtLabel = useMemo(() => {
+    if (!entryClosesAt) return "TBD";
+    const date = new Date(entryClosesAt);
+    if (Number.isNaN(date.getTime())) return "TBD";
+    return date.toLocaleString();
+  }, [entryClosesAt]);
 
   const predictionStatus = useMemo<PredictionStatus>(() => {
     const openTs = entryOpensAt ? new Date(entryOpensAt).getTime() : NaN;
@@ -181,20 +230,6 @@ export function HomePage() {
     return () => window.clearInterval(interval);
   }, [startsAt]);
 
-  const localRaceTime = useMemo(() => {
-    if (!startsAt) return "Time TBD";
-    const date = new Date(startsAt);
-    if (Number.isNaN(date.getTime())) return "Time TBD";
-    return date.toLocaleString();
-  }, [startsAt]);
-
-  const utcRaceTime = useMemo(() => {
-    if (!startsAt) return "UTC TBD";
-    const date = new Date(startsAt);
-    if (Number.isNaN(date.getTime())) return "UTC TBD";
-    return date.toUTCString();
-  }, [startsAt]);
-
   function parseInviteTokenOrLeagueId(raw: string): {
     token?: string;
     leagueId?: string;
@@ -230,39 +265,35 @@ export function HomePage() {
     return { token: input };
   }
 
-  async function handleCreateLeague() {
-    setCreateState("creating");
-
-    try {
-      assertLeagueVisibility(leagueVisibility);
-      const payload = {
-        name: leagueName.trim() || "My League",
-        visibility: leagueVisibility,
-      };
-      const result = await apiClient.post<{
-        id?: string;
+  const joinLeagueMutation = useMutation({
+    mutationFn: async (token: string) => {
+      return apiClient.post<{
         leagueId?: string;
-        league?: { id?: string };
-      }>("/leagues", payload);
-
-      const createdLeagueId = result.id ?? result.leagueId ?? result.league?.id;
-      if (!createdLeagueId) {
-        throw new Error("Create league succeeded but no league id returned");
+      }>(`/invites/${encodeURIComponent(token)}/join`);
+    },
+    onMutate: () => {
+      setJoinState("joining");
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ["leagues-page"] });
+      const joinedLeagueId = result.leagueId;
+      if (!joinedLeagueId) {
+        throw new Error("Invite join succeeded but no league id returned");
       }
-
-      setCreateState("created");
-      navigate(`/league/${createdLeagueId}`);
-    } catch (err: unknown) {
+      setJoinState("joined");
+      navigate(`/league/${joinedLeagueId}`);
+    },
+    onError: (err: unknown) => {
       const message = toastApiError(
         err,
-        "Create league failed",
-        "Failed to create league",
+        "Join league failed",
+        "Failed to join league",
       );
-      setCreateState(message);
-    }
-  }
+      setJoinState(message);
+    },
+  });
 
-  async function handleJoinLeague() {
+  function handleJoinLeague() {
     const parsed = parseInviteTokenOrLeagueId(inviteInput);
 
     if (!parsed.token && !parsed.leagueId) {
@@ -276,25 +307,7 @@ export function HomePage() {
       return;
     }
 
-    setJoinState("joining");
-    try {
-      const result = await apiClient.post<{
-        leagueId?: string;
-        league?: { id?: string };
-      }>("/leagues/join", {
-        inviteToken: parsed.token,
-      });
-      const joinedLeagueId = result.leagueId ?? result.league?.id;
-      setJoinState("joined");
-      navigate(`/league/${joinedLeagueId ?? "demo-league"}`);
-    } catch (err: unknown) {
-      const message = toastApiError(
-        err,
-        "Join league failed",
-        "Failed to join league",
-      );
-      setJoinState(message);
-    }
+    void joinLeagueMutation.mutateAsync(parsed.token ?? "");
   }
 
   return (
@@ -302,17 +315,9 @@ export function HomePage() {
       <section className="relative w-full overflow-hidden bg-linear-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
         <HeroBackdrop />
         <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
-          <div className="overflow-hidden rounded-lg border border-neutral-200/20 bg-white/5 backdrop-blur">
+          <div className="overflow-hidden rounded-4xl border border-neutral-200/20 bg-white/5 backdrop-blur">
             <div className="h-[3px] w-full bg-red-600" />
             <div className="space-y-7 p-10">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-semibold tracking-tight">Home</h1>
-                <p className="text-slate-300">
-                  Predict race results with your friends and climb the
-                  leaderboard.
-                </p>
-              </div>
-
               {loading ? (
                 <p className="text-slate-300">Loading next race...</p>
               ) : null}
@@ -331,7 +336,7 @@ export function HomePage() {
                   <p className="text-slate-300">{error}</p>
                   <Button
                     variant="secondary"
-                    onClick={() => setReloadTick((v) => v + 1)}
+                    onClick={() => void nextRaceQuery.refetch()}
                   >
                     Retry
                   </Button>
@@ -341,58 +346,77 @@ export function HomePage() {
               {!loading && !error ? (
                 <>
                   <div className="space-y-3">
-                    <p className="hero-kicker text-slate-300">Next Race</p>
+                    <p className="font-['Orbitron'] text-xs uppercase tracking-[0.24em] text-slate-300">
+                      Next Race
+                    </p>
                     <h2 className="text-5xl font-extrabold tracking-tight md:text-6xl">
                       {raceName}
                     </h2>
                   </div>
 
-                  <p>
-                    <strong title={utcRaceTime}>{localRaceTime}</strong>
-                  </p>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge
+                      variant="outline"
+                      className={`rounded-full px-4 py-1.5 text-xs font-semibold tracking-wide uppercase ${
+                        predictionStatus === "open"
+                          ? "border-green-500/30 bg-green-500/20 text-green-300"
+                          : predictionStatus === "opens_soon"
+                            ? "border-sky-400/30 bg-sky-400/20 text-sky-200"
+                            : "border-red-500/30 bg-red-500/20 text-red-200"
+                      }`}
+                    >
+                      {predictionStatus === "open"
+                        ? "Predictions Open"
+                        : predictionStatus === "opens_soon"
+                          ? "Opening Soon"
+                          : "Predictions Locked"}
+                    </Badge>
+                    <p className="text-sm text-slate-300">
+                      Invite your group, lock picks, and chase the podium.
+                    </p>
+                  </div>
 
-                  <div className="hero-metrics">
-                    <div>
-                      <span className="hero-metric-label text-slate-300">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
                         Countdown
-                      </span>
-                      <strong className="text-3xl font-semibold tracking-[0.04em]">
+                      </p>
+                      <p className="mt-2 text-3xl font-semibold tracking-[0.04em] text-white">
                         {countdown}
-                      </strong>
+                      </p>
+                    </div>
+                    <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                        Race Start
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-white">
+                        {localRaceTime}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-300">{utcRaceTime}</p>
+                    </div>
+                    <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                        Entry Lock
+                      </p>
+                      <p className="mt-2 text-sm font-medium text-white">
+                        {lockAtLabel}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="hero-chips">
-                    {predictionStatus === "open" ? (
-                      <Badge
-                        variant="outline"
-                        className="border-green-500/30 bg-green-500/20 text-green-400"
-                      >
-                        Predictions Open
-                      </Badge>
-                    ) : null}
-                    {predictionStatus === "opens_soon" ? (
-                      <Badge tone="info">Predictions Open Soon</Badge>
-                    ) : null}
-                    {predictionStatus === "locked" ? (
-                      <Badge tone="danger">Predictions Locked</Badge>
-                    ) : null}
-                    {entryClosesAt ? (
-                      <Badge
-                        variant="outline"
-                        className="border-slate-400/30 bg-slate-400/10 text-slate-300"
-                      >
-                        Locks at {new Date(entryClosesAt).toLocaleString()}
-                      </Badge>
-                    ) : null}
-                  </div>
-
-                  <div>
+                  <div className="flex flex-wrap items-center gap-3">
                     <Button
                       asChild
                       className="h-auto bg-red-600 px-8 py-3 text-base font-semibold text-white! shadow-lg ring-2 ring-red-400/40 transition hover:-translate-y-0.5 hover:bg-red-700"
                     >
-                      <Link to="#create-league">Create League</Link>
+                      <Link to="/leagues/create">Create League</Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="secondary"
+                      className="h-auto border border-white/20 bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
+                    >
+                      <Link to="/leagues">View My Leagues</Link>
                     </Button>
                   </div>
                 </>
@@ -402,7 +426,7 @@ export function HomePage() {
         </div>
       </section>
 
-      <section className="relative w-full overflow-hidden bg-background bg-linear-to-b from-neutral-50 to-white pb-12 pt-20">
+      <section className="relative w-full pb-12 pt-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
@@ -413,59 +437,74 @@ export function HomePage() {
           }}
         />
         <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
+          {session?.user && !sessionPending ? (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
+                  My Leagues
+                </h2>
+                <Button asChild variant="secondary">
+                  <Link to="/leagues">View All</Link>
+                </Button>
+              </div>
+              {myLeaguesQuery.isLoading ? (
+                <div className="space-y-6">
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="h-36 animate-pulse rounded-4xl border border-neutral-300 bg-neutral-100"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {myLeaguesQuery.error ? (
+                <Card className="bg-red-50">
+                  <CardContent className="py-4">
+                    <p className="text-red-600">
+                      {myLeaguesQuery.error instanceof Error
+                        ? myLeaguesQuery.error.message
+                        : "Failed to load leagues"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : null}
+              {!myLeaguesQuery.isLoading && !myLeaguesQuery.error ? (
+                <>
+                  {(myLeaguesQuery.data ?? []).length === 0 ? (
+                    <Card className="bg-background">
+                      <CardContent className="py-6">
+                        <p className="text-center text-slate-500">
+                          You haven&apos;t joined any leagues yet.
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-6">
+                      {(myLeaguesQuery.data ?? []).map((league, index) => (
+                        <LeagueListRow
+                          key={league.id}
+                          league={league}
+                          index={index}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="space-y-2">
-            <div className="mb-4 h-[2px] w-12 bg-red-600" />
-            <h2 className="text-3xl font-semibold">Start Competing</h2>
+            <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
+              Join League
+            </h2>
             <p className="text-muted-foreground text-slate-600">
-              Create or join a league and challenge your friends.
+              Paste an invite link or token to jump into a league.
             </p>
           </div>
 
-          <div id="create-league" className="grid gap-8 md:grid-cols-2">
-            <Card className="rounded-lg border border-neutral-200 bg-background transition hover:border-neutral-300">
-              <CardHeader>
-                <CardTitle>Create League</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p>Start a private league and invite your friends.</p>
-                <Label htmlFor="leagueName">League name</Label>
-                <Input
-                  id="leagueName"
-                  placeholder="League name"
-                  value={leagueName}
-                  onChange={(event) => setLeagueName(event.target.value)}
-                />
-                <Label htmlFor="leagueVisibility">Visibility</Label>
-                <Select
-                  value={leagueVisibility}
-                  onValueChange={(value) =>
-                    setLeagueVisibility(value as LeagueVisibility)
-                  }
-                >
-                  <SelectTrigger id="leagueVisibility">
-                    <SelectValue placeholder="Select visibility" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="public">Public</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  className="w-full"
-                  onClick={handleCreateLeague}
-                  disabled={createState === "creating"}
-                >
-                  {createState === "creating" ? "Creating..." : "Create League"}
-                </Button>
-                {createState !== "idle" &&
-                createState !== "creating" &&
-                createState !== "created" ? (
-                  <p>{createState}</p>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-lg border border-neutral-200 bg-background transition hover:border-neutral-300">
+          <div className="grid gap-8 md:grid-cols-1">
+            <Card>
               <CardHeader>
                 <CardTitle>Join League</CardTitle>
               </CardHeader>

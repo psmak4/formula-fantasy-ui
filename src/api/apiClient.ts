@@ -36,12 +36,6 @@ function readStoredDebugUserId(): string {
 }
 
 let debugUserId = readStoredDebugUserId()
-let authTokenGetter: (() => Promise<string | null>) | null = null
-
-export function setAuthTokenGetter(getter: (() => Promise<string | null>) | null): void {
-  authTokenGetter = getter
-}
-
 export function getDebugUserId(): string {
   return debugUserId
 }
@@ -65,16 +59,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (options.body !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
-  if (authTokenGetter && !headers.has('Authorization')) {
-    const token = await authTokenGetter()
-    if (token) headers.set('Authorization', `Bearer ${token}`)
-  }
   if (import.meta.env.DEV && ALLOW_DEBUG_AUTH && debugUserId && !headers.has('X-Debug-User-Id')) {
     headers.set('X-Debug-User-Id', debugUserId)
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined
   })
@@ -111,7 +102,13 @@ export const apiClient = {
   post: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
     request<T>(path, { ...options, method: 'POST', body }),
   put: <T>(path: string, body?: unknown, options?: Omit<RequestOptions, 'method' | 'body'>) =>
-    request<T>(path, { ...options, method: 'PUT', body })
+    request<T>(path, { ...options, method: 'PUT', body }),
+  delete: <T>(path: string, options?: Omit<RequestOptions, 'method' | 'body'>) =>
+    request<T>(path, { ...options, method: 'DELETE' }),
+
+  // League-specific methods
+  getMyLeagues: <T>() => request<T>('/leagues', { method: 'GET' }),
+  getPublicLeagues: <T>() => request<T>('/leagues/public', { method: 'GET' }),
 }
 
 export { API_BASE_URL }

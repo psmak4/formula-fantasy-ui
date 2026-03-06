@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
+import { Link, NavLink, Outlet } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -11,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/Button";
+import { authClient } from "@/auth/authClient";
 
 function initials(name?: string | null): string {
   if (!name) return "FF";
@@ -21,17 +21,11 @@ function initials(name?: string | null): string {
 }
 
 export function AppShell() {
-  const location = useLocation();
-  const { user } = useUser();
-  const { signOut } = useClerk();
-  const isHome = location.pathname === "/";
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
 
   const displayName = useMemo(
-    () =>
-      user?.fullName ??
-      user?.firstName ??
-      user?.primaryEmailAddress?.emailAddress ??
-      "Manager",
+    () => user?.name ?? user?.email ?? "Manager",
     [user],
   );
   const currentYear = new Date().getFullYear();
@@ -68,16 +62,26 @@ export function AppShell() {
             >
               Home
             </NavLink>
-            <NavLink
-              to="/my-leagues"
-              className={({ isActive }) => navLinkClass(isActive)}
-            >
-              My Leagues
-            </NavLink>
+            {user && !isPending ? (
+              <>
+                <NavLink
+                  to="/leagues"
+                  className={({ isActive }) => navLinkClass(isActive)}
+                >
+                  Leagues
+                </NavLink>
+                <NavLink
+                  to="/admin"
+                  className={({ isActive }) => navLinkClass(isActive)}
+                >
+                  Admin
+                </NavLink>
+              </>
+            ) : null}
           </nav>
 
           <div className="flex flex-1 items-center justify-end gap-2">
-            <SignedIn>
+            {user && !isPending ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -86,7 +90,10 @@ export function AppShell() {
                     aria-label="Open user menu"
                   >
                     <Avatar className="h-9 w-9">
-                      <AvatarImage src={user?.imageUrl} alt={displayName} />
+                      <AvatarImage
+                        src={user?.image ?? undefined}
+                        alt={displayName}
+                      />
                       <AvatarFallback>{initials(displayName)}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -94,42 +101,53 @@ export function AppShell() {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem disabled>
-                    Profile (coming soon)
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/admin">Admin</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={(event) => {
                       event.preventDefault();
-                      void signOut();
+                      void authClient.signOut();
                     }}
                   >
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </SignedIn>
-            <SignedOut>
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-white/10"
-              >
-                <Link to="/sign-in">Sign in</Link>
-              </Button>
-              <Button
-                asChild
-                size="sm"
-                className="bg-red-600 text-white hover:bg-red-700"
-              >
-                <Link to="/sign-up">Sign up</Link>
-              </Button>
-            </SignedOut>
+            ) : (
+              <>
+                <Button
+                  asChild
+                  variant="ghost"
+                  size="sm"
+                  className="text-white hover:bg-white/10"
+                >
+                  <Link to="/sign-in">Sign in</Link>
+                </Button>
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-red-600 text-white hover:bg-red-700"
+                >
+                  <Link to="/sign-up">Sign up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
 
-      <main className={isHome ? "w-full" : "w-full py-2"}>
+      <main
+        className="w-full min-h-[calc(100svh-133px)]"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 2px, transparent 0, transparent 50%)",
+          backgroundSize: "16px 16px",
+        }}
+      >
         <Outlet />
       </main>
 
