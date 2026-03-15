@@ -66,6 +66,13 @@ function leagueInitials(name: string): string {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
+function formatDateLabel(value?: string) {
+  if (!value) return "TBD";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "TBD";
+  return date.toLocaleString();
+}
+
 function LeagueListRow({ league, index }: { league: League; index: number }) {
   return (
     <Link
@@ -158,9 +165,7 @@ export function HomePage() {
 
   const localRaceTime = useMemo(() => {
     if (!startsAt) return "Time TBD";
-    const date = new Date(startsAt);
-    if (Number.isNaN(date.getTime())) return "Time TBD";
-    return date.toLocaleString();
+    return formatDateLabel(startsAt);
   }, [startsAt]);
 
   const utcRaceTime = useMemo(() => {
@@ -171,10 +176,7 @@ export function HomePage() {
   }, [startsAt]);
 
   const lockAtLabel = useMemo(() => {
-    if (!entryClosesAt) return "TBD";
-    const date = new Date(entryClosesAt);
-    if (Number.isNaN(date.getTime())) return "TBD";
-    return date.toLocaleString();
+    return formatDateLabel(entryClosesAt);
   }, [entryClosesAt]);
 
   const predictionStatus = useMemo<PredictionStatus>(() => {
@@ -198,6 +200,30 @@ export function HomePage() {
     nextRace?.lockStatus,
     nextRace?.predictionLocked,
   ]);
+
+  const leagueCount = myLeaguesQuery.data?.length ?? 0;
+  const homeHeadline = session?.user
+    ? "Race Control"
+    : "Build Your Grid";
+  const homeSubhead = session?.user
+    ? "Your next race, your league status, and the fastest path back to the card are all here."
+    : "Create a private league, invite your group, and lock predictions before lights out.";
+  const nextActionLabel =
+    predictionStatus === "locked"
+      ? "Predictions are locked for the next race"
+      : predictionStatus === "opens_soon"
+        ? "Prediction window opens soon"
+        : "Prediction window is live";
+  const primaryCtaHref = session?.user
+    ? leagueCount > 0
+      ? `/league/${myLeaguesQuery.data?.[0]?.id ?? ""}`
+      : "/leagues/create"
+    : "/sign-up";
+  const primaryCtaLabel = session?.user
+    ? leagueCount > 0
+      ? "Open Lead League"
+      : "Create Private League"
+    : "Create Account";
 
   useEffect(() => {
     if (!startsAt) {
@@ -347,11 +373,14 @@ export function HomePage() {
                 <>
                   <div className="space-y-3">
                     <p className="font-['Orbitron'] text-xs uppercase tracking-[0.24em] text-slate-300">
-                      Next Race
+                      {homeHeadline}
                     </p>
                     <h2 className="text-5xl font-extrabold tracking-tight md:text-6xl">
                       {raceName}
                     </h2>
+                    <p className="max-w-3xl text-base text-slate-300 md:text-lg">
+                      {homeSubhead}
+                    </p>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -372,11 +401,11 @@ export function HomePage() {
                           : "Predictions Locked"}
                     </Badge>
                     <p className="text-sm text-slate-300">
-                      Invite your group, lock picks, and chase the podium.
+                      {nextActionLabel}
                     </p>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-3">
+                  <div className="grid gap-3 md:grid-cols-4">
                     <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
                         Countdown
@@ -402,6 +431,21 @@ export function HomePage() {
                         {lockAtLabel}
                       </p>
                     </div>
+                    <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                        Live Leagues
+                      </p>
+                      <p className="mt-2 text-3xl font-semibold tracking-[0.04em] text-white">
+                        {session?.user ? leagueCount : "-"}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-300">
+                        {session?.user
+                          ? leagueCount === 1
+                            ? "1 private league"
+                            : `${leagueCount} private leagues`
+                          : "Sign in to track your grid"}
+                      </p>
+                    </div>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
@@ -409,14 +453,16 @@ export function HomePage() {
                       asChild
                       className="h-auto bg-red-600 px-8 py-3 text-base font-semibold text-white! shadow-lg ring-2 ring-red-400/40 transition hover:-translate-y-0.5 hover:bg-red-700"
                     >
-                      <Link to="/leagues/create">Create League</Link>
+                      <Link to={primaryCtaHref}>{primaryCtaLabel}</Link>
                     </Button>
                     <Button
                       asChild
                       variant="secondary"
                       className="h-auto border border-white/20 bg-white/10 px-6 py-3 text-base font-semibold text-white hover:bg-white/20"
                     >
-                      <Link to="/leagues">View My Leagues</Link>
+                      <Link to={session?.user ? "/leagues" : "/sign-in"}>
+                        {session?.user ? "View My Leagues" : "Sign In"}
+                      </Link>
                     </Button>
                   </div>
                 </>
@@ -440,12 +486,62 @@ export function HomePage() {
           {session?.user && !sessionPending ? (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
-                  My Leagues
-                </h2>
-                <Button asChild variant="secondary">
-                  <Link to="/leagues">View All</Link>
-                </Button>
+                <div className="space-y-2">
+                  <p className="font-['Orbitron'] text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                    Your Pit Wall
+                  </p>
+                  <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
+                    My Leagues
+                  </h2>
+                  <p className="max-w-2xl text-sm text-slate-600">
+                    Jump back into your active groups, check the next card, and
+                    keep rivalries moving between race weekends.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Button asChild variant="secondary">
+                    <Link to="/leagues">View All</Link>
+                  </Button>
+                  <Button asChild className="bg-red-600 text-white hover:bg-red-700">
+                    <Link to="/leagues/create">Create League</Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="grid gap-4 md:grid-cols-3">
+                <Card className="rounded-4xl border-neutral-300">
+                  <CardContent className="py-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Total Leagues
+                    </p>
+                    <p className="mt-2 font-['Orbitron'] text-4xl font-black text-black">
+                      {leagueCount}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-4xl border-neutral-300">
+                  <CardContent className="py-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Card Window
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-black">
+                      {predictionStatus === "open"
+                        ? "Open now"
+                        : predictionStatus === "opens_soon"
+                          ? "Opening soon"
+                          : "Locked"}
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-4xl border-neutral-300">
+                  <CardContent className="py-6">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Next Lock
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-black">
+                      {lockAtLabel}
+                    </p>
+                  </CardContent>
+                </Card>
               </div>
               {myLeaguesQuery.isLoading ? (
                 <div className="space-y-6">
@@ -472,10 +568,19 @@ export function HomePage() {
                 <>
                   {(myLeaguesQuery.data ?? []).length === 0 ? (
                     <Card className="bg-background">
-                      <CardContent className="py-6">
-                        <p className="text-center text-slate-500">
-                          You haven&apos;t joined any leagues yet.
+                      <CardContent className="space-y-4 py-8 text-center">
+                        <p className="font-['Orbitron'] text-2xl font-bold uppercase tracking-tight text-black">
+                          No leagues yet
                         </p>
+                        <p className="text-slate-500">
+                          Create a private league or paste an invite below to
+                          get your first grid started.
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                          <Button asChild className="bg-red-600 text-white hover:bg-red-700">
+                            <Link to="/leagues/create">Create League</Link>
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   ) : (
@@ -494,34 +599,30 @@ export function HomePage() {
             </div>
           ) : null}
 
-          <div className="space-y-2">
-            <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
-              Join League
-            </h2>
-            <p className="text-muted-foreground text-slate-600">
-              Paste an invite link or token to jump into a league.
-            </p>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Join League</CardTitle>
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+            <Card className="rounded-4xl border-neutral-300">
+              <CardHeader className="space-y-2">
+                <p className="font-['Orbitron'] text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Join League
+                </p>
+                <CardTitle className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight">
+                  Bring In An Invite
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p>
-                  Paste an invite token or full invite link to join instantly.
+                <p className="text-slate-600">
+                  Paste a full invite link, token, or direct league path. If it
+                  is valid, you will be routed straight into the league.
                 </p>
                 <Label htmlFor="inviteInput">Invite token or link</Label>
                 <Input
                   id="inviteInput"
-                  placeholder="Invite token or link"
+                  placeholder="https://... or invite token"
                   value={inviteInput}
                   onChange={(event) => setInviteInput(event.target.value)}
                 />
                 <Button
-                  className="w-full"
-                  variant="secondary"
+                  className="w-full bg-black text-white hover:bg-neutral-800"
                   onClick={handleJoinLeague}
                   disabled={joinState === "joining"}
                 >
@@ -530,10 +631,57 @@ export function HomePage() {
                 {joinState !== "idle" &&
                 joinState !== "joining" &&
                 joinState !== "joined" ? (
-                  <p>{joinState}</p>
+                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {joinState}
+                  </p>
                 ) : null}
               </CardContent>
             </Card>
+
+            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-1">
+              <Card className="rounded-4xl border-neutral-300">
+                <CardContent className="space-y-2 py-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Next Weekend
+                  </p>
+                  <p className="font-['Orbitron'] text-2xl font-black uppercase tracking-tight text-black">
+                    {raceName}
+                  </p>
+                  <p className="text-sm text-slate-600">{localRaceTime}</p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-4xl border-neutral-300">
+                <CardContent className="space-y-2 py-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Prediction Window
+                  </p>
+                  <p className="text-lg font-semibold text-black">
+                    {predictionStatus === "open"
+                      ? "Live now"
+                      : predictionStatus === "opens_soon"
+                        ? "Waiting to open"
+                        : "Closed for this race"}
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Lock time: {lockAtLabel}
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="rounded-4xl border-neutral-300">
+                <CardContent className="space-y-2 py-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Format
+                  </p>
+                  <p className="text-lg font-semibold text-black">
+                    Private leagues. One card per race.
+                  </p>
+                  <p className="text-sm text-slate-600">
+                    Save early, edit until lock, then track the scored
+                    leaderboard.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>

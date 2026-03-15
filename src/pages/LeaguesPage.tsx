@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { apiClient } from "../api/apiClient";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
+import { HeroBackdrop } from "../components/HeroBackdrop";
 
 type League = {
   id: string;
@@ -13,10 +14,6 @@ type League = {
 };
 
 type LeaguesResponse = {
-  leagues?: League[];
-};
-
-type PublicLeaguesResponse = {
   leagues?: League[];
 };
 
@@ -72,13 +69,10 @@ export function LeaguesPage() {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["leagues-page"],
     queryFn: async () => {
-      const [myLeaguesData, publicLeaguesData] = await Promise.all([
-        apiClient.getMyLeagues<LeaguesResponse>(),
-        apiClient.getPublicLeagues<PublicLeaguesResponse>(),
-      ]);
+      const myLeaguesData = await apiClient.getMyLeagues<LeaguesResponse>();
       return {
         myLeagues: myLeaguesData.leagues ?? [],
-        publicLeagues: publicLeaguesData.leagues ?? [],
+        publicLeagues: [] as League[],
       };
     },
   });
@@ -86,87 +80,176 @@ export function LeaguesPage() {
   const myLeagues = useMemo(() => data?.myLeagues ?? [], [data]);
   const publicLeagues = useMemo(() => data?.publicLeagues ?? [], [data]);
   const errorMessage = error instanceof Error ? error.message : null;
+  const totalManagers = useMemo(
+    () => myLeagues.reduce((sum, league) => sum + (league.memberCount ?? 0), 0),
+    [myLeagues],
+  );
 
   return (
-    <section className="relative w-full overflow-hidden pb-12 pt-20">
-      <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
-            My Leagues
-          </h2>
-          <Button asChild className="bg-red-600 text-white hover:bg-red-700">
-            <Link to="/leagues/create">Create League</Link>
-          </Button>
-        </div>
-
-        {isLoading ? (
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-40 animate-pulse rounded-4xl border border-neutral-300 bg-neutral-100"
-              />
-            ))}
+    <section className="w-full">
+      <section className="relative w-full overflow-hidden bg-linear-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
+        <HeroBackdrop />
+        <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="space-y-3">
+              <p className="font-['Orbitron'] text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">
+                League Garage
+              </p>
+              <h1 className="font-['Orbitron'] text-4xl font-black uppercase tracking-tight md:text-6xl">
+                My Leagues
+              </h1>
+              <p className="max-w-3xl text-base text-slate-300 md:text-lg">
+                Every private league you are racing in, organized around the
+                next card and the current rivalry board.
+              </p>
+            </div>
+            <Button asChild className="bg-red-600 text-white hover:bg-red-700">
+              <Link to="/leagues/create">Create League</Link>
+            </Button>
           </div>
-        ) : errorMessage ? (
-          <Card className="bg-red-50">
-            <CardContent className="py-4">
-              <p className="text-red-600">{errorMessage}</p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-2"
-                onClick={() => void refetch()}
-              >
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {/* My Leagues Section */}
-            <div className="space-y-4">
-              {myLeagues.length === 0 ? (
-                <Card className="bg-background">
-                  <CardContent className="py-6">
-                    <p className="text-center text-slate-500">
-                      You haven't joined any leagues yet.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-6">
-                  {myLeagues.map((league, index) => (
-                    <LeagueListRow
-                      key={league.id}
-                      league={league}
-                      index={index}
-                    />
-                  ))}
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card className="rounded-4xl border-white/10 bg-white/10 text-white">
+              <CardContent className="py-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                  Active Leagues
+                </p>
+                <p className="mt-2 font-['Orbitron'] text-4xl font-black">
+                  {isLoading ? "-" : myLeagues.length}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-4xl border-white/10 bg-white/10 text-white">
+              <CardContent className="py-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                  Total Managers
+                </p>
+                <p className="mt-2 font-['Orbitron'] text-4xl font-black">
+                  {isLoading ? "-" : totalManagers}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-4xl border-white/10 bg-white/10 text-white">
+              <CardContent className="py-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
+                  Format
+                </p>
+                <p className="mt-2 text-lg font-semibold">
+                  Invite-only rivalry
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                  Private leagues only for MVP.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative w-full overflow-hidden pb-12 pt-14">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
+            opacity: 0.02,
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="space-y-2">
+              <p className="font-['Orbitron'] text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                Current Grid
+              </p>
+              <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
+                League Lineup
+              </h2>
+            </div>
+            <Button asChild variant="secondary">
+              <Link to="/">Back Home</Link>
+            </Button>
+          </div>
+
+          {isLoading ? (
+            <div className="space-y-6">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="h-40 animate-pulse rounded-4xl border border-neutral-300 bg-neutral-100"
+                />
+              ))}
+            </div>
+          ) : errorMessage ? (
+            <Card className="bg-red-50">
+              <CardContent className="py-4">
+                <p className="text-red-600">{errorMessage}</p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() => void refetch()}
+                >
+                  Retry
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {myLeagues.length === 0 ? (
+                  <Card className="rounded-4xl bg-background">
+                    <CardContent className="space-y-4 py-10 text-center">
+                      <p className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight text-black">
+                        No Leagues Yet
+                      </p>
+                      <p className="mx-auto max-w-2xl text-slate-500">
+                        Start a private league for your group or use an invite
+                        link from another league owner.
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-3">
+                        <Button asChild className="bg-red-600 text-white hover:bg-red-700">
+                          <Link to="/leagues/create">Create League</Link>
+                        </Button>
+                        <Button asChild variant="secondary">
+                          <Link to="/">Use Invite Link</Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-6">
+                    {myLeagues.map((league, index) => (
+                      <LeagueListRow
+                        key={league.id}
+                        league={league}
+                        index={index}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {publicLeagues.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="font-['Orbitron'] text-3xl font-semibold uppercase tracking-tight text-black">
+                    Public Leagues
+                  </h3>
+                  <div className="space-y-6">
+                    {publicLeagues.map((league, index) => (
+                      <LeagueListRow
+                        key={league.id}
+                        league={league}
+                        index={myLeagues.length + index}
+                      />
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
-
-            {/* Public Leagues Section */}
-            {publicLeagues.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="font-['Orbitron'] text-3xl font-semibold uppercase tracking-tight text-black">
-                  Public Leagues
-                </h3>
-                <div className="space-y-6">
-                  {publicLeagues.map((league, index) => (
-                    <LeagueListRow
-                      key={league.id}
-                      league={league}
-                      index={myLeagues.length + index}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
+      </section>
     </section>
   );
 }

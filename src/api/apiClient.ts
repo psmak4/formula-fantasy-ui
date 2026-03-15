@@ -107,8 +107,7 @@ export const apiClient = {
     request<T>(path, { ...options, method: 'DELETE' }),
 
   // League-specific methods
-  getMyLeagues: <T>() => request<T>('/leagues', { method: 'GET' }),
-  getPublicLeagues: <T>() => request<T>('/leagues/public', { method: 'GET' }),
+  getMyLeagues: <T>() => request<T>('/me/leagues', { method: 'GET' }),
 }
 
 export { API_BASE_URL }

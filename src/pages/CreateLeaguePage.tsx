@@ -7,29 +7,18 @@ import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-
-type LeagueVisibility = "private" | "public";
-
-function assertLeagueVisibility(value: string): asserts value is LeagueVisibility {
-  if (value !== "private" && value !== "public") {
-    throw new Error(`Invalid league visibility: ${value}`);
-  }
-}
 
 export function CreateLeaguePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [leagueName, setLeagueName] = useState("");
-  const [leagueVisibility, setLeagueVisibility] = useState<LeagueVisibility>("private");
   const [createState, setCreateState] = useState<"idle" | "creating" | "created" | string>("idle");
 
   const createLeagueMutation = useMutation({
     mutationFn: async () => {
-      assertLeagueVisibility(leagueVisibility);
       const payload = {
         name: leagueName.trim() || "My League",
-        visibility: leagueVisibility,
+        visibility: "private" as const,
       };
       return apiClient.post<{
         id?: string;
@@ -98,19 +87,9 @@ export function CreateLeaguePage() {
               value={leagueName}
               onChange={(event) => setLeagueName(event.target.value)}
             />
-            <Label htmlFor="leagueVisibility">Visibility</Label>
-            <Select
-              value={leagueVisibility}
-              onValueChange={(value) => setLeagueVisibility(value as LeagueVisibility)}
-            >
-              <SelectTrigger id="leagueVisibility">
-                <SelectValue placeholder="Select visibility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-slate-600">
+              Leagues are private in MVP. You can invite players with a join link after creation.
+            </div>
             <Button
               className="w-full"
               onClick={handleCreateLeague}

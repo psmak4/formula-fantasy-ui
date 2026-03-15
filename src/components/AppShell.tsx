@@ -70,12 +70,6 @@ export function AppShell() {
                 >
                   Leagues
                 </NavLink>
-                <NavLink
-                  to="/admin"
-                  className={({ isActive }) => navLinkClass(isActive)}
-                >
-                  Admin
-                </NavLink>
               </>
             ) : null}
           </nav>
@@ -103,9 +97,6 @@ export function AppShell() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link to="/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">Admin</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onSelect={(event) => {

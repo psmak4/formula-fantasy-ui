@@ -36,7 +36,14 @@ type PredictionPicks = {
   FASTEST_LAP: string;
   BIGGEST_GAINER: string;
   SAFETY_CAR: boolean;
+  CLASSIFIED_FINISHERS: ClassifiedFinishersBucket;
 };
+
+type ClassifiedFinishersBucket =
+  | "0_TO_9"
+  | "10_TO_12"
+  | "13_TO_15"
+  | "16_TO_20";
 
 type EntryResponse = {
   picks?: PredictionPicks;
@@ -49,6 +56,17 @@ type EntryResponse = {
 };
 
 type NextRaceResponse = {
+  id?: string;
+  raceId?: string;
+  name?: string;
+  raceName?: string;
+  grandPrixName?: string;
+  startsAt?: string;
+  startTime?: string;
+  raceAt?: string;
+  raceStartAt?: string;
+  scheduledAt?: string;
+  date?: string;
   predictionLocked?: boolean;
   entriesLocked?: boolean;
   lockStatus?: "open" | "locked";
@@ -92,6 +110,72 @@ function driverName(driver: Driver): string {
 function driverDisplayLabel(driver: Driver): string {
   const code = driver.code ? ` (${driver.code})` : "";
   return `${driverName(driver)}${code}`;
+}
+
+function raceDisplayName(nextRace: NextRaceResponse | undefined): string {
+  return (
+    nextRace?.name ??
+    nextRace?.raceName ??
+    nextRace?.grandPrixName ??
+    "Next Grand Prix"
+  );
+}
+
+function raceStartLabel(nextRace: NextRaceResponse | undefined): string | null {
+  const value =
+    nextRace?.startsAt ??
+    nextRace?.startTime ??
+    nextRace?.raceAt ??
+    nextRace?.raceStartAt ??
+    nextRace?.scheduledAt ??
+    nextRace?.date;
+
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleString();
+}
+
+function driverLabelById(drivers: Driver[], value: string): string {
+  if (!value) return "Pending";
+  const match = drivers.find((driver) => driverId(driver) === value);
+  return match ? driverDisplayLabel(match) : value;
+}
+
+const classifiedFinisherOptions: Array<{
+  value: ClassifiedFinishersBucket;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "0_TO_9",
+    label: "0 to 9 finishers",
+    description: "Heavy attrition race",
+  },
+  {
+    value: "10_TO_12",
+    label: "10 to 12 finishers",
+    description: "Several retirements",
+  },
+  {
+    value: "13_TO_15",
+    label: "13 to 15 finishers",
+    description: "Typical mixed-incident race",
+  },
+  {
+    value: "16_TO_20",
+    label: "16 to 20 finishers",
+    description: "Mostly clean race",
+  },
+];
+
+function classifiedFinishersLabel(
+  value?: ClassifiedFinishersBucket | string,
+): string {
+  return (
+    classifiedFinisherOptions.find((option) => option.value === value)?.label ??
+    "Pending"
+  );
 }
 
 function DriverPicker({
@@ -166,11 +250,15 @@ export function LeaguePredictPage() {
     }
   });
   const drivers = data?.drivers ?? [];
+  const raceName = raceDisplayName(data?.nextRace);
+  const raceStart = raceStartLabel(data?.nextRace);
 
   const [podium, setPodium] = useState<string[]>(["", "", ""]);
   const [fastestLapDriverId, setFastestLapDriverId] = useState("");
   const [biggestGainerDriverId, setBiggestGainerDriverId] = useState("");
   const [safetyCarDeployed, setSafetyCarDeployed] = useState(false);
+  const [classifiedFinishersBucket, setClassifiedFinishersBucket] =
+    useState<ClassifiedFinishersBucket | "">("");
 
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved">(
     "idle",
@@ -213,6 +301,9 @@ export function LeaguePredictPage() {
     setFastestLapDriverId(entryData.picks?.FASTEST_LAP ?? "");
     setBiggestGainerDriverId(entryData.picks?.BIGGEST_GAINER ?? "");
     setSafetyCarDeployed(entryData.picks?.SAFETY_CAR ?? false);
+    setClassifiedFinishersBucket(
+      entryData.picks?.CLASSIFIED_FINISHERS ?? "",
+    );
 
     const raceOpenAt =
       entryData.window?.openAt ??
@@ -240,7 +331,6 @@ export function LeaguePredictPage() {
       now < raceOpenTime;
     const lockedByApi =
       entryData.window?.isLocked === true ||
-      Boolean(entryData.lockedAt) ||
       nextRaceData.predictionLocked === true ||
       nextRaceData.entriesLocked === true ||
       nextRaceData.lockStatus === "locked";
@@ -275,14 +365,32 @@ export function LeaguePredictPage() {
   }, [data]);
 
   const missingRequiredPick = useMemo(
-    () => podium.some((value) => !value) || !fastestLapDriverId || !biggestGainerDriverId,
-    [podium, fastestLapDriverId, biggestGainerDriverId],
+    () =>
+      podium.some((value) => !value) ||
+      !fastestLapDriverId ||
+      !biggestGainerDriverId ||
+      !classifiedFinishersBucket,
+    [podium, fastestLapDriverId, biggestGainerDriverId, classifiedFinishersBucket],
   );
   const duplicatePodiumPick = useMemo(() => {
     const selectedPodium = podium.filter(Boolean);
     return new Set(selectedPodium).size !== selectedPodium.length;
   }, [podium]);
   const isOpen = windowStatus === "open";
+  const selectedDriverCount = useMemo(() => {
+    let count = podium.filter(Boolean).length;
+    if (fastestLapDriverId) count += 1;
+    if (biggestGainerDriverId) count += 1;
+    if (classifiedFinishersBucket) count += 1;
+    return count;
+  }, [podium, fastestLapDriverId, biggestGainerDriverId, classifiedFinishersBucket]);
+  const pickProgress = `${selectedDriverCount}/6 calls made`;
+  const statusTone =
+    windowStatus === "locked"
+      ? "danger"
+      : windowStatus === "opening_soon"
+        ? "warning"
+        : "success";
 
   useEffect(() => {
     if (!opensAt && !closesAt) {
@@ -331,6 +439,8 @@ export function LeaguePredictPage() {
           FASTEST_LAP: fastestLapDriverId,
           BIGGEST_GAINER: biggestGainerDriverId,
           SAFETY_CAR: safetyCarDeployed,
+          CLASSIFIED_FINISHERS:
+            classifiedFinishersBucket as ClassifiedFinishersBucket,
         },
       });
     },
@@ -367,43 +477,104 @@ export function LeaguePredictPage() {
         }}
       />
       <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
-        {/* Header */}
-        <div className="space-y-2">
-          <h2 className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-black">
-            Make Predictions
-          </h2>
-        </div>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
+          <Card className="overflow-hidden border-neutral-900 bg-[radial-gradient(circle_at_top_left,_rgba(248,113,113,0.22),_transparent_32%),linear-gradient(145deg,_#140f14_0%,_#111827_48%,_#191919_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
+            <CardHeader className="space-y-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className="bg-white/12 text-white" tone="info">
+                  Prediction Card
+                </Badge>
+                <Badge className="bg-white/12 text-white" tone="info">
+                  {pickProgress}
+                </Badge>
+                <Badge className="bg-white/12 text-white" tone="info">
+                  {safetyCarDeployed ? "Safety car: yes" : "Safety car: no"}
+                </Badge>
+              </div>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.36em] text-white/60">
+                  {raceName}
+                </p>
+                <h2 className="font-['Orbitron'] text-4xl font-bold uppercase tracking-tight text-white md:text-5xl">
+                  Race Weekend Calls
+                </h2>
+                <p className="max-w-2xl text-sm leading-6 text-white/72 md:text-base">
+                  Lock in your podium, fastest lap, biggest gainer, and safety car
+                  call, then forecast how many cars make the flag.
+                </p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                    Window
+                  </p>
+                  <p className="mt-2 font-['Orbitron'] text-xl font-bold uppercase text-white">
+                    {windowStatus === "open"
+                      ? "Open"
+                      : windowStatus === "opening_soon"
+                        ? "Opens soon"
+                        : "Locked"}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                    Countdown
+                  </p>
+                  <p className="mt-2 font-['Orbitron'] text-xl font-bold uppercase text-white">
+                    {countdownLabel || "Awaiting schedule"}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                    Race start
+                  </p>
+                  <p className="mt-2 text-sm font-medium text-white/82">
+                    {raceStart ?? "TBD"}
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
 
-        {/* Status Banner */}
-        <div
-          className={`rounded-3xl border p-6 ${
-            windowStatus === "locked"
-              ? "border-red-200 bg-red-50"
-              : windowStatus === "opening_soon"
-                ? "border-yellow-200 bg-yellow-50"
-                : "border-green-200 bg-green-50"
-          }`}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              {windowStatus === "locked" && <Badge tone="danger">Locked</Badge>}
-              {windowStatus === "opening_soon" && (
-                <Badge tone="warning">Opening Soon</Badge>
-              )}
-              {windowStatus === "open" && <Badge tone="success">Open</Badge>}
-              <span className="text-sm text-slate-600">
-                {countdownLabel || windowMessage}
-              </span>
-            </div>
-            {windowStatus !== "locked" && (
-              <Link
-                to={`/league/${leagueId}`}
-                className="text-sm text-slate-500 hover:text-slate-700"
-              >
-                Back to league
-              </Link>
-            )}
-          </div>
+          <Card className="border-neutral-300 bg-white/96">
+            <CardHeader className="space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.18em] text-slate-900">
+                  Race Status
+                </CardTitle>
+                <Badge tone={statusTone}>{windowMessage}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  Card status
+                </p>
+                <p className="mt-2 font-['Orbitron'] text-2xl font-bold uppercase text-slate-950">
+                  {saveState === "saved"
+                    ? "Saved"
+                    : windowStatus === "locked"
+                      ? "Closed"
+                      : "Editable"}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  {saveState === "saved"
+                    ? "Your latest calls are stored."
+                    : "Changes are local until you save the card."}
+                </p>
+              </div>
+              <div className="rounded-3xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-slate-600">
+                {windowStatus === "locked"
+                  ? "The prediction window has closed for this race."
+                  : windowStatus === "opening_soon"
+                    ? "The race card is not open yet. Review your likely picks and come back at launch."
+                    : "You can edit repeatedly until lock. Save early so the card is already in if you miss final changes."}
+              </div>
+              <Button asChild variant="outline" className="w-full">
+                <Link to={`/league/${leagueId}`}>Back to league</Link>
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Loading State */}
@@ -426,13 +597,49 @@ export function LeaguePredictPage() {
 
         {/* Prediction Form */}
         {!loading && !error && (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Podium Picks */}
+          <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
+            <div className="space-y-6">
             <Card className="bg-background transition hover:border-neutral-400">
               <CardHeader>
-                <CardTitle>Podium Picks</CardTitle>
+                <CardTitle className="font-['Orbitron'] uppercase tracking-[0.14em]">
+                  Podium Picks
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-3">
+                  {[
+                    {
+                      label: "P1 Winner",
+                      value: driverLabelById(drivers, podium[0]),
+                      tone: "success" as const,
+                    },
+                    {
+                      label: "P2",
+                      value: driverLabelById(drivers, podium[1]),
+                      tone: "warning" as const,
+                    },
+                    {
+                      label: "P3",
+                      value: driverLabelById(drivers, podium[2]),
+                      tone: "info" as const,
+                    },
+                  ].map((slot) => (
+                    <div
+                      key={slot.label}
+                      className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                          {slot.label}
+                        </p>
+                        <Badge tone={slot.tone}>{slot.value === "Pending" ? "Pending" : "Ready"}</Badge>
+                      </div>
+                      <p className="mt-3 font-medium text-slate-900">
+                        {slot.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
                 <div className="grid gap-4 md:grid-cols-3">
                   <DriverPicker
                     label="P1 Winner"
@@ -482,9 +689,45 @@ export function LeaguePredictPage() {
             {/* Race Props */}
             <Card className="bg-background transition hover:border-neutral-400">
               <CardHeader>
-                <CardTitle>Race Props</CardTitle>
+                <CardTitle className="font-['Orbitron'] uppercase tracking-[0.14em]">
+                  Race Props
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      Fastest lap
+                    </p>
+                    <p className="mt-2 font-medium text-slate-900">
+                      {driverLabelById(drivers, fastestLapDriverId)}
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      Biggest gainer
+                    </p>
+                    <p className="mt-2 font-medium text-slate-900">
+                      {driverLabelById(drivers, biggestGainerDriverId)}
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      Safety car
+                    </p>
+                    <p className="mt-2 font-medium text-slate-900">
+                      {safetyCarDeployed ? "Deployed" : "No call"}
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4 md:col-span-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      Classified finishers
+                    </p>
+                    <p className="mt-2 font-medium text-slate-900">
+                      {classifiedFinishersLabel(classifiedFinishersBucket)}
+                    </p>
+                  </div>
+                </div>
                 <div className="grid gap-4 md:grid-cols-2">
                   <DriverPicker
                     label="Fastest Lap"
@@ -501,6 +744,31 @@ export function LeaguePredictPage() {
                     onChange={setBiggestGainerDriverId}
                   />
                 </div>
+                <fieldset className="space-y-2" disabled={!isOpen || saveState === "saving"}>
+                  <legend className="text-sm font-medium text-slate-700">
+                    Classified Finishers
+                  </legend>
+                  <select
+                    className="w-full rounded-xl border border-neutral-300 px-4 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    value={classifiedFinishersBucket}
+                    onChange={(event) =>
+                      setClassifiedFinishersBucket(
+                        event.target.value as ClassifiedFinishersBucket,
+                      )
+                    }
+                    aria-label="Classified Finishers"
+                  >
+                    <option value="">Select finishers bucket</option>
+                    {classifiedFinisherOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-sm text-slate-500">
+                    Predict how many cars will be classified at the finish.
+                  </p>
+                </fieldset>
 
                 <label className="flex items-center gap-2">
                   <input
@@ -518,24 +786,71 @@ export function LeaguePredictPage() {
                 </label>
               </CardContent>
             </Card>
+            </div>
+            <div className="space-y-6">
+              <Card className="border-neutral-300">
+                <CardHeader>
+                  <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
+                    Submit Card
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                      Validation
+                    </p>
+                    <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                      <li>{missingRequiredPick ? "Complete every required slot." : "All required slots filled."}</li>
+                      <li>{duplicatePodiumPick ? "Podium picks must be unique." : "Podium picks are unique."}</li>
+                      <li>{isOpen ? "Prediction window is open." : "Prediction window is not open."}</li>
+                    </ul>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={
+                      !isOpen ||
+                      missingRequiredPick ||
+                      duplicatePodiumPick ||
+                      saveState === "saving"
+                    }
+                  >
+                    {saveState === "saving" ? "Saving Entry..." : "Save Entry"}
+                  </Button>
+                  {saveState === "saved" && (
+                    <Badge className="w-full justify-center" tone="success">
+                      Entry saved
+                    </Badge>
+                  )}
+                  {submitError && (
+                    <Badge className="w-full justify-center" tone="danger">
+                      {submitError}
+                    </Badge>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Actions */}
-            <div className="flex flex-wrap items-center gap-4">
-              <Button
-                type="submit"
-                disabled={
-                  !isOpen ||
-                  missingRequiredPick ||
-                  duplicatePodiumPick ||
-                  saveState === "saving"
-                }
-              >
-                {saveState === "saving" ? "Saving Entry..." : "Save Entry"}
-              </Button>
-              {saveState === "saved" && (
-                <Badge tone="success">Entry saved</Badge>
-              )}
-              {submitError && <Badge tone="danger">{submitError}</Badge>}
+              <Card className="border-neutral-300">
+                <CardHeader>
+                  <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
+                    Pick Notes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm leading-6 text-slate-600">
+                  <p>
+                    Podium calls are exclusive. Once a driver is in P1, they cannot
+                    also appear in P2 or P3.
+                  </p>
+                  <p>
+                    Classified finishers are scored in buckets, so you are
+                    calling the race shape as much as the result.
+                  </p>
+                  <p>
+                    Save as early as possible. You can keep editing until the lock
+                    window closes.
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </form>
         )}
