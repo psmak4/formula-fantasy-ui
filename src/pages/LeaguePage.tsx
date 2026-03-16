@@ -64,6 +64,14 @@ type ApiLeaderboardRow = {
 
 type LeaderboardResponse = {
   scoring?: { available?: boolean };
+  scoringAvailable?: boolean;
+  seasonYear?: number;
+  latestCompletedRace?: {
+    raceId?: string;
+    raceName?: string;
+    round?: number;
+    computedAt?: string;
+  };
   rows?: ApiLeaderboardRow[];
 };
 
@@ -211,7 +219,7 @@ export function LeaguePage() {
           apiClient.get<LeagueResponse>(`/leagues/${leagueId}`),
           apiClient
             .get<LeaderboardResponse>(
-              `/leagues/${leagueId}/races/next/leaderboard`,
+              `/leagues/${leagueId}/standings`,
             )
             .catch(() => ({}) as LeaderboardResponse),
           apiClient
@@ -270,7 +278,7 @@ export function LeaguePage() {
     [leaderboard],
   );
   const topScorer = leaderboardRows[0];
-  const scoringAvailable = leaderboard?.scoring?.available !== false;
+  const scoringAvailable = leaderboard?.scoringAvailable ?? leaderboard?.scoring?.available ?? false;
   const runnerUp = leaderboardRows[1];
 
   const isMember = useMemo(() => {
@@ -386,9 +394,13 @@ export function LeaguePage() {
                 <Badge className="bg-white/12 text-white" tone="info">
                   {members.length} managers
                 </Badge>
-                {!scoringAvailable && (
+                {leaderboard?.latestCompletedRace ? (
+                  <Badge className="bg-emerald-200 text-emerald-950" tone="success">
+                    Last scored: {leaderboard.latestCompletedRace.raceName ?? "Latest round"}
+                  </Badge>
+                ) : (
                   <Badge className="bg-amber-200 text-amber-950" tone="warning">
-                    Scoring pending
+                    No scored rounds yet
                   </Badge>
                 )}
               </div>
@@ -400,8 +412,7 @@ export function LeaguePage() {
                   {leagueName}
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-white/72 md:text-base">
-                  Track your rivalry, lock in your picks, and push for manager of
-                  the race. League access is invite-only for MVP.
+                  Track the full championship table, review the latest scored round, and lock in your next card before the window closes.
                 </p>
               </div>
               <div className="flex flex-wrap gap-3">
@@ -419,6 +430,13 @@ export function LeaguePage() {
                         {entryLocked ? "Review Entry" : "Make Picks"}
                       </Link>
                     </Button>
+                    {leaderboard?.latestCompletedRace?.raceId ? (
+                      <Button asChild variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white">
+                        <Link to={`/league/${leagueId}/races/${leaderboard.latestCompletedRace.raceId}/leaderboard`}>
+                          View Latest Results
+                        </Link>
+                      </Button>
+                    ) : null}
                     {!isOwner ? (
                       <div className="rounded-2xl border border-white/15 bg-white/6 px-4 py-3 text-sm text-white/78">
                         Invite links are managed by the league owner.
@@ -441,7 +459,7 @@ export function LeaguePage() {
                   Battle Snapshot
                 </CardTitle>
                 {topScorer ? (
-                  <Badge tone="success">Leader live</Badge>
+                  <Badge tone="success">Season live</Badge>
                 ) : (
                   <Badge tone="warning">Grid forming</Badge>
                 )}
@@ -451,24 +469,24 @@ export function LeaguePage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    P1 right now
+                    Championship leader
                   </p>
                   <p className="mt-2 font-['Orbitron'] text-2xl font-bold uppercase text-slate-950">
                     {topScorer?.displayName ?? "No leader yet"}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {topScorer ? `${topScorer.points} pts` : "Scoring will appear after race results finalize."}
+                    {topScorer ? `${topScorer.points} pts` : "Standings will populate after the first scored round."}
                   </p>
                 </div>
                 <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Chase car
+                    Latest results
                   </p>
                   <p className="mt-2 font-['Orbitron'] text-2xl font-bold uppercase text-slate-950">
-                    {runnerUp?.displayName ?? "Waiting on the field"}
+                    {leaderboard?.latestCompletedRace?.raceName ?? runnerUp?.displayName ?? "Waiting on the field"}
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {runnerUp ? `${runnerUp.points} pts` : "Invite more rivals to turn this into a proper fight."}
+                    {leaderboard?.latestCompletedRace ? `Round ${leaderboard.latestCompletedRace.round ?? "-"}` : runnerUp ? `${runnerUp.points} pts` : "Invite more rivals to turn this into a proper fight."}
                   </p>
                 </div>
               </div>
@@ -531,11 +549,11 @@ export function LeaguePage() {
                       League Standings
                     </CardTitle>
                     <p className="text-sm text-slate-500">
-                      Current race-week leaderboard for the top 10 managers.
+                      Cumulative league standings across all scored rounds this season.
                     </p>
                   </div>
-                  {leaderboard?.scoring?.available === false ? (
-                    <Badge tone="warning">Scoring pending</Badge>
+                  {leaderboard?.latestCompletedRace ? (
+                    <Badge tone="info">Latest round: {leaderboard.latestCompletedRace.raceName}</Badge>
                   ) : null}
                   {scoringAvailable && topScorer ? (
                     <Badge tone="success">Top: {topScorer.displayName}</Badge>
@@ -586,7 +604,7 @@ export function LeaguePage() {
                           colSpan={3}
                           className="text-center text-slate-500 py-4"
                         >
-                          No leaderboard data yet
+                          No cumulative standings yet
                         </td>
                       </tr>
                     )}

@@ -53,6 +53,11 @@ const ProfilePage = lazy(() =>
     default: module.ProfilePage,
   })),
 );
+const MyResultsPage = lazy(() =>
+  import("./pages/MyResultsPage").then((module) => ({
+    default: module.MyResultsPage,
+  })),
+);
 const SignInPage = lazy(() =>
   import("./pages/SignInPage").then((module) => ({
     default: module.SignInPage,
@@ -106,6 +111,14 @@ function App() {
                 element={
                   <RequireAuth>
                     <ProfilePage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/results"
+                element={
+                  <RequireAuth>
+                    <MyResultsPage />
                   </RequireAuth>
                 }
               />

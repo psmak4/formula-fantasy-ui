@@ -65,6 +65,12 @@ export function AppShell() {
             {user && !isPending ? (
               <>
                 <NavLink
+                  to="/results"
+                  className={({ isActive }) => navLinkClass(isActive)}
+                >
+                  My Results
+                </NavLink>
+                <NavLink
                   to="/leagues"
                   className={({ isActive }) => navLinkClass(isActive)}
                 >
