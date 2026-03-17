@@ -70,7 +70,14 @@ function formatDateLabel(value?: string) {
   if (!value) return "TBD";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "TBD";
-  return date.toLocaleString();
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
 }
 
 function LeagueListRow({ league, index }: { league: League; index: number }) {
