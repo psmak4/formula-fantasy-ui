@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { ArrowDownRight, ArrowUpRight, Minus, Trophy } from "lucide-react";
@@ -119,10 +119,27 @@ type Driver = {
 type NextRaceResponse = {
   predictionLocked?: boolean;
   entriesLocked?: boolean;
-  lockStatus?: "open" | "locked";
+  entriesOpen?: boolean;
+  lockStatus?: "upcoming" | "open" | "locked";
+  windowStatus?: "upcoming" | "open" | "locked";
+  entryOpensAt?: string;
   entryClosesAt?: string;
+  predictionOpensAt?: string;
   predictionClosesAt?: string;
+  openAt?: string;
   lockAt?: string;
+  raceStartAt?: string;
+  timeUntilOpenMs?: number;
+  timeUntilLockMs?: number;
+};
+
+type NextRaceWindowSummary = {
+  status: "upcoming" | "open" | "locked";
+  tone: "info" | "warning" | "danger" | "success" | "neutral";
+  badgeLabel: string;
+  headline: string;
+  detail: string;
+  timestampLabel: string;
 };
 
 type InviteResponse = {
@@ -227,6 +244,103 @@ function gapLabel(value?: number): string {
   return `+${value} pts`;
 }
 
+function formatDateTimeLabel(value?: string): string {
+  if (!value) return "TBD";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "TBD";
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function formatDuration(ms?: number): string {
+  if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) {
+    return "0m";
+  }
+
+  const totalMinutes = Math.max(1, Math.floor(ms / 60000));
+  const days = Math.floor(totalMinutes / (24 * 60));
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60);
+  const minutes = totalMinutes % 60;
+  const parts: string[] = [];
+
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0 && days === 0) parts.push(`${minutes}m`);
+
+  return parts.join(" ") || "0m";
+}
+
+function buildNextRaceWindowSummary(
+  nextRace: NextRaceResponse | null,
+  nowMs: number,
+): NextRaceWindowSummary {
+  const openAt = nextRace?.entryOpensAt ?? nextRace?.predictionOpensAt ?? nextRace?.openAt;
+  const lockAt = nextRace?.entryClosesAt ?? nextRace?.predictionClosesAt ?? nextRace?.lockAt;
+  const openTs = openAt ? new Date(openAt).getTime() : NaN;
+  const lockTs = lockAt ? new Date(lockAt).getTime() : NaN;
+
+  const status = nextRace?.windowStatus
+    ?? nextRace?.lockStatus
+    ?? (nextRace?.predictionLocked || nextRace?.entriesLocked
+      ? "locked"
+      : !Number.isNaN(lockTs) && nowMs >= lockTs
+        ? "locked"
+        : !Number.isNaN(openTs) && nowMs < openTs
+          ? "upcoming"
+          : "open");
+
+  if (status === "locked") {
+    return {
+      status,
+      tone: "danger",
+      badgeLabel: "Locked",
+      headline: "Predictions are locked",
+      detail: lockAt
+        ? `This race locked at ${formatDateTimeLabel(lockAt)}.`
+        : "This race is no longer editable.",
+      timestampLabel: lockAt ? `Locked ${formatDateTimeLabel(lockAt)}` : "Locked",
+    };
+  }
+
+  if (status === "upcoming") {
+    const timeToOpen = !Number.isNaN(openTs) ? Math.max(openTs - nowMs, 0) : nextRace?.timeUntilOpenMs;
+    return {
+      status,
+      tone: "warning",
+      badgeLabel: "Opens soon",
+      headline: openAt
+        ? `Prediction window opens ${formatDateTimeLabel(openAt)}`
+        : "Prediction window opens soon",
+      detail: lockAt
+        ? `Cards will lock ${formatDateTimeLabel(lockAt)}.`
+        : "Cards will become editable before race start.",
+      timestampLabel: timeToOpen && timeToOpen > 0
+        ? `Opens in ${formatDuration(timeToOpen)}`
+        : (openAt ? `Opens ${formatDateTimeLabel(openAt)}` : "Opens soon"),
+    };
+  }
+
+  const timeToLock = !Number.isNaN(lockTs) ? Math.max(lockTs - nowMs, 0) : nextRace?.timeUntilLockMs;
+  return {
+    status: "open",
+    tone: "success",
+    badgeLabel: "Open now",
+    headline: lockAt
+      ? `Predictions lock ${formatDateTimeLabel(lockAt)}`
+      : "Prediction window is open",
+    detail: timeToLock && timeToLock > 0
+      ? `You still have ${formatDuration(timeToLock)} to save or edit your card.`
+      : "Save your card before the race locks.",
+    timestampLabel: timeToLock && timeToLock > 0
+      ? `${formatDuration(timeToLock)} left`
+      : (lockAt ? `Locks ${formatDateTimeLabel(lockAt)}` : "Open now"),
+  };
+}
+
 export function LeaguePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const [inviteLink, setInviteLink] = useState("");
@@ -300,6 +414,7 @@ export function LeaguePage() {
         members: leagueData.members ?? leagueData.league?.members ?? [],
         leaderboard: leaderboardData,
         drivers: driversData ?? [],
+        nextRace: nextRaceData,
         entryLocked,
         entrySubmitted,
         entryPicks: entryData.picks ?? null,
@@ -311,10 +426,20 @@ export function LeaguePage() {
   const leagueName = data?.leagueName ?? "League";
   const members = data?.members ?? [];
   const leaderboard = data?.leaderboard ?? null;
+  const nextRace = data?.nextRace ?? null;
   const entrySubmitted = data?.entrySubmitted ?? false;
   const entryLocked = data?.entryLocked ?? false;
   const entryPicks = data?.entryPicks ?? null;
   const drivers = data?.drivers ?? [];
+  const [nowMs, setNowMs] = useState(() => Date.now());
+
+  useEffect(() => {
+    const handle = window.setInterval(() => {
+      setNowMs(Date.now());
+    }, 30000);
+
+    return () => window.clearInterval(handle);
+  }, []);
 
   const leaderboardRows = useMemo(
     () => normalizeLeaderboardRows(leaderboard, currentUserId).slice(0, 10),
@@ -380,6 +505,11 @@ export function LeaguePage() {
       },
     ];
   }, [driversById, entryPicks]);
+
+  const nextRaceWindow = useMemo(
+    () => buildNextRaceWindowSummary(nextRace, nowMs),
+    [nextRace, nowMs],
+  );
 
   const orderedMembers = useMemo(() => {
     return [...members].sort((left, right) => {
@@ -544,12 +674,22 @@ export function LeaguePage() {
                   </p>
                 </div>
               </div>
-              <div className="rounded-3xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-slate-600">
-                {entrySubmitted
-                  ? entryLocked
-                    ? "Your card is locked for the next race."
-                    : "Your next-race card is saved. You can still edit before lock."
-                  : "No next-race card submitted yet. Lock it in before the window closes."}
+              <div className="rounded-3xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Prediction window
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-slate-900">
+                      {nextRaceWindow.headline}
+                    </p>
+                  </div>
+                  <Badge tone={nextRaceWindow.tone}>{nextRaceWindow.badgeLabel}</Badge>
+                </div>
+                <p className="mt-3 text-sm text-slate-600">{nextRaceWindow.detail}</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  {nextRaceWindow.timestampLabel}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -806,12 +946,30 @@ export function LeaguePage() {
                       ) : (
                         <Badge tone="info">Editable</Badge>
                       )}
+                      <Badge tone={nextRaceWindow.tone}>{nextRaceWindow.badgeLabel}</Badge>
                     </div>
-                    <p className="text-sm leading-6 text-slate-600">
-                      {entrySubmitted
-                        ? "Your prediction card is live for the next race."
-                        : "You have not submitted picks for the next race yet."}
-                    </p>
+                    <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Race window
+                      </p>
+                      <p className="mt-2 text-sm font-semibold text-slate-900">
+                        {nextRaceWindow.headline}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">
+                        {entrySubmitted
+                          ? entryLocked
+                            ? "Your prediction card is locked in for this race."
+                            : "Your prediction card is saved. You can still edit it before lock."
+                          : nextRaceWindow.status === "upcoming"
+                            ? "The next card is not open yet, but the lock time is already set."
+                            : nextRaceWindow.status === "locked"
+                              ? "This race is locked. You can review the card and get ready for the next round."
+                              : "You have not submitted picks for the next race yet."}
+                      </p>
+                      <p className="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        {nextRaceWindow.timestampLabel}
+                      </p>
+                    </div>
                     {entrySubmitted && entrySummary.length > 0 ? (
                       <div className="grid gap-3 sm:grid-cols-2">
                         {entrySummary.map((row) => (
