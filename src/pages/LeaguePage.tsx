@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
+import { ArrowDownRight, ArrowUpRight, Minus, Trophy } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -18,7 +19,6 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Input } from "../components/ui/input";
-import { Table } from "../components/ui/Table";
 
 type Member = {
   id?: string;
@@ -42,21 +42,36 @@ type LeagueResponse = {
 
 type LeaderboardEntry = {
   rank: number;
+  previousRank?: number;
+  rankDelta: number;
+  userId: string;
   displayName: string;
+  avatarUrl?: string;
   points: number;
-  rankChange?: number;
-  movement?: number;
-  delta?: number;
+  racesScored: number;
+  lastRacePoints: number;
+  gapToLeader: number;
+  gapToNext?: number;
+  isCurrentUser: boolean;
 };
 
 type ApiLeaderboardRow = {
   rank?: number;
+  previousRank?: number;
+  rankDelta?: number;
   user?: {
+    id?: string;
     displayName?: string;
+    avatarUrl?: string;
   };
   displayName?: string;
   pointsTotal?: number;
   points?: number;
+  racesScored?: number;
+  lastRacePoints?: number;
+  gapToLeader?: number;
+  gapToNext?: number;
+  isCurrentUser?: boolean;
   rankChange?: number;
   movement?: number;
   delta?: number;
@@ -165,23 +180,51 @@ function formatPickValue(
   return driversById.get(value) ?? value;
 }
 
-function rankDelta(entry: LeaderboardEntry): number | null {
-  const value = entry.rankChange ?? entry.movement ?? entry.delta;
-  return typeof value === "number" ? value : null;
-}
-
 function normalizeLeaderboardRows(
   data: LeaderboardResponse | null,
+  currentUserId: string | null,
 ): LeaderboardEntry[] {
   if (!data) return [];
-  return (data.rows ?? []).map((row, index) => ({
-    rank: typeof row.rank === "number" ? row.rank : index + 1,
-    displayName: row.user?.displayName ?? row.displayName ?? "Unknown manager",
-    points: row.pointsTotal ?? row.points ?? 0,
-    rankChange: row.rankChange,
-    movement: row.movement,
-    delta: row.delta,
-  }));
+  return (data.rows ?? []).map((row, index) => {
+    const userId = row.user?.id ?? "";
+    const rank = typeof row.rank === "number" ? row.rank : index + 1;
+    const previousRank = typeof row.previousRank === "number" ? row.previousRank : undefined;
+    const fallbackDelta = row.rankChange ?? row.movement ?? row.delta;
+
+    return {
+      rank,
+      previousRank,
+      rankDelta: typeof row.rankDelta === "number"
+        ? row.rankDelta
+        : typeof fallbackDelta === "number"
+          ? fallbackDelta
+          : typeof previousRank === "number"
+            ? previousRank - rank
+            : 0,
+      userId,
+      displayName: row.user?.displayName ?? row.displayName ?? "Unknown manager",
+      avatarUrl: row.user?.avatarUrl,
+      points: row.pointsTotal ?? row.points ?? 0,
+      racesScored: row.racesScored ?? 0,
+      lastRacePoints: row.lastRacePoints ?? 0,
+      gapToLeader: row.gapToLeader ?? 0,
+      gapToNext: row.gapToNext,
+      isCurrentUser: row.isCurrentUser ?? Boolean(currentUserId && userId && userId === currentUserId),
+    };
+  });
+}
+
+function rankChipClass(rank: number): string {
+  if (rank === 1) return "border-amber-300 bg-amber-100 text-amber-900";
+  if (rank === 2) return "border-slate-300 bg-slate-100 text-slate-800";
+  if (rank === 3) return "border-orange-300 bg-orange-100 text-orange-900";
+  return "border-neutral-200 bg-neutral-100 text-slate-700";
+}
+
+function gapLabel(value?: number): string {
+  if (typeof value !== "number") return "—";
+  if (value <= 0) return "Level";
+  return `+${value} pts`;
 }
 
 export function LeaguePage() {
@@ -274,12 +317,23 @@ export function LeaguePage() {
   const drivers = data?.drivers ?? [];
 
   const leaderboardRows = useMemo(
-    () => normalizeLeaderboardRows(leaderboard).slice(0, 10),
-    [leaderboard],
+    () => normalizeLeaderboardRows(leaderboard, currentUserId).slice(0, 10),
+    [currentUserId, leaderboard],
   );
   const topScorer = leaderboardRows[0];
   const scoringAvailable = leaderboard?.scoringAvailable ?? leaderboard?.scoring?.available ?? false;
   const runnerUp = leaderboardRows[1];
+  const currentUserRow = leaderboardRows.find((entry) => entry.isCurrentUser) ?? null;
+  const biggestMovers = useMemo(
+    () => leaderboardRows
+      .filter((entry) => entry.rankDelta > 0)
+      .sort((left, right) => {
+        if (left.rankDelta !== right.rankDelta) return right.rankDelta - left.rankDelta;
+        return left.rank - right.rank;
+      })
+      .slice(0, 3),
+    [leaderboardRows],
+  );
 
   const isMember = useMemo(() => {
     if (!currentUserId) return false;
@@ -552,64 +606,183 @@ export function LeaguePage() {
                       Cumulative league standings across all scored rounds this season.
                     </p>
                   </div>
-                  {leaderboard?.latestCompletedRace ? (
-                    <Badge tone="info">Latest round: {leaderboard.latestCompletedRace.raceName}</Badge>
-                  ) : null}
-                  {scoringAvailable && topScorer ? (
-                    <Badge tone="success">Top: {topScorer.displayName}</Badge>
-                  ) : null}
+                  <div className="flex flex-wrap gap-2">
+                    {leaderboard?.latestCompletedRace ? (
+                      <Badge tone="info">Latest round: {leaderboard.latestCompletedRace.raceName}</Badge>
+                    ) : null}
+                    {scoringAvailable && topScorer ? (
+                      <Badge tone="success">Top: {topScorer.displayName}</Badge>
+                    ) : null}
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <Table ariaLabel="League leaderboard top 10">
-                  <thead>
-                    <tr>
-                      <th className="w-16">Rank</th>
-                      <th>Manager</th>
-                      <th className="text-right">Points</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leaderboardRows.map((entry) => (
-                      <tr key={`${entry.rank}-${entry.displayName}`}>
-                        <td>
-                          <span className="rank-cell">
-                            <span>{entry.rank}</span>
-                            {rankDelta(entry) !== null && (
-                              <span
-                                className={`rank-delta ${
-                                  (rankDelta(entry) as number) > 0
-                                    ? "up"
-                                    : (rankDelta(entry) as number) < 0
-                                      ? "down"
-                                      : "flat"
-                                }`}
-                              >
-                                {(rankDelta(entry) as number) > 0
-                                  ? `+${rankDelta(entry)}`
-                                  : `${rankDelta(entry)}`}
-                              </span>
-                            )}
-                          </span>
-                        </td>
-                        <td>{entry.displayName}</td>
-                        <td className="text-right font-semibold">
-                          {entry.points}
-                        </td>
-                      </tr>
-                    ))}
-                    {leaderboardRows.length === 0 && (
-                      <tr>
-                        <td
-                          colSpan={3}
-                          className="text-center text-slate-500 py-4"
-                        >
-                          No cumulative standings yet
-                        </td>
-                      </tr>
+              <CardContent className="space-y-6">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.95fr)]">
+                  <div className="rounded-[28px] border border-slate-900 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.18),_transparent_34%),linear-gradient(145deg,_#111827_0%,_#0f172a_52%,_#18181b_100%)] p-6 text-white shadow-[0_16px_48px_rgba(15,23,42,0.22)]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
+                      Your championship spot
+                    </p>
+                    <div className="mt-4 flex flex-wrap items-end gap-3">
+                      <p className="font-['Orbitron'] text-4xl font-bold uppercase tracking-tight text-white md:text-5xl">
+                        {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
+                      </p>
+                      {currentUserRow ? (
+                        <Badge className="bg-white/12 text-white" tone="info">
+                          {currentUserRow.displayName}
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/74">
+                      {currentUserRow
+                        ? `You have ${currentUserRow.points} total points after ${currentUserRow.racesScored} scored rounds in ${leagueName}.`
+                        : "Join the fight and score a round to lock in your place on the grid."}
+                    </p>
+                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Gap to leader</p>
+                        <p className="mt-2 font-['Orbitron'] text-xl font-bold text-white">
+                          {currentUserRow ? gapLabel(currentUserRow.gapToLeader) : "—"}
+                        </p>
+                      </div>
+                      <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Gap to next</p>
+                        <p className="mt-2 font-['Orbitron'] text-xl font-bold text-white">
+                          {currentUserRow ? gapLabel(currentUserRow.gapToNext) : "—"}
+                        </p>
+                      </div>
+                      <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Last race haul</p>
+                        <p className="mt-2 font-['Orbitron'] text-xl font-bold text-white">
+                          {currentUserRow ? `${currentUserRow.lastRacePoints} pts` : "—"}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 rounded-[28px] border border-neutral-200 bg-neutral-50 p-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Race movement</p>
+                        <p className="mt-1 text-sm text-slate-600">Changes since the previous scored race.</p>
+                      </div>
+                      <Badge tone={biggestMovers.length > 0 ? "success" : "neutral"}>
+                        {biggestMovers.length > 0 ? "Momentum live" : "No movement yet"}
+                      </Badge>
+                    </div>
+                    {biggestMovers.length > 0 ? (
+                      <div className="space-y-3">
+                        {biggestMovers.map((entry) => (
+                          <div
+                            key={`mover-${entry.userId || entry.displayName}`}
+                            className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-slate-900">{entry.displayName}</p>
+                              <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Now P{entry.rank}</p>
+                            </div>
+                            <div className="flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
+                              <ArrowUpRight className="h-4 w-4" />
+                              +{entry.rankDelta}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-neutral-300 bg-white px-4 py-5 text-sm text-slate-500">
+                        Position changes will appear after the second scored race of the season.
+                      </div>
                     )}
-                  </tbody>
-                </Table>
+                    <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Leader of the paddock</p>
+                      <div className="mt-3 flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-['Orbitron'] text-xl font-bold uppercase text-slate-950">
+                            {topScorer?.displayName ?? "Waiting"}
+                          </p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {topScorer ? `${topScorer.points} pts · ${topScorer.racesScored} rounds scored` : "Standings will populate after the first scored round."}
+                          </p>
+                        </div>
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-300 bg-amber-100 text-amber-700">
+                          <Trophy className="h-5 w-5" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {leaderboardRows.map((entry) => {
+                    const isLeader = entry.rank === 1;
+                    const movement = entry.rankDelta;
+
+                    return (
+                      <div
+                        key={entry.userId || `${entry.rank}-${entry.displayName}`}
+                        className={`rounded-[26px] border px-4 py-4 transition-shadow md:px-5 ${entry.isCurrentUser
+                          ? "border-rose-300 bg-rose-50/70 shadow-[0_18px_42px_rgba(244,63,94,0.12)]"
+                          : "border-neutral-200 bg-white hover:shadow-[0_14px_32px_rgba(15,23,42,0.08)]"}`}
+                      >
+                        <div className="flex flex-wrap items-center gap-4 md:flex-nowrap">
+                          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border text-base font-['Orbitron'] font-bold ${rankChipClass(entry.rank)}`}>
+                            {entry.rank}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate text-base font-semibold text-slate-950 md:text-lg">
+                                {entry.displayName}
+                              </p>
+                              {entry.isCurrentUser ? <Badge tone="info">You</Badge> : null}
+                              {isLeader ? <Badge tone="success">Leader</Badge> : null}
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-500">
+                              <span>{entry.racesScored} rounds</span>
+                              <span>Last race {entry.lastRacePoints} pts</span>
+                              <span>{entry.rank === 1 ? "Front row" : `Leader ${gapLabel(entry.gapToLeader)}`}</span>
+                              {entry.rank > 1 ? <span>Next {gapLabel(entry.gapToNext)}</span> : null}
+                            </div>
+                          </div>
+
+                          <div className="ml-auto flex items-center gap-3 md:justify-end">
+                            <div
+                              className={`flex items-center gap-2 rounded-full px-3 py-1 text-sm font-semibold ${movement > 0
+                                ? "bg-emerald-100 text-emerald-700"
+                                : movement < 0
+                                  ? "bg-rose-100 text-rose-700"
+                                  : "bg-neutral-100 text-slate-600"}`}
+                            >
+                              {movement > 0 ? (
+                                <ArrowUpRight className="h-4 w-4" />
+                              ) : movement < 0 ? (
+                                <ArrowDownRight className="h-4 w-4" />
+                              ) : (
+                                <Minus className="h-4 w-4" />
+                              )}
+                              <span>
+                                {movement > 0 ? `+${movement}` : movement < 0 ? `${movement}` : "Flat"}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-['Orbitron'] text-2xl font-bold text-slate-950">
+                                {entry.points}
+                              </p>
+                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                                total pts
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {leaderboardRows.length === 0 ? (
+                    <div className="rounded-[26px] border border-dashed border-neutral-300 bg-neutral-50 px-6 py-10 text-center text-sm text-slate-500">
+                      No cumulative standings yet. Score a round to light up the championship table.
+                    </div>
+                  ) : null}
+                </div>
               </CardContent>
             </Card>
 
