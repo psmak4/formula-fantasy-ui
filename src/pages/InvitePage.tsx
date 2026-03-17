@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { ApiError, apiClient } from "@/api/apiClient";
@@ -8,13 +8,25 @@ import { Button } from "@/components/ui/Button";
 import { HeroBackdrop } from "@/components/HeroBackdrop";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
+type InvitePreviewResponse = {
+  inviteId?: string;
+  token?: string;
+  leagueId?: string;
+  leagueName?: string;
+  leagueVisibility?: "private" | "public";
+  memberCount?: number;
+  status?: "pending" | "accepted" | "revoked" | "expired";
+  expiresAt?: string;
+  createdAt?: string;
+};
+
 type JoinInviteResponse = {
   leagueId?: string;
   status?: "accepted";
   joined?: boolean;
 };
 
-function getErrorMessage(error: unknown): string {
+function getInvitePreviewError(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.code === "invite_not_found") {
       return "This invite link is invalid.";
@@ -24,7 +36,79 @@ function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
+  return "Unable to load this invite link.";
+}
+
+function getJoinInviteError(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.code === "invite_not_found") {
+      return "This invite link is invalid.";
+    }
+    if (error.code === "invite_expired") {
+      return "This invite link has expired.";
+    }
+    if (error.code === "invite_not_pending") {
+      return "This invite link is no longer available.";
+    }
+    return error.message;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
   return "Unable to join league from this invite link.";
+}
+
+function formatDateLabel(value?: string): string {
+  if (!value) return "Not set";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not set";
+
+  return date.toLocaleString();
+}
+
+function getInviteBadgeTone(status: InvitePreviewResponse["status"]) {
+  switch (status) {
+    case "pending":
+      return "border-emerald-300 bg-emerald-50 text-emerald-700";
+    case "accepted":
+      return "border-sky-300 bg-sky-50 text-sky-700";
+    case "expired":
+    case "revoked":
+      return "border-red-300 bg-red-50 text-red-700";
+    default:
+      return "border-neutral-300 bg-neutral-50 text-neutral-700";
+  }
+}
+
+function getInviteBadgeLabel(status: InvitePreviewResponse["status"]) {
+  switch (status) {
+    case "pending":
+      return "Ready To Join";
+    case "accepted":
+      return "Invite Used";
+    case "expired":
+      return "Invite Expired";
+    case "revoked":
+      return "Invite Revoked";
+    default:
+      return "League Invite";
+  }
+}
+
+function getInviteTitle(status: InvitePreviewResponse["status"]) {
+  switch (status) {
+    case "pending":
+      return "Your Seat Is Waiting";
+    case "accepted":
+      return "Invite Already Used";
+    case "expired":
+      return "Invite Expired";
+    case "revoked":
+      return "Invite Revoked";
+    default:
+      return "League Invite";
+  }
 }
 
 export function InvitePage() {
@@ -32,15 +116,25 @@ export function InvitePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { data: session, isPending } = authClient.useSession();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
 
   const [result, setResult] = useState<JoinInviteResponse | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
 
   const invitePath = useMemo(
     () => `${location.pathname}${location.search}`,
     [location.pathname, location.search],
   );
+
+  const invitePreviewQuery = useQuery({
+    queryKey: ["invite-preview", token],
+    enabled: Boolean(token),
+    queryFn: async () => {
+      return apiClient.get<InvitePreviewResponse>(
+        `/invites/${encodeURIComponent(token ?? "")}`,
+      );
+    },
+  });
 
   const joinInviteMutation = useMutation({
     mutationFn: async (inviteToken: string) => {
@@ -50,50 +144,58 @@ export function InvitePage() {
     },
     onSuccess: async (data) => {
       setResult(data);
-      setErrorMessage(null);
-      await queryClient.invalidateQueries({ queryKey: ["leagues-page"] });
+      setJoinErrorMessage(null);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["leagues-page"] }),
+        queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] }),
+        queryClient.invalidateQueries({ queryKey: ["invite-preview", token] }),
+      ]);
     },
     onError: (err: unknown) => {
-      setErrorMessage(getErrorMessage(err));
+      setJoinErrorMessage(getJoinInviteError(err));
     },
   });
 
-  useEffect(() => {
-    if (isPending) {
+  const preview = invitePreviewQuery.data ?? null;
+  const previewErrorMessage = invitePreviewQuery.error
+    ? getInvitePreviewError(invitePreviewQuery.error)
+    : null;
+
+  const leagueId = result?.leagueId ?? preview?.leagueId;
+  const leagueName = preview?.leagueName ?? "Private League";
+  const memberCount = preview?.memberCount ?? 0;
+  const inviteStatus = preview?.status;
+  const isLoading = sessionPending || invitePreviewQuery.isLoading;
+  const isJoining = joinInviteMutation.isPending;
+  const joinedExisting = result?.joined === false;
+  const isInviteJoinable = inviteStatus === "pending";
+
+  const primaryButtonLabel = !session?.user
+    ? "Sign In To Join"
+    : isJoining
+      ? "Joining League..."
+      : isInviteJoinable
+        ? "Join League"
+        : "Open My Leagues";
+
+  function handlePrimaryAction() {
+    if (!token) {
+      setJoinErrorMessage("Invite token is missing.");
       return;
     }
 
     if (!session?.user) {
-      navigate(`/sign-in?redirect=${encodeURIComponent(invitePath)}`, {
-        replace: true,
-      });
+      navigate(`/sign-in?redirect=${encodeURIComponent(invitePath)}`);
       return;
     }
 
-    if (!token) {
-      setErrorMessage("Invite token is missing.");
-      return;
-    }
-
-    if (joinInviteMutation.isPending || result || errorMessage) {
+    if (!isInviteJoinable) {
+      navigate(leagueId ? `/league/${leagueId}` : "/leagues");
       return;
     }
 
     void joinInviteMutation.mutateAsync(token);
-  }, [
-    errorMessage,
-    invitePath,
-    isPending,
-    joinInviteMutation,
-    navigate,
-    result,
-    session,
-    token,
-  ]);
-
-  const leagueId = result?.leagueId;
-  const isJoining = isPending || joinInviteMutation.isPending;
-  const joinedExisting = result?.joined === false;
+  }
 
   return (
     <section className="w-full">
@@ -113,9 +215,9 @@ export function InvitePage() {
                   Join The Grid
                 </h1>
                 <p className="max-w-2xl text-base text-slate-300 md:text-lg">
-                  This invite drops you straight into a private league. Once you
-                  are in, the next job is simple: lock your card before the race
-                  goes live.
+                  See the league first, then jump straight into the competition.
+                  One good invite should get you from link to leaderboard with as
+                  little friction as possible.
                 </p>
               </div>
 
@@ -125,7 +227,7 @@ export function InvitePage() {
                     Step 1
                   </p>
                   <p className="mt-2 text-lg font-semibold text-white">
-                    Join League
+                    Check The League
                   </p>
                 </div>
                 <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
@@ -133,7 +235,7 @@ export function InvitePage() {
                     Step 2
                   </p>
                   <p className="mt-2 text-lg font-semibold text-white">
-                    Build Your Card
+                    Join In One Click
                   </p>
                 </div>
                 <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
@@ -141,7 +243,7 @@ export function InvitePage() {
                     Step 3
                   </p>
                   <p className="mt-2 text-lg font-semibold text-white">
-                    Beat Your League
+                    Lock Your Card
                   </p>
                 </div>
               </div>
@@ -152,54 +254,54 @@ export function InvitePage() {
                 <Badge
                   variant="outline"
                   className={`w-fit rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
-                    isJoining
+                    isLoading
                       ? "border-sky-300 bg-sky-50 text-sky-700"
-                      : errorMessage
+                      : previewErrorMessage || joinErrorMessage
                         ? "border-red-300 bg-red-50 text-red-700"
                         : result
                           ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                          : "border-neutral-300 bg-neutral-50 text-neutral-700"
+                          : getInviteBadgeTone(inviteStatus)
                   }`}
                 >
-                  {isJoining
-                    ? "Processing"
-                    : errorMessage
+                  {isLoading
+                    ? "Loading Invite"
+                    : previewErrorMessage || joinErrorMessage
                       ? "Invite Failed"
                       : result
                         ? "Grid Access Confirmed"
-                        : "Stand By"}
+                        : getInviteBadgeLabel(inviteStatus)}
                 </Badge>
                 <CardTitle className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight">
-                  {isJoining
-                    ? "Joining League"
-                    : errorMessage
+                  {isLoading
+                    ? "Reading Invite"
+                    : previewErrorMessage || joinErrorMessage
                       ? "Invite Unavailable"
-                      : joinedExisting
-                        ? "Already On The Grid"
-                        : result
-                          ? "Seat Secured"
-                          : "League Invite"}
+                      : result
+                        ? joinedExisting
+                          ? "Already On The Grid"
+                          : "Seat Secured"
+                        : getInviteTitle(inviteStatus)}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-5">
-                {isJoining ? (
+                {isLoading ? (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      Syncing account and league access
+                      Syncing invite details
                     </p>
                     <div className="h-2 overflow-hidden rounded-full bg-slate-200">
                       <div className="h-full w-2/3 animate-pulse rounded-full bg-red-600" />
                     </div>
                     <p className="text-slate-600">
-                      Finalizing your place in the league.
+                      Pulling the league details and invite status.
                     </p>
                   </div>
                 ) : null}
 
-                {errorMessage ? (
+                {previewErrorMessage || joinErrorMessage ? (
                   <>
                     <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      {errorMessage}
+                      {previewErrorMessage ?? joinErrorMessage}
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <Button asChild className="bg-black text-white hover:bg-neutral-800">
@@ -209,49 +311,90 @@ export function InvitePage() {
                   </>
                 ) : null}
 
-                {result && leagueId ? (
+                {!isLoading && !previewErrorMessage && preview ? (
                   <>
                     <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Status
+                        League
                       </p>
-                      <p className="mt-2 text-lg font-semibold text-black">
-                        {joinedExisting
-                          ? "You were already in this league."
-                          : "You are now in the league."}
+                      <p className="mt-2 text-2xl font-semibold text-black">
+                        {leagueName}
                       </p>
                       <p className="mt-2 text-sm text-slate-600">
-                        Head to the league page to check the next race, lock a
-                        card, and track the leaderboard.
+                        {(preview.leagueVisibility ?? "private").toUpperCase()} league • {memberCount} manager{memberCount === 1 ? "" : "s"}
                       </p>
                     </div>
 
                     <div className="grid gap-3 sm:grid-cols-2">
                       <div className="rounded-3xl border border-neutral-200 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          Next Move
+                          Invite Status
                         </p>
                         <p className="mt-2 text-base font-semibold text-black">
-                          Open the league hub
+                          {inviteStatus === "pending"
+                            ? "Ready to join now"
+                            : inviteStatus === "accepted"
+                              ? "Invite has already been used"
+                              : inviteStatus === "expired"
+                                ? "Invite window has closed"
+                                : "Invite is no longer active"}
                         </p>
                       </div>
                       <div className="rounded-3xl border border-neutral-200 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          Goal
+                          Expires
                         </p>
                         <p className="mt-2 text-base font-semibold text-black">
-                          Submit your prediction card before lock
+                          {formatDateLabel(preview.expiresAt)}
                         </p>
                       </div>
                     </div>
 
+                    {result ? (
+                      <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                          Status
+                        </p>
+                        <p className="mt-2 text-lg font-semibold text-black">
+                          {joinedExisting
+                            ? "You were already in this league."
+                            : "You are now in the league."}
+                        </p>
+                        <p className="mt-2 text-sm text-slate-600">
+                          Head to the league page to check the next race, lock a
+                          card, and track the leaderboard.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="rounded-3xl border border-neutral-200 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          What happens next
+                        </p>
+                        <p className="mt-2 text-base font-semibold text-black">
+                          Join the league, open the hub, then submit your race
+                          card before predictions lock.
+                        </p>
+                      </div>
+                    )}
+
                     <div className="flex flex-wrap gap-3">
-                      <Button asChild className="bg-red-600 text-white hover:bg-red-700">
-                        <Link to={`/league/${leagueId}`}>Open League</Link>
+                      <Button
+                        type="button"
+                        className="bg-red-600 text-white hover:bg-red-700"
+                        disabled={isJoining}
+                        onClick={handlePrimaryAction}
+                      >
+                        {primaryButtonLabel}
                       </Button>
-                      <Button asChild variant="secondary">
-                        <Link to="/leagues">View My Leagues</Link>
-                      </Button>
+                      {leagueId ? (
+                        <Button asChild variant="secondary">
+                          <Link to={`/league/${leagueId}`}>Open League</Link>
+                        </Button>
+                      ) : (
+                        <Button asChild variant="secondary">
+                          <Link to="/leagues">View My Leagues</Link>
+                        </Button>
+                      )}
                     </div>
                   </>
                 ) : null}
@@ -276,11 +419,11 @@ export function InvitePage() {
             <Card className="rounded-4xl">
               <CardContent className="space-y-2 py-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Private Leagues
+                  Fast Join
                 </p>
                 <p className="text-sm text-slate-600">
-                  Every league is invite-only for MVP, which keeps groups small
-                  and competitive.
+                  One clean invite link now shows the league first so people know
+                  exactly what they are joining.
                 </p>
               </CardContent>
             </Card>
@@ -298,11 +441,11 @@ export function InvitePage() {
             <Card className="rounded-4xl">
               <CardContent className="space-y-2 py-6">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Race Result
+                  Beat Your League
                 </p>
                 <p className="text-sm text-slate-600">
-                  Leaderboards update from the race data once the weekend can be
-                  finalized.
+                  Score points from live race outcomes and climb the standings
+                  against your group every weekend.
                 </p>
               </CardContent>
             </Card>
