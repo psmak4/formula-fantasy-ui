@@ -23,6 +23,7 @@ function initials(name?: string | null): string {
 export function AppShell() {
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
+  const isImpersonating = Boolean((session?.session as { impersonatedBy?: string } | undefined)?.impersonatedBy);
 
   const displayName = useMemo(
     () => user?.name ?? user?.email ?? "Manager",
@@ -35,6 +36,14 @@ export function AppShell() {
       return "relative text-white after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:bg-red-600";
     }
     return "relative text-neutral-300 hover:text-white";
+  };
+
+  const stopImpersonating = () => {
+    void authClient
+      .$fetch("/admin/stop-impersonating", { method: "POST" })
+      .then(() => {
+        window.location.assign("/admin/users");
+      });
   };
 
   return (
@@ -100,6 +109,19 @@ export function AppShell() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+                  {isImpersonating ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={(event) => {
+                          event.preventDefault();
+                          stopImpersonating();
+                        }}
+                      >
+                        Stop impersonating
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link to="/profile">Profile</Link>
@@ -136,6 +158,22 @@ export function AppShell() {
           </div>
         </div>
       </header>
+
+      {isImpersonating ? (
+        <div className="border-b border-amber-200 bg-amber-50">
+          <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-2 text-sm text-amber-900">
+            <span>You are impersonating another user.</span>
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-amber-300 bg-white text-amber-900 hover:bg-amber-100"
+              onClick={stopImpersonating}
+            >
+              Stop impersonating
+            </Button>
+          </div>
+        </div>
+      ) : null}
 
       <main
         className="w-full min-h-[calc(100svh-133px)]"

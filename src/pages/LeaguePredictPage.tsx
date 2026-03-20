@@ -80,6 +80,12 @@ type NextRaceResponse = {
 
 type PredictionWindowStatus = "open" | "locked" | "opening_soon";
 
+type LoadIssue = {
+  title: string;
+  message: string;
+  tone: "danger" | "warning";
+};
+
 type DriverPickerProps = {
   label: string;
   value: string;
@@ -109,7 +115,10 @@ function driverName(driver: Driver): string {
 
 function driverDisplayLabel(driver: Driver): string {
   const code = driver.code ? ` (${driver.code})` : "";
-  return `${driverName(driver)}${code}`;
+  const constructorName =
+    driver.constructorName ?? driver.constructor ?? driver.teamName ?? driver.team;
+  const number = driver.number ? ` #${driver.number}` : "";
+  return `${driverName(driver)}${code}${number}${constructorName ? ` · ${constructorName}` : ""}`;
 }
 
 function raceDisplayName(nextRace: NextRaceResponse | undefined): string {
@@ -227,31 +236,88 @@ export function LeaguePredictPage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading, error } = useQuery({
-    queryKey: ["league-predict", leagueId],
+  const driversQuery = useQuery({
+    queryKey: ["league-predict", leagueId, "drivers"],
+    queryFn: () => apiClient.get<DriversResponse>("/f1/next-race/drivers"),
+  });
+
+  const entryQuery = useQuery({
+    queryKey: ["league-predict", leagueId, "entry"],
     enabled: Boolean(leagueId),
     queryFn: async () => {
       if (!leagueId) {
         throw new Error("Missing league ID");
       }
-      const [driversData, entryData, nextRaceData] = await Promise.all([
-        apiClient.get<DriversResponse>("/f1/next-race/drivers"),
-        apiClient
-          .get<EntryResponse>(`/leagues/${leagueId}/races/next/entry/me`)
-          .catch(() => ({}) as EntryResponse),
-        apiClient.get<NextRaceResponse>("/f1/next-race"),
-      ]);
-
-      return {
-        drivers: driversData ?? [],
-        entry: entryData,
-        nextRace: nextRaceData
-      };
-    }
+      return apiClient.get<EntryResponse>(`/leagues/${leagueId}/races/next/entry/me`);
+    },
+    retry: 1,
   });
-  const drivers = data?.drivers ?? [];
-  const raceName = raceDisplayName(data?.nextRace);
-  const raceStart = raceStartLabel(data?.nextRace);
+
+  const nextRaceQuery = useQuery({
+    queryKey: ["league-predict", leagueId, "next-race"],
+    queryFn: () => apiClient.get<NextRaceResponse>("/f1/next-race"),
+  });
+
+  const drivers = driversQuery.data ?? [];
+  const entryData = entryQuery.data;
+  const nextRaceData = nextRaceQuery.data;
+  const loading =
+    driversQuery.isLoading || entryQuery.isLoading || nextRaceQuery.isLoading;
+  const pageReady = Boolean(nextRaceData || entryData || drivers.length > 0);
+  const criticalLoadError = !pageReady
+    ? nextRaceQuery.error ?? driversQuery.error ?? entryQuery.error ?? null
+    : null;
+  const loadIssues = useMemo<LoadIssue[]>(() => {
+    const issues: LoadIssue[] = [];
+
+    if (driversQuery.error) {
+      issues.push({
+        title: "Driver pool unavailable",
+        message: formatServerError(
+          driversQuery.error,
+          "We couldn't load the next-race driver list.",
+        ),
+        tone: "danger",
+      });
+    }
+
+    if (entryQuery.error) {
+      issues.push({
+        title: "Saved card unavailable",
+        message: formatServerError(
+          entryQuery.error,
+          "We couldn't load your current saved card. You can still build a new one before saving.",
+        ),
+        tone: "warning",
+      });
+    }
+
+    if (nextRaceQuery.error) {
+      issues.push({
+        title: "Race status unavailable",
+        message: formatServerError(
+          nextRaceQuery.error,
+          "We couldn't confirm the race schedule or prediction window.",
+        ),
+        tone: "danger",
+      });
+    }
+
+    return issues;
+  }, [driversQuery.error, entryQuery.error, nextRaceQuery.error]);
+
+  const hasBlockingDriversError = Boolean(driversQuery.error) || drivers.length === 0;
+  const raceName = raceDisplayName(nextRaceData);
+  const raceStart = raceStartLabel(nextRaceData);
+  const canRefresh = !driversQuery.isFetching && !entryQuery.isFetching && !nextRaceQuery.isFetching;
+
+  async function refreshPredictionData() {
+    await Promise.all([
+      driversQuery.refetch(),
+      entryQuery.refetch(),
+      nextRaceQuery.refetch(),
+    ]);
+  }
 
   const [podium, setPodium] = useState<string[]>(["", "", ""]);
   const [fastestLapDriverId, setFastestLapDriverId] = useState("");
@@ -283,14 +349,14 @@ export function LeaguePredictPage() {
   }
 
   useEffect(() => {
-    if (!data) {
+    if (!entryData && !nextRaceData) {
       return;
     }
-    const entryData = data.entry;
-    const nextRaceData = data.nextRace;
+    const entry = entryData ?? {};
+    const nextRace = nextRaceData ?? {};
 
-    const existingPodium = entryData.picks
-      ? [entryData.picks.P1, entryData.picks.P2, entryData.picks.P3]
+    const existingPodium = entry.picks
+      ? [entry.picks.P1, entry.picks.P2, entry.picks.P3]
       : [];
 
     setPodium([
@@ -298,23 +364,23 @@ export function LeaguePredictPage() {
       existingPodium[1] ?? "",
       existingPodium[2] ?? "",
     ]);
-    setFastestLapDriverId(entryData.picks?.FASTEST_LAP ?? "");
-    setBiggestGainerDriverId(entryData.picks?.BIGGEST_GAINER ?? "");
-    setSafetyCarDeployed(entryData.picks?.SAFETY_CAR ?? false);
+    setFastestLapDriverId(entry.picks?.FASTEST_LAP ?? "");
+    setBiggestGainerDriverId(entry.picks?.BIGGEST_GAINER ?? "");
+    setSafetyCarDeployed(entry.picks?.SAFETY_CAR ?? false);
     setClassifiedFinishersBucket(
-      entryData.picks?.CLASSIFIED_FINISHERS ?? "",
+      entry.picks?.CLASSIFIED_FINISHERS ?? "",
     );
 
     const raceOpenAt =
-      entryData.window?.openAt ??
-      nextRaceData.entryOpensAt ??
-      nextRaceData.predictionOpensAt ??
-      nextRaceData.openAt;
+      entry.window?.openAt ??
+      nextRace.entryOpensAt ??
+      nextRace.predictionOpensAt ??
+      nextRace.openAt;
     const raceCloseAt =
-      entryData.window?.lockAt ??
-      nextRaceData.entryClosesAt ??
-      nextRaceData.predictionClosesAt ??
-      nextRaceData.lockAt;
+      entry.window?.lockAt ??
+      nextRace.entryClosesAt ??
+      nextRace.predictionClosesAt ??
+      nextRace.lockAt;
     const raceOpenTime = raceOpenAt ? new Date(raceOpenAt).getTime() : null;
     const raceCloseTime = raceCloseAt
       ? new Date(raceCloseAt).getTime()
@@ -330,10 +396,10 @@ export function LeaguePredictPage() {
       !Number.isNaN(raceOpenTime) &&
       now < raceOpenTime;
     const lockedByApi =
-      entryData.window?.isLocked === true ||
-      nextRaceData.predictionLocked === true ||
-      nextRaceData.entriesLocked === true ||
-      nextRaceData.lockStatus === "locked";
+      entry.window?.isLocked === true ||
+      nextRace.predictionLocked === true ||
+      nextRace.entriesLocked === true ||
+      nextRace.lockStatus === "locked";
 
     setOpensAt(
       raceOpenTime !== null && !Number.isNaN(raceOpenTime)
@@ -362,7 +428,7 @@ export function LeaguePredictPage() {
           : "Open for entries",
       );
     }
-  }, [data]);
+  }, [entryData, nextRaceData]);
 
   const missingRequiredPick = useMemo(
     () =>
@@ -428,7 +494,13 @@ export function LeaguePredictPage() {
 
   const saveEntryMutation = useMutation({
     mutationFn: async () => {
-      if (!leagueId || !isOpen || missingRequiredPick || duplicatePodiumPick) {
+      if (
+        !leagueId ||
+        !isOpen ||
+        missingRequiredPick ||
+        duplicatePodiumPick ||
+        hasBlockingDriversError
+      ) {
         return;
       }
       await apiClient.put(`/leagues/${leagueId}/races/next/entry/me`, {
@@ -446,7 +518,7 @@ export function LeaguePredictPage() {
     },
     onSuccess: async () => {
       setSaveState("saved");
-      await queryClient.invalidateQueries({ queryKey: ["league-predict", leagueId] });
+      await queryClient.invalidateQueries({ queryKey: ["league-predict", leagueId, "entry"] });
       await queryClient.invalidateQueries({ queryKey: ["league-page", leagueId] });
       await queryClient.invalidateQueries({ queryKey: ["league-leaderboard"] });
     },
@@ -458,7 +530,15 @@ export function LeaguePredictPage() {
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (!leagueId || !isOpen || missingRequiredPick || duplicatePodiumPick) return;
+    if (
+      !leagueId ||
+      !isOpen ||
+      missingRequiredPick ||
+      duplicatePodiumPick ||
+      hasBlockingDriversError
+    ) {
+      return;
+    }
 
     setSaveState("saving");
     setSubmitError(null);
@@ -578,7 +658,7 @@ export function LeaguePredictPage() {
         </div>
 
         {/* Loading State */}
-        {loading ? (
+        {loading && !pageReady ? (
           <Card className="animate-pulse bg-background">
             <CardContent className="py-8">
               <div className="h-6 w-1/3 rounded bg-neutral-200" />
@@ -587,16 +667,42 @@ export function LeaguePredictPage() {
         ) : null}
 
         {/* Error State */}
-        {error ? (
+        {criticalLoadError ? (
           <Card className="bg-red-50">
-            <CardContent className="py-4">
-              <Badge tone="danger">{formatServerError(error, "Failed to load prediction page")}</Badge>
+            <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <Badge tone="danger">
+                {formatServerError(criticalLoadError, "Failed to load prediction page")}
+              </Badge>
+              <Button variant="outline" onClick={() => void refreshPredictionData()} disabled={!canRefresh}>
+                Retry load
+              </Button>
             </CardContent>
           </Card>
         ) : null}
 
+        {pageReady && loadIssues.length > 0 ? (
+          <div className="space-y-3">
+            {loadIssues.map((issue) => (
+              <Card
+                key={issue.title}
+                className={issue.tone === "danger" ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"}
+              >
+                <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-slate-900">{issue.title}</p>
+                    <p className="text-sm text-slate-600">{issue.message}</p>
+                  </div>
+                  <Button variant="outline" onClick={() => void refreshPredictionData()} disabled={!canRefresh}>
+                    Retry
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : null}
+
         {/* Prediction Form */}
-        {!loading && !error && (
+        {pageReady && !criticalLoadError && (
           <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
             <div className="space-y-6">
             <Card className="bg-background transition hover:border-neutral-400">
@@ -646,7 +752,7 @@ export function LeaguePredictPage() {
                     value={podium[0]}
                     drivers={drivers}
                     excludedDriverIds={[podium[1], podium[2]].filter(Boolean)}
-                    disabled={!isOpen || saveState === "saving"}
+                    disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}
                     onChange={(value) =>
                       setPodium((prev) => [value, prev[1], prev[2]])
                     }
@@ -656,7 +762,7 @@ export function LeaguePredictPage() {
                     value={podium[1]}
                     drivers={drivers}
                     excludedDriverIds={[podium[0], podium[2]].filter(Boolean)}
-                    disabled={!isOpen || saveState === "saving"}
+                    disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}
                     onChange={(value) =>
                       setPodium((prev) => [prev[0], value, prev[2]])
                     }
@@ -666,7 +772,7 @@ export function LeaguePredictPage() {
                     value={podium[2]}
                     drivers={drivers}
                     excludedDriverIds={[podium[0], podium[1]].filter(Boolean)}
-                    disabled={!isOpen || saveState === "saving"}
+                    disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}
                     onChange={(value) =>
                       setPodium((prev) => [prev[0], prev[1], value])
                     }
@@ -733,18 +839,18 @@ export function LeaguePredictPage() {
                     label="Fastest Lap"
                     value={fastestLapDriverId}
                     drivers={drivers}
-                    disabled={!isOpen || saveState === "saving"}
+                    disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}
                     onChange={setFastestLapDriverId}
                   />
                   <DriverPicker
                     label="Biggest Gainer"
                     value={biggestGainerDriverId}
                     drivers={drivers}
-                    disabled={!isOpen || saveState === "saving"}
+                    disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}
                     onChange={setBiggestGainerDriverId}
                   />
                 </div>
-                <fieldset className="space-y-2" disabled={!isOpen || saveState === "saving"}>
+                <fieldset className="space-y-2" disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}>
                   <legend className="text-sm font-medium text-slate-700">
                     Classified Finishers
                   </legend>
@@ -803,12 +909,14 @@ export function LeaguePredictPage() {
                       <li>{missingRequiredPick ? "Complete every required slot." : "All required slots filled."}</li>
                       <li>{duplicatePodiumPick ? "Podium picks must be unique." : "Podium picks are unique."}</li>
                       <li>{isOpen ? "Prediction window is open." : "Prediction window is not open."}</li>
+                      <li>{hasBlockingDriversError ? "Driver pool needs to reload before you can save." : "Driver pool is ready."}</li>
                     </ul>
                   </div>
                   <Button
                     type="submit"
                     className="w-full"
                     disabled={
+                      hasBlockingDriversError ||
                       !isOpen ||
                       missingRequiredPick ||
                       duplicatePodiumPick ||
@@ -854,6 +962,7 @@ export function LeaguePredictPage() {
             </div>
           </form>
         )}
+
       </div>
     </section>
   );

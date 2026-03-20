@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { ArrowDownRight, ArrowUpRight, Minus, Trophy } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
@@ -155,6 +155,8 @@ type EntrySummaryRow = {
   value: string;
 };
 
+const LEADERBOARD_PAGE_SIZE = 25;
+
 function resolveInviteLink(data: InviteResponse): string | null {
   const link = data.inviteUrl ?? data.inviteLink ?? data.url ?? data.link;
   if (link) return link;
@@ -258,6 +260,13 @@ function formatDateTimeLabel(value?: string): string {
   }).format(date);
 }
 
+function leagueInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "L";
+  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
+}
+
 function formatDuration(ms?: number): string {
   if (typeof ms !== "number" || !Number.isFinite(ms) || ms <= 0) {
     return "0m";
@@ -351,6 +360,7 @@ export function LeaguePage() {
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
     "idle",
   );
+  const [currentPage, setCurrentPage] = useState(1);
 
   const {
     data,
@@ -444,12 +454,11 @@ export function LeaguePage() {
   }, []);
 
   const leaderboardRows = useMemo(
-    () => normalizeLeaderboardRows(leaderboard, currentUserId).slice(0, 10),
+    () => normalizeLeaderboardRows(leaderboard, currentUserId),
     [currentUserId, leaderboard],
   );
   const topScorer = leaderboardRows[0];
   const scoringAvailable = leaderboard?.scoringAvailable ?? leaderboard?.scoring?.available ?? false;
-  const runnerUp = leaderboardRows[1];
   const currentUserRow = leaderboardRows.find((entry) => entry.isCurrentUser) ?? null;
   const biggestMovers = useMemo(
     () => leaderboardRows
@@ -512,6 +521,14 @@ export function LeaguePage() {
     () => buildNextRaceWindowSummary(nextRace, nowMs),
     [nextRace, nowMs],
   );
+  const totalPages = Math.max(
+    1,
+    Math.ceil(leaderboardRows.length / LEADERBOARD_PAGE_SIZE),
+  );
+  const pagedLeaderboardRows = useMemo(() => {
+    const start = (currentPage - 1) * LEADERBOARD_PAGE_SIZE;
+    return leaderboardRows.slice(start, start + LEADERBOARD_PAGE_SIZE);
+  }, [currentPage, leaderboardRows]);
 
   const orderedMembers = useMemo(() => {
     return [...members].sort((left, right) => {
@@ -524,6 +541,16 @@ export function LeaguePage() {
       return leftName.localeCompare(rightName);
     });
   }, [members]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [leagueId]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   const createInviteMutation = useMutation({
     mutationFn: async () => {
@@ -559,7 +586,7 @@ export function LeaguePage() {
   }
 
   return (
-    <section className="pb-12 pt-20">
+    <section className="bg-[linear-gradient(180deg,#f6f3ee_0%,#f3eee7_100%)] pb-12 pt-14">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -570,134 +597,112 @@ export function LeaguePage() {
         }}
       />
       <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
-          <Card className="overflow-hidden border-neutral-900 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.22),_transparent_35%),linear-gradient(140deg,_#121212_0%,_#0f172a_52%,_#18181b_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.26)]">
-            <CardHeader className="space-y-5">
+        <Card className="overflow-hidden border-[#d7d0c7] bg-white shadow-[0_18px_44px_rgba(15,23,42,0.05)]">
+          <CardContent className="grid gap-6 px-6 py-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.9fr)] lg:px-8">
+            <div className="space-y-5">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-white/12 text-white" tone="info">
-                  Private League
-                </Badge>
-                <Badge className="bg-white/12 text-white" tone="info">
-                  {members.length} managers
-                </Badge>
-                {leaderboard?.latestCompletedRace ? (
-                  <Badge className="bg-emerald-200 text-emerald-950" tone="success">
-                    Last scored: {leaderboard.latestCompletedRace.raceName ?? "Latest round"}
-                  </Badge>
-                ) : (
-                  <Badge className="bg-amber-200 text-amber-950" tone="warning">
-                    No scored rounds yet
-                  </Badge>
-                )}
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1d4ed8] text-lg font-black text-white">
+                  {leagueInitials(leagueName)}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight text-black md:text-4xl">
+                    {leagueName}
+                  </p>
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
+                    <Badge className="rounded-full" tone="info">
+                      Private league
+                    </Badge>
+                    <Badge className="rounded-full" tone="neutral">
+                      {members.length} managers
+                    </Badge>
+                    {leaderboard?.seasonYear ? (
+                      <Badge className="rounded-full" tone="neutral">
+                        {leaderboard.seasonYear} season
+                      </Badge>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-              <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.36em] text-white/60">
-                  Race Control
-                </p>
-                <h2 className="font-['Orbitron'] text-4xl font-bold uppercase tracking-tight text-white md:text-5xl">
-                  {leagueName}
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-white/72 md:text-base">
-                  Track the full championship table, review the latest scored round, and lock in your next card before the window closes.
-                </p>
-              </div>
+
+              <p className="max-w-3xl text-sm leading-6 text-slate-600 md:text-base">
+                Championship standings for the full league. Keep this page focused on
+                rank, movement, and total points, then jump out to predictions or race
+                reviews when needed.
+              </p>
+
               <div className="flex flex-wrap gap-3">
-                {isMember ? (
-                  <>
-                    {isOwner ? (
-                      <Button onClick={handleCreateInvite}>
-                        {createInviteMutation.isPending
-                          ? "Generating invite..."
-                          : "Share Invite"}
-                      </Button>
-                    ) : null}
-                    <Button asChild variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white">
-                      <Link to={`/league/${leagueId}/predict`}>
-                        {entryLocked ? "Review Entry" : "Make Picks"}
-                      </Link>
-                    </Button>
-                    {leaderboard?.latestCompletedRace?.raceId ? (
-                      <Button asChild variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white">
-                        <Link to={`/league/${leagueId}/races/${leaderboard.latestCompletedRace.raceId}/leaderboard`}>
-                          View Latest Results
-                        </Link>
-                      </Button>
-                    ) : null}
-                    {!isOwner ? (
-                      <div className="rounded-2xl border border-white/15 bg-white/6 px-4 py-3 text-sm text-white/78">
-                        Invite links are managed by the league owner.
-                      </div>
-                    ) : null}
-                  </>
-                ) : (
-                  <div className="rounded-2xl border border-white/15 bg-white/6 px-4 py-3 text-sm text-white/78">
-                    Join from an invite link. Direct join from the league page is not supported in MVP.
-                  </div>
-                )}
+                {isOwner ? (
+                  <Button
+                    onClick={handleCreateInvite}
+                    disabled={!isMember || createInviteMutation.isPending}
+                    className="rounded-full"
+                  >
+                    {createInviteMutation.isPending
+                      ? "Generating invite..."
+                      : "Share invite"}
+                  </Button>
+                ) : null}
+                <Button asChild variant="outline" className="rounded-full border-2 border-black px-5">
+                  <Link to={`/league/${leagueId}/predict`}>
+                    {entryLocked ? "Review entry" : "Make predictions"}
+                  </Link>
+                </Button>
+                {leaderboard?.latestCompletedRace?.raceId ? (
+                  <Button asChild variant="outline" className="rounded-full px-5">
+                    <Link
+                      to={`/league/${leagueId}/races/${leaderboard.latestCompletedRace.raceId}/review`}
+                    >
+                      Last round details
+                    </Link>
+                  </Button>
+                ) : null}
               </div>
-            </CardHeader>
-          </Card>
+            </div>
 
-          <Card className="border-neutral-300 bg-white/96">
-            <CardHeader className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.18em] text-slate-900">
-                  Battle Snapshot
-                </CardTitle>
-                {topScorer ? (
-                  <Badge tone="success">Season live</Badge>
-                ) : (
-                  <Badge tone="warning">Grid forming</Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Championship leader
-                  </p>
-                  <p className="mt-2 font-['Orbitron'] text-2xl font-bold uppercase text-slate-950">
-                    {topScorer?.displayName ?? "No leader yet"}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {topScorer ? `${topScorer.points} pts` : "Standings will populate after the first scored round."}
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
-                    Latest results
-                  </p>
-                  <p className="mt-2 font-['Orbitron'] text-2xl font-bold uppercase text-slate-950">
-                    {leaderboard?.latestCompletedRace?.raceName ?? runnerUp?.displayName ?? "Waiting on the field"}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {leaderboard?.latestCompletedRace ? `Round ${leaderboard.latestCompletedRace.round ?? "-"}` : runnerUp ? `${runnerUp.points} pts` : "Invite more rivals to turn this into a proper fight."}
-                  </p>
-                </div>
-              </div>
-              <div className="rounded-3xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                      Prediction window
-                    </p>
-                    <p className="mt-1 text-sm font-semibold text-slate-900">
-                      {nextRaceWindow.headline}
-                    </p>
-                  </div>
-                  <Badge tone={nextRaceWindow.tone}>{nextRaceWindow.badgeLabel}</Badge>
-                </div>
-                <p className="mt-3 text-sm text-slate-600">{nextRaceWindow.detail}</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  {nextRaceWindow.timestampLabel}
+            <div className="rounded-[28px] border border-neutral-900 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.18),_transparent_36%),linear-gradient(145deg,_#101114_0%,_#16181d_60%,_#20232b_100%)] p-6 text-white">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/55">
+                Your position
+              </p>
+              <div className="mt-4 flex items-end gap-3">
+                <p className="font-['Orbitron'] text-5xl font-black text-white">
+                  {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
                 </p>
+                {currentUserRow ? (
+                  <Badge className="bg-white/12 text-white" tone="info">
+                    {currentUserRow.displayName}
+                  </Badge>
+                ) : null}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+                    Total points
+                  </p>
+                  <p className="mt-2 font-['Orbitron'] text-2xl font-bold text-white">
+                    {currentUserRow?.points ?? 0}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+                    Gap to lead
+                  </p>
+                  <p className="mt-2 font-['Orbitron'] text-2xl font-bold text-white">
+                    {currentUserRow ? gapLabel(currentUserRow.gapToLeader) : "—"}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+                    Last round
+                  </p>
+                  <p className="mt-2 font-['Orbitron'] text-2xl font-bold text-white">
+                    {currentUserRow ? `${currentUserRow.lastRacePoints}` : "—"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Loading State */}
         {loading ? (
           <div className="grid gap-6 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
@@ -713,7 +718,6 @@ export function LeaguePage() {
           </div>
         ) : null}
 
-        {/* Error State */}
         {error ? (
           <Card className="bg-red-50">
             <CardContent className="py-4">
@@ -734,136 +738,79 @@ export function LeaguePage() {
           </Card>
         ) : null}
 
-        {/* Content */}
         {!loading && !error ? (
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
-            <Card className="overflow-hidden border-neutral-300">
-              <CardHeader>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="space-y-1">
-                    <CardTitle className="font-['Orbitron'] text-2xl uppercase tracking-[0.18em]">
-                      League Standings
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_340px]">
+            <Card className="overflow-hidden border-[#d7d0c7] bg-white">
+              <CardHeader className="border-b border-[#ece5dc] bg-[#fbf9f5]">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="font-['Orbitron'] text-2xl font-black uppercase tracking-tight text-black">
+                      League standings
                     </CardTitle>
-                    <p className="text-sm text-slate-500">
-                      Cumulative league standings across all scored rounds this season.
+                    <p className="mt-1 text-sm text-slate-500">
+                      Full championship order for this league, paged for larger grids.
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="rounded-full" tone={scoringAvailable ? "success" : "warning"}>
+                      {scoringAvailable ? "Season live" : "Awaiting scoring"}
+                    </Badge>
                     {leaderboard?.latestCompletedRace ? (
-                      <Badge tone="info">Latest round: {leaderboard.latestCompletedRace.raceName}</Badge>
-                    ) : null}
-                    {scoringAvailable && topScorer ? (
-                      <Badge tone="success">Top: {topScorer.displayName}</Badge>
+                      <Badge className="rounded-full" tone="neutral">
+                        Latest: {leaderboard.latestCompletedRace.raceName}
+                      </Badge>
                     ) : null}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(260px,0.95fr)]">
-                  <div className="rounded-[28px] border border-slate-900 bg-[radial-gradient(circle_at_top_left,_rgba(239,68,68,0.18),_transparent_34%),linear-gradient(145deg,_#111827_0%,_#0f172a_52%,_#18181b_100%)] p-6 text-white shadow-[0_16px_48px_rgba(15,23,42,0.22)]">
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-white/60">
-                      Your championship spot
+              <CardContent className="space-y-5 px-4 py-4 md:px-6">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      League leader
                     </p>
-                    <div className="mt-4 flex flex-wrap items-end gap-3">
-                      <p className="font-['Orbitron'] text-4xl font-bold uppercase tracking-tight text-white md:text-5xl">
-                        {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
-                      </p>
-                      {currentUserRow ? (
-                        <Badge className="bg-white/12 text-white" tone="info">
-                          {currentUserRow.displayName}
-                        </Badge>
-                      ) : null}
-                    </div>
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-white/74">
-                      {currentUserRow
-                        ? `You have ${currentUserRow.points} total points after ${currentUserRow.racesScored} scored rounds in ${leagueName}.`
-                        : "Join the fight and score a round to lock in your place on the grid."}
+                    <p className="mt-2 truncate font-['Orbitron'] text-2xl font-black text-black">
+                      {topScorer?.displayName ?? "Waiting"}
                     </p>
-                    <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Gap to leader</p>
-                        <p className="mt-2 font-['Orbitron'] text-xl font-bold text-white">
-                          {currentUserRow ? gapLabel(currentUserRow.gapToLeader) : "—"}
-                        </p>
-                      </div>
-                      <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Gap to next</p>
-                        <p className="mt-2 font-['Orbitron'] text-xl font-bold text-white">
-                          {currentUserRow ? gapLabel(currentUserRow.gapToNext) : "—"}
-                        </p>
-                      </div>
-                      <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Last race haul</p>
-                        <p className="mt-2 font-['Orbitron'] text-xl font-bold text-white">
-                          {currentUserRow ? `${currentUserRow.lastRacePoints} pts` : "—"}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {topScorer ? `${topScorer.points} pts` : "No leader yet"}
+                    </p>
                   </div>
-
-                  <div className="space-y-4 rounded-[28px] border border-neutral-200 bg-neutral-50 p-5">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Race movement</p>
-                        <p className="mt-1 text-sm text-slate-600">Changes since the previous scored race.</p>
-                      </div>
-                      <Badge tone={biggestMovers.length > 0 ? "success" : "neutral"}>
-                        {biggestMovers.length > 0 ? "Momentum live" : "No movement yet"}
-                      </Badge>
-                    </div>
-                    {biggestMovers.length > 0 ? (
-                      <div className="space-y-3">
-                        {biggestMovers.map((entry) => (
-                          <div
-                            key={`mover-${entry.userId || entry.displayName}`}
-                            className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold text-slate-900">{entry.displayName}</p>
-                              <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Now P{entry.rank}</p>
-                            </div>
-                            <div className="flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-700">
-                              <ArrowUpRight className="h-4 w-4" />
-                              +{entry.rankDelta}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="rounded-2xl border border-dashed border-neutral-300 bg-white px-4 py-5 text-sm text-slate-500">
-                        Position changes will appear after the second scored race of the season.
-                      </div>
-                    )}
-                    <div className="rounded-2xl border border-neutral-200 bg-white px-4 py-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Leader of the paddock</p>
-                      <div className="mt-3 flex items-center justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="truncate font-['Orbitron'] text-xl font-bold uppercase text-slate-950">
-                            {topScorer?.displayName ?? "Waiting"}
-                          </p>
-                          <p className="mt-1 text-sm text-slate-500">
-                            {topScorer ? `${topScorer.points} pts · ${topScorer.racesScored} rounds scored` : "Standings will populate after the first scored round."}
-                          </p>
-                        </div>
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-amber-300 bg-amber-100 text-amber-700">
-                          <Trophy className="h-5 w-5" />
-                        </div>
-                      </div>
-                    </div>
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Managers
+                    </p>
+                    <p className="mt-2 font-['Orbitron'] text-2xl font-black text-black">
+                      {members.length}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Total league members
+                    </p>
+                  </div>
+                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Your rank
+                    </p>
+                    <p className="mt-2 font-['Orbitron'] text-2xl font-black text-black">
+                      {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {currentUserRow ? `${currentUserRow.points} total pts` : "Not on the board yet"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  {leaderboardRows.map((entry) => {
+                  {pagedLeaderboardRows.map((entry) => {
                     const isLeader = entry.rank === 1;
                     const movement = entry.rankDelta;
 
                     return (
                       <div
                         key={entry.userId || `${entry.rank}-${entry.displayName}`}
-                        className={`rounded-[26px] border px-4 py-4 transition-shadow md:px-5 ${entry.isCurrentUser
-                          ? "border-rose-300 bg-rose-50/70 shadow-[0_18px_42px_rgba(244,63,94,0.12)]"
-                          : "border-neutral-200 bg-white hover:shadow-[0_14px_32px_rgba(15,23,42,0.08)]"}`}
+                        className={`rounded-[24px] border px-4 py-4 transition-shadow md:px-5 ${entry.isCurrentUser
+                          ? "border-rose-300 bg-rose-50/70 shadow-[0_18px_42px_rgba(244,63,94,0.08)]"
+                          : "border-neutral-200 bg-white hover:shadow-[0_14px_32px_rgba(15,23,42,0.06)]"}`}
                       >
                         <div className="flex flex-wrap items-center gap-4 md:flex-nowrap">
                           <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border text-base font-['Orbitron'] font-bold ${rankChipClass(entry.rank)}`}>
@@ -919,20 +866,117 @@ export function LeaguePage() {
                     );
                   })}
 
-                  {leaderboardRows.length === 0 ? (
+                  {pagedLeaderboardRows.length === 0 ? (
                     <div className="rounded-[26px] border border-dashed border-neutral-300 bg-neutral-50 px-6 py-10 text-center text-sm text-slate-500">
                       No cumulative standings yet. Score a round to light up the championship table.
                     </div>
                   ) : null}
                 </div>
+
+                {leaderboardRows.length > LEADERBOARD_PAGE_SIZE ? (
+                  <div className="flex flex-col gap-3 border-t border-[#ece5dc] pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-slate-500">
+                      Showing {(currentPage - 1) * LEADERBOARD_PAGE_SIZE + 1}
+                      {" "}to{" "}
+                      {Math.min(currentPage * LEADERBOARD_PAGE_SIZE, leaderboardRows.length)}
+                      {" "}of {leaderboardRows.length} managers
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      <span className="min-w-20 text-center text-sm font-semibold text-slate-600">
+                        Page {currentPage} / {totalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full"
+                        onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
 
             <div className="space-y-6">
-              <Card className="border-neutral-300">
+              <Card className="border-[#d7d0c7] bg-white">
                 <CardHeader>
                   <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
-                    Your Next Card
+                    League details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Status
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-slate-900">
+                      {isOwner ? "You own this league" : "You are a league member"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Latest scored round
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-slate-900">
+                      {leaderboard?.latestCompletedRace?.raceName ?? "No scored rounds yet"}
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {leaderboard?.latestCompletedRace?.round
+                        ? `Round ${leaderboard.latestCompletedRace.round}`
+                        : "Waiting for completed scoring"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      Movement tracker
+                    </p>
+                    {biggestMovers.length > 0 ? (
+                      <div className="mt-3 space-y-3">
+                        {biggestMovers.map((entry) => (
+                          <div
+                            key={`mover-${entry.userId || entry.displayName}`}
+                            className="flex items-center justify-between rounded-2xl border border-emerald-200 bg-white px-3 py-3"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-semibold text-slate-900">
+                                {entry.displayName}
+                              </p>
+                              <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
+                                Now P{entry.rank}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 text-sm font-semibold text-emerald-700">
+                              <ArrowUpRight className="h-4 w-4" />
+                              +{entry.rankDelta}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm text-slate-500">
+                        Position changes appear once the league has multiple scored rounds.
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#d7d0c7] bg-white">
+                <CardHeader>
+                  <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
+                    Your next card
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1002,7 +1046,7 @@ export function LeaguePage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-neutral-300">
+              <Card className="border-[#d7d0c7] bg-white">
                 <CardHeader>
                   <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
                     Invite Grid
@@ -1031,10 +1075,10 @@ export function LeaguePage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-neutral-300">
+              <Card className="border-[#d7d0c7] bg-white">
                 <CardHeader>
                   <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
-                    Grid Order
+                    Top of the grid
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

@@ -1,17 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
 
 const navItems = [
-  { to: "/admin", label: "Dashboard", end: true },
-  { to: "/admin/users", label: "Users" },
+  { to: "/admin", label: "Race Ops", end: true },
+  { to: "/admin/incidents", label: "Incidents" },
+  { to: "/admin/season-assignments", label: "Season Assignments" },
   { to: "/admin/leagues", label: "Leagues" },
-  { to: "/admin/races", label: "Races" },
-  { to: "/admin/sessions", label: "Sessions" },
-  { to: "/admin/seasons", label: "Seasons" },
-  { to: "/admin/countries", label: "Countries" },
-  { to: "/admin/circuits", label: "Circuits" },
-  { to: "/admin/constructors", label: "Constructors" },
-  { to: "/admin/drivers", label: "Drivers" },
-  { to: "/admin/entries", label: "Entries" },
+  { to: "/admin/users", label: "Users" },
 ];
 
 function navItemClass(isActive: boolean): string {

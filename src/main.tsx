@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { RequireAuth } from "./components/RequireAuth";
+import { RequireAdmin } from "./components/RequireAdmin";
 import { Toaster } from "./components/ui/sonner";
 import { queryClient } from "./lib/queryClient";
 import "./styles.css";
@@ -28,6 +29,11 @@ const LeaguePredictPage = lazy(() =>
     default: module.LeaguePredictPage,
   })),
 );
+const LeagueReviewPage = lazy(() =>
+  import("./pages/LeagueReviewPage").then((module) => ({
+    default: module.LeagueReviewPage,
+  })),
+);
 const LeagueLeaderboardPage = lazy(() =>
   import("./pages/LeagueLeaderboardPage").then((module) => ({
     default: module.LeagueLeaderboardPage,
@@ -41,6 +47,11 @@ const LeaguesPage = lazy(() =>
 const CreateLeaguePage = lazy(() =>
   import("./pages/CreateLeaguePage").then((module) => ({
     default: module.CreateLeaguePage,
+  })),
+);
+const JoinLeaguePage = lazy(() =>
+  import("./pages/JoinLeaguePage").then((module) => ({
+    default: module.JoinLeaguePage,
   })),
 );
 const InvitePage = lazy(() =>
@@ -66,6 +77,51 @@ const SignInPage = lazy(() =>
 const SignUpPage = lazy(() =>
   import("./pages/SignUpPage").then((module) => ({
     default: module.SignUpPage,
+  })),
+);
+const AdminLayout = lazy(() =>
+  import("./pages/AdminLayout").then((module) => ({
+    default: module.AdminLayout,
+  })),
+);
+const AdminOperationsPage = lazy(() =>
+  import("./pages/AdminOperationsPage").then((module) => ({
+    default: module.AdminOperationsPage,
+  })),
+);
+const AdminRaceOperationsDetailPage = lazy(() =>
+  import("./pages/AdminRaceOperationsDetailPage").then((module) => ({
+    default: module.AdminRaceOperationsDetailPage,
+  })),
+);
+const AdminSeasonAssignmentsPage = lazy(() =>
+  import("./pages/AdminSeasonAssignmentsPage").then((module) => ({
+    default: module.AdminSeasonAssignmentsPage,
+  })),
+);
+const AdminLeagueOperationsPage = lazy(() =>
+  import("./pages/AdminLeagueOperationsPage").then((module) => ({
+    default: module.AdminLeagueOperationsPage,
+  })),
+);
+const AdminLeagueOperationsDetailPage = lazy(() =>
+  import("./pages/AdminLeagueOperationsDetailPage").then((module) => ({
+    default: module.AdminLeagueOperationsDetailPage,
+  })),
+);
+const AdminUsersOperationsPage = lazy(() =>
+  import("./pages/AdminUsersOperationsPage").then((module) => ({
+    default: module.AdminUsersOperationsPage,
+  })),
+);
+const AdminUserOperationsDetailPage = lazy(() =>
+  import("./pages/AdminUserOperationsDetailPage").then((module) => ({
+    default: module.AdminUserOperationsDetailPage,
+  })),
+);
+const AdminIncidentsPage = lazy(() =>
+  import("./pages/AdminIncidentsPage").then((module) => ({
+    default: module.AdminIncidentsPage,
   })),
 );
 
@@ -95,6 +151,14 @@ function App() {
                 element={
                   <RequireAuth>
                     <LeaguesPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/join"
+                element={
+                  <RequireAuth>
+                    <JoinLeaguePage />
                   </RequireAuth>
                 }
               />
@@ -142,6 +206,14 @@ function App() {
                 }
               />
               <Route
+                path="/league/:leagueId/races/:raceId/review"
+                element={
+                  <RequireAuth>
+                    <LeagueReviewPage />
+                  </RequireAuth>
+                }
+              />
+              <Route
                 path="/league/:leagueId/races/:raceId/leaderboard"
                 element={
                   <RequireAuth>
@@ -149,6 +221,23 @@ function App() {
                   </RequireAuth>
                 }
               />
+              <Route
+                path="/admin"
+                element={
+                  <RequireAdmin>
+                    <AdminLayout />
+                  </RequireAdmin>
+                }
+              >
+                <Route index element={<AdminOperationsPage />} />
+                <Route path="incidents" element={<AdminIncidentsPage />} />
+                <Route path="races/:raceId" element={<AdminRaceOperationsDetailPage />} />
+                <Route path="season-assignments" element={<AdminSeasonAssignmentsPage />} />
+                <Route path="leagues" element={<AdminLeagueOperationsPage />} />
+                <Route path="leagues/:leagueId" element={<AdminLeagueOperationsDetailPage />} />
+                <Route path="users" element={<AdminUsersOperationsPage />} />
+                <Route path="users/:userId" element={<AdminUserOperationsDetailPage />} />
+              </Route>
               <Route path="*" element={<HomePage />} />
             </Route>
           </Routes>
