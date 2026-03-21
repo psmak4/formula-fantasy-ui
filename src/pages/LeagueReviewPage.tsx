@@ -188,6 +188,29 @@ function formatComputedAt(value?: string): string {
   return date.toLocaleString();
 }
 
+function scoreBreakdownLabel(key: string): string {
+  switch (key) {
+    case "P1_exact":
+      return "Winner picked exactly";
+    case "P2_exact":
+      return "P2 picked exactly";
+    case "P3_exact":
+      return "P3 picked exactly";
+    case "podium_wrong_position":
+      return "Right podium driver, wrong slot";
+    case "fastest_lap":
+      return "Fastest lap call";
+    case "biggest_gainer":
+      return "Biggest gainer call";
+    case "safety_car":
+      return "Safety car call";
+    case "classified_finishers":
+      return "Classified finishers bucket";
+    default:
+      return key.replace(/_/g, " ");
+  }
+}
+
 function shortToken(value: string): string {
   const words = value
     .replace(/[^a-zA-Z0-9 ]/g, " ")
@@ -360,9 +383,9 @@ export function LeagueReviewPage() {
   }, [activeIndex, reviewSlides.length]);
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <Card className="overflow-hidden border-white/8 bg-[linear-gradient(145deg,#111217_0%,#15161b_58%,#1d1f25_100%)]">
+    <section className="ff-page">
+      <div className="ff-shell space-y-8">
+        <Card className="ff-hero-band overflow-hidden border-white/8">
           <CardContent className="px-6 py-8 text-white">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
@@ -385,8 +408,8 @@ export function LeagueReviewPage() {
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="border-l-2 border-[#cc0000] bg-white/8 px-4 py-4">
+            <div className="ff-stat-strip sm:grid-cols-3">
+              <div className="ff-field-shell border-l-2 border-[#cc0000] bg-white/8 px-4 py-4">
                 <p className="ff-kicker text-white/55">
                   Round total
                 </p>
@@ -394,7 +417,7 @@ export function LeagueReviewPage() {
                   {data?.score?.pointsTotal ?? 0}
                 </p>
               </div>
-              <div className="border-l-2 border-[#e9c400] bg-white/8 px-4 py-4">
+              <div className="ff-field-shell border-l-2 border-[#e9c400] bg-white/8 px-4 py-4">
                 <p className="ff-kicker text-white/55">
                   Hits
                 </p>
@@ -402,7 +425,7 @@ export function LeagueReviewPage() {
                   {hits}
                 </p>
               </div>
-              <div className="border-l-2 border-white/10 bg-white/8 px-4 py-4">
+              <div className="ff-field-shell border-l-2 border-white/10 bg-white/8 px-4 py-4">
                 <p className="ff-kicker text-white/55">
                   Scored at
                 </p>
@@ -438,12 +461,12 @@ export function LeagueReviewPage() {
 
         {!isLoading && !error ? (
           <>
-            <Card className="overflow-hidden border-white/8 bg-[#15161b] shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
+            <Card className="ff-table-card overflow-hidden border-white/8 shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
               <CardContent className="px-8 py-8">
                 {activeSlide ? (
                   <div className="space-y-8">
                     <div className="flex flex-wrap items-start justify-between gap-4">
-                      <div className="space-y-4">
+                      <div className="min-w-0 flex-1 space-y-4">
                         <p className="ff-display text-5xl text-[#5d6069]">
                           Q{activeIndex + 1}
                         </p>
@@ -451,7 +474,7 @@ export function LeagueReviewPage() {
                           <p className="ff-kicker">
                             {activeSlide.label}
                           </p>
-                          <h2 className="mt-2 max-w-3xl text-2xl font-semibold leading-tight text-white md:text-4xl">
+                          <h2 className="mt-2 text-2xl font-semibold leading-tight text-white md:text-4xl">
                             {activeSlide.prompt}
                           </h2>
                         </div>
@@ -476,7 +499,7 @@ export function LeagueReviewPage() {
                     </div>
 
                     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_88px_minmax(0,1fr)] lg:items-center">
-                      <div className="border border-white/8 bg-white/3 p-6">
+                      <div className="ff-field-shell bg-white/3 p-6">
                         <p className="ff-kicker">
                           Your pick
                         </p>
@@ -513,7 +536,7 @@ export function LeagueReviewPage() {
                         </div>
                       </div>
 
-                      <div className="border border-white/8 bg-white/3 p-6">
+                      <div className="ff-field-shell bg-white/3 p-6">
                         <p className="ff-kicker">
                           Actual result
                         </p>
@@ -590,7 +613,7 @@ export function LeagueReviewPage() {
             </Card>
 
             <div className="grid gap-6 lg:grid-cols-3">
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-4 px-6 py-6">
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center bg-white/8 text-white">
@@ -605,7 +628,7 @@ export function LeagueReviewPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="border border-white/8 bg-white/3 px-4 py-4">
+                  <div className="ff-field-shell bg-white/3 px-4 py-4">
                     <p className="ff-kicker">
                       Correct calls
                     </p>
@@ -613,7 +636,7 @@ export function LeagueReviewPage() {
                       {hits}/{reviewSlides.length}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 px-4 py-4">
+                  <div className="ff-field-shell bg-white/3 px-4 py-4">
                     <p className="ff-kicker">
                       Missed calls
                     </p>
@@ -621,7 +644,7 @@ export function LeagueReviewPage() {
                       {misses}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 px-4 py-4">
+                  <div className="ff-field-shell bg-white/3 px-4 py-4">
                     <p className="ff-kicker">
                       Result status
                     </p>
@@ -634,7 +657,7 @@ export function LeagueReviewPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-4 px-6 py-6">
                   <p className="ff-display text-xl text-white">
                     Score breakdown
@@ -644,10 +667,10 @@ export function LeagueReviewPage() {
                       {reviewBreakdownEntries.map(([key, value]) => (
                         <div
                           key={key}
-                          className="flex items-center justify-between border border-white/8 bg-white/3 px-4 py-3 text-sm"
+                          className="flex items-center justify-between bg-white/3 px-4 py-3 text-sm"
                         >
                           <span className="text-[#c4c8d0]">
-                            {key.replace(/_/g, " ")}
+                            {scoreBreakdownLabel(key)}
                           </span>
                           <span className="font-semibold text-white">+{value}</span>
                         </div>
@@ -661,7 +684,7 @@ export function LeagueReviewPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-3 px-6 py-6">
                   <p className="ff-display text-xl text-white">
                     Navigation

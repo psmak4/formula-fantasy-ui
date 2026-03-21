@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "../api/apiClient";
@@ -87,7 +87,7 @@ function PublicLeagueRow({
   joining: boolean;
 }) {
   return (
-    <div className="grid gap-4 border-b border-white/6 bg-white/2 px-5 py-5 md:grid-cols-[minmax(0,1.5fr)_140px_120px_110px] md:items-center">
+    <div className="ff-data-row md:grid-cols-[minmax(0,1.5fr)_140px_110px]">
       <div className="flex items-center gap-4">
         <div
           className={`flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 text-base font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
@@ -109,13 +109,6 @@ function PublicLeagueRow({
         <p className="ff-kicker">Members</p>
         <p className="mt-2 text-3xl font-black text-white">
           {league.memberCount ?? 0}
-        </p>
-      </div>
-
-      <div className="text-left md:text-center">
-        <p className="ff-kicker">Entry</p>
-        <p className="mt-2 text-lg font-black text-[#e9c400]">
-          {(league.visibility ?? "public").toUpperCase()}
         </p>
       </div>
 
@@ -203,7 +196,6 @@ export function JoinLeaguePage() {
 
   const leagues = publicLeaguesQuery.data?.leagues ?? [];
   const totalPages = publicLeaguesQuery.data?.totalPages ?? 1;
-  const total = publicLeaguesQuery.data?.total ?? 0;
   const loadError =
     publicLeaguesQuery.error instanceof Error
       ? publicLeaguesQuery.error.message
@@ -231,16 +223,10 @@ export function JoinLeaguePage() {
   }
 
   const hasPagination = totalPages > 1;
-  const summaryLabel = useMemo(() => {
-    if (total === 0) return "No public leagues available";
-    const start = (page - 1) * PAGE_SIZE + 1;
-    const end = Math.min(page * PAGE_SIZE, total);
-    return `Showing ${start} to ${end} of ${total} public leagues`;
-  }, [page, total]);
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-10">
+    <section className="ff-page">
+      <div className="ff-shell">
         <div className="space-y-5">
           <Link
             to="/leagues"
@@ -261,15 +247,15 @@ export function JoinLeaguePage() {
           </div>
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(320px,0.72fr)_minmax(0,1fr)]">
+        <div className="ff-grid-main" data-layout="rail">
           <div className="space-y-6">
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="ff-table-card border-white/8">
               <CardContent className="space-y-5 px-6 py-6">
                 <div className="space-y-3">
                   <p className="ff-display text-2xl text-white">Private Invitation</p>
                   <p className="text-sm leading-6 text-[#9699a2]">
-                    Enter the unique invite code provided by your league commissioner
-                    to gain entry into private telemetry grids.
+                    Enter the invite token or full invite link shared by the league
+                    commissioner to join a private competition.
                   </p>
                 </div>
 
@@ -304,104 +290,110 @@ export function JoinLeaguePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/8 bg-[#1b1c22]">
-              <CardContent className="space-y-3 px-6 py-6">
-                <p className="ff-kicker text-[#e9c400]">Season Highlight</p>
-                <p className="ff-display text-3xl text-white">The Elite Paddock</p>
-                <p className="text-sm leading-6 text-[#9699a2]">
-                  Global rankings for high-performing competitors. Join private
-                  groups or open public competition depending on how you want to play.
-                </p>
+            <Card className="ff-table-card border-white/8">
+              <CardContent className="px-0 py-0">
+                <div className="flex items-center justify-between border-b border-white/6 px-5 py-4">
+                  <p className="ff-display text-2xl text-white">Public Grids</p>
+                </div>
+
+                {publicLeaguesQuery.isLoading ? (
+                  <div className="space-y-4 px-5 py-5">
+                    {[1, 2, 3, 4].map((value) => (
+                      <div
+                        key={value}
+                        className="h-24 animate-pulse border border-white/6 bg-white/3"
+                      />
+                    ))}
+                  </div>
+                ) : null}
+
+                {loadError ? (
+                  <div className="px-5 py-5">
+                    <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                      {loadError}
+                    </div>
+                  </div>
+                ) : null}
+
+              {!publicLeaguesQuery.isLoading && !loadError ? (
+                  leagues.length === 0 ? (
+                    <div className="px-5 py-5">
+                      <div className="border border-white/6 bg-white/3 px-6 py-10 text-center">
+                        <p className="ff-display text-2xl text-white">
+                          No Public Leagues Yet
+                        </p>
+                        <p className="mx-auto mt-3 max-w-2xl text-sm text-[#9699a2]">
+                          Create a league or join with a private invite link instead.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      {leagues.map((league, index) => (
+                        <PublicLeagueRow
+                          key={league.id}
+                          league={league}
+                          index={index}
+                          onJoin={handleJoinPublicLeague}
+                          joining={joinPublicLeagueMutation.isPending}
+                        />
+                      ))}
+                    </div>
+                  )
+                ) : null}
+
+                {hasPagination ? (
+                  <div className="flex items-center justify-between gap-4 border-t border-white/6 px-5 py-5">
+                    <p className="ff-kicker text-[#6f727b]">
+                      Page {page} of {totalPages}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => setPage((value) => Math.max(1, value - 1))}
+                        disabled={page === 1}
+                      >
+                        ←
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
+                        disabled={page === totalPages}
+                      >
+                        →
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </CardContent>
             </Card>
           </div>
 
-          <Card className="border-white/8 bg-[#15161b]">
-            <CardContent className="px-0 py-0">
-              <div className="flex items-center justify-between border-b border-white/6 px-5 py-4">
-                <p className="ff-display text-2xl text-white">Public Grids</p>
-                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#b9bcc4]">
-                  Live Updates
-                </span>
-              </div>
-
-              <div className="px-5 py-4">
-                <p className="text-sm text-[#7f828b]">{summaryLabel}</p>
-              </div>
-
-              {publicLeaguesQuery.isLoading ? (
-                <div className="space-y-4 px-5 pb-5">
-                  {[1, 2, 3, 4].map((value) => (
-                    <div
-                      key={value}
-                      className="h-24 animate-pulse border border-white/6 bg-white/3"
-                    />
-                  ))}
-                </div>
-              ) : null}
-
-              {loadError ? (
-                <div className="px-5 pb-5">
-                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
-                    {loadError}
-                  </div>
-                </div>
-              ) : null}
-
-              {!publicLeaguesQuery.isLoading && !loadError ? (
-                leagues.length === 0 ? (
-                  <div className="px-5 pb-5">
-                    <div className="border border-white/6 bg-white/3 px-6 py-10 text-center">
-                      <p className="ff-display text-2xl text-white">
-                        No Public Leagues Yet
-                      </p>
-                      <p className="mx-auto mt-3 max-w-2xl text-sm text-[#9699a2]">
-                        Create a league or join with a private invite link instead.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    {leagues.map((league, index) => (
-                      <PublicLeagueRow
-                        key={league.id}
-                        league={league}
-                        index={index}
-                        onJoin={handleJoinPublicLeague}
-                        joining={joinPublicLeagueMutation.isPending}
-                      />
-                    ))}
-                  </div>
-                )
-              ) : null}
-
-              {hasPagination ? (
-                <div className="flex items-center justify-between gap-4 border-t border-white/6 px-5 py-5">
-                  <p className="ff-kicker text-[#6f727b]">
-                    Page {page} of {totalPages}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      onClick={() => setPage((value) => Math.max(1, value - 1))}
-                      disabled={page === 1}
-                    >
-                      ←
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      onClick={() => setPage((value) => Math.min(totalPages, value + 1))}
-                      disabled={page === totalPages}
-                    >
-                      →
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <div className="ff-field-shell">
+              <p className="ff-kicker">Private Leagues</p>
+              <p className="text-sm leading-6 text-[#989aa2]">
+                Use an invite token or invite URL. If the token is valid, you
+                will be redirected straight into the league after joining.
+              </p>
+            </div>
+            <div className="ff-field-shell">
+              <p className="ff-kicker">Public Leagues</p>
+              <p className="text-sm leading-6 text-[#989aa2]">
+                Browse open leagues by name, member count, and visibility. Join
+                instantly or open the league if you are already a member.
+              </p>
+            </div>
+            <div className="ff-field-shell">
+              <p className="ff-kicker">After Joining</p>
+              <p className="text-sm leading-6 text-[#989aa2]">
+                The app takes you to the league hub so you can review the next
+                race and lock in your prediction card.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

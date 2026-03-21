@@ -18,6 +18,19 @@ type LeaguesResponse = {
   leagues?: League[];
 };
 
+type NextRaceResponse = {
+  round?: number;
+  name?: string;
+  raceName?: string;
+  grandPrixName?: string;
+  startsAt?: string;
+  startTime?: string;
+  raceAt?: string;
+  raceStartAt?: string;
+  scheduledAt?: string;
+  date?: string;
+};
+
 const leagueIconBackgrounds = [
   "bg-red-600",
   "bg-black",
@@ -45,7 +58,7 @@ function LeagueListRow({ league, index }: { league: League; index: number }) {
   return (
     <Link
       to={`/league/${league.id}`}
-      className="grid gap-4 border-b border-white/6 bg-white/2 px-5 py-5 transition hover:bg-white/4 hover:no-underline md:grid-cols-[minmax(0,1.5fr)_120px_120px]"
+      className="ff-data-row transition hover:bg-white/4 hover:no-underline md:grid-cols-[minmax(0,1.5fr)_120px_120px]"
     >
       <div className="flex items-center gap-4">
         <div
@@ -81,31 +94,135 @@ function LeagueListRow({ league, index }: { league: League; index: number }) {
   );
 }
 
+function LeaguesPageSkeleton() {
+  return (
+    <div className="ff-grid-main" data-layout="rail">
+      <div className="space-y-6">
+        <Card className="ff-table-card border-white/8">
+          <CardContent className="px-0 py-0">
+            <div className="ff-panel-strip">
+              <div className="space-y-2">
+                <div className="skeleton-line h-8 w-40" />
+                <div className="skeleton-line h-4 w-72" />
+              </div>
+            </div>
+            <div className="space-y-4 px-6 py-6">
+              {[1, 2, 3].map((value) => (
+                <div
+                  key={value}
+                  className="grid gap-4 border border-white/6 bg-white/3 p-5 md:grid-cols-[56px_minmax(0,1fr)_120px_120px]"
+                >
+                  <div className="skeleton-line h-12 w-12" />
+                  <div className="space-y-2">
+                    <div className="skeleton-line h-6 w-52" />
+                    <div className="skeleton-line h-4 w-28" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="skeleton-line h-4 w-16" />
+                    <div className="skeleton-line h-8 w-16" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="skeleton-line h-4 w-16" />
+                    <div className="skeleton-line h-8 w-16" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-5 lg:grid-cols-2">
+          {[1, 2].map((value) => (
+            <Card key={value} className="ff-table-card border-white/8">
+              <CardContent className="space-y-4 px-6 py-6">
+                <div className="skeleton-line h-8 w-44" />
+                <div className="skeleton-line h-4 w-full" />
+                <div className="skeleton-line h-4 w-5/6" />
+                <div className="skeleton-line h-11 w-40" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-6">
+        <Card className="ff-table-card border-white/8">
+          <CardContent className="space-y-6 px-6 py-6">
+            <div className="space-y-2">
+              <div className="skeleton-line h-4 w-32" />
+              <div className="skeleton-line h-4 w-64" />
+            </div>
+            <div className="space-y-2">
+              <div className="skeleton-line h-12 w-20" />
+              <div className="skeleton-line h-4 w-28" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+              {[1, 2].map((value) => (
+                <div key={value} className="ff-field-shell bg-white/3">
+                  <div className="skeleton-line h-4 w-28" />
+                  <div className="skeleton-line h-8 w-24" />
+                  <div className="skeleton-line h-4 w-20" />
+                </div>
+              ))}
+            </div>
+            <div className="ff-field-shell bg-white/3">
+              <div className="skeleton-line h-4 w-24" />
+              <div className="skeleton-line h-6 w-48" />
+              <div className="skeleton-line h-4 w-56" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export function LeaguesPage() {
   const { data: session } = authClient.useSession();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["leagues-page"],
     queryFn: async () => {
-      const myLeaguesData = await apiClient.getMyLeagues<LeaguesResponse>();
+      const [myLeaguesData, nextRaceData] = await Promise.all([
+        apiClient.getMyLeagues<LeaguesResponse>(),
+        apiClient.get<NextRaceResponse>("/f1/next-race").catch(() => ({} as NextRaceResponse)),
+      ]);
       return {
         myLeagues: myLeaguesData.leagues ?? [],
+        nextRace: nextRaceData,
       };
     },
   });
 
   const myLeagues = useMemo(() => data?.myLeagues ?? [], [data]);
+  const nextRace = data?.nextRace;
   const errorMessage = error instanceof Error ? error.message : null;
   const displayName =
     session?.user?.name?.trim() || session?.user?.email?.trim() || "Manager";
   const firstName = displayName.split(/\s+/).filter(Boolean)[0] ?? "Manager";
-
-  const summaryPoints = 136;
-  const summaryAccuracy = 25;
+  const publicLeagueCount = myLeagues.filter((league) => league.visibility === "public").length;
+  const privateLeagueCount = Math.max(0, myLeagues.length - publicLeagueCount);
+  const bestRank = myLeagues
+    .map((league) => league.rank)
+    .filter((rank): rank is number => typeof rank === "number" && rank > 0)
+    .sort((left, right) => left - right)[0];
+  const nextRaceName =
+    nextRace?.name ?? nextRace?.raceName ?? nextRace?.grandPrixName ?? "Next Grand Prix";
+  const nextRaceTimeRaw =
+    nextRace?.startsAt ??
+    nextRace?.startTime ??
+    nextRace?.raceAt ??
+    nextRace?.raceStartAt ??
+    nextRace?.scheduledAt ??
+    nextRace?.date;
+  const nextRaceTime = nextRaceTimeRaw
+    ? new Date(nextRaceTimeRaw).toLocaleString()
+    : "Schedule pending";
+  const isInitialLoading = isLoading && !data;
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-10">
+    <section className="ff-page">
+      <div className="ff-shell">
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="space-y-4">
             <p className="ff-kicker">Paddock Management</p>
@@ -124,75 +241,20 @@ export function LeaguesPage() {
           </div>
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-[300px_minmax(0,1fr)]">
-          <div className="space-y-6">
-            <Card className="border-white/8 bg-[#15161b]">
-              <CardContent className="space-y-6 px-6 py-6">
-                <div className="space-y-2">
-                  <p className="ff-kicker">Season Summary</p>
-                  <p className="text-sm text-[#989aa2]">
-                    {firstName}, here&apos;s your current telemetry snapshot.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-5xl font-black text-white">{summaryPoints}</p>
-                  <p className="ff-kicker mt-2">Total performance points</p>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
-                  <div className="border border-white/8 bg-white/3 p-4">
-                    <p className="ff-kicker">Global Rank</p>
-                    <p className="mt-2 text-3xl font-black text-[#e9c400]">#4,219</p>
-                  </div>
-                  <div className="border border-white/8 bg-white/3 p-4">
-                    <p className="ff-kicker">Accuracy</p>
-                    <p className="mt-2 text-3xl font-black text-white">{summaryAccuracy}%</p>
-                  </div>
-                </div>
-
-                <div className="border-l-2 border-[#e9c400] bg-white/3 p-4">
-                  <p className="ff-kicker">Next Race</p>
-                  <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em] text-white">
-                    Monaco
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                    Optimize your next card and keep pressure on the top of the board.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="overflow-hidden border-white/8 bg-[linear-gradient(135deg,#111217_0%,#191b20_58%,#23262d_100%)]">
-              <CardContent className="space-y-5 px-8 py-8 text-white">
-                <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
-                  Limited Time Event
-                </span>
-                <h3 className="ff-display text-4xl text-white">
-                  The Constructor&apos;s Gauntlet
-                </h3>
-                <p className="text-sm leading-6 text-white/70">
-                  Assemble a league, invite rivals, and turn every race weekend into a
-                  pressure test.
-                </p>
-                <Button asChild variant="outline">
-                  <Link to="/leagues/create">Enter Challenge</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card className="border-white/8 bg-[#15161b]">
+        {isInitialLoading ? (
+          <LeaguesPageSkeleton />
+        ) : (
+          <div className="ff-grid-main" data-layout="rail">
+            <div className="space-y-6">
+            <Card className="ff-table-card border-white/8">
               <CardContent className="px-0 py-0">
-                <div className="flex items-center justify-between border-b border-white/6 px-6 py-5">
+                <div className="ff-panel-strip">
                   <div>
                     <p className="ff-display text-3xl text-white">My Leagues</p>
                     <p className="mt-2 text-sm text-[#989aa2]">
                       Jump straight into your current competitions.
                     </p>
                   </div>
-                  <span className="ff-kicker text-[#7f828b]">Live updates</span>
                 </div>
 
                 {isLoading ? (
@@ -237,7 +299,7 @@ export function LeaguesPage() {
             </Card>
 
             <div className="grid gap-5 lg:grid-cols-2">
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-4 px-6 py-6">
                   <p className="ff-display text-3xl text-white">Create And Compete</p>
                   <p className="text-sm leading-6 text-[#989aa2]">
@@ -249,7 +311,7 @@ export function LeaguesPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-4 px-6 py-6">
                   <p className="ff-display text-3xl text-white">Join More Leagues</p>
                   <p className="text-sm leading-6 text-[#989aa2]">
@@ -262,7 +324,71 @@ export function LeaguesPage() {
               </Card>
             </div>
           </div>
-        </div>
+
+            <div className="space-y-6">
+            <Card className="ff-table-card border-white/8">
+              <CardContent className="space-y-6 px-6 py-6">
+                <div className="space-y-2">
+                  <p className="ff-kicker">Season Summary</p>
+                  <p className="text-sm text-[#989aa2]">
+                    {firstName}, here&apos;s your current telemetry snapshot.
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-5xl font-black text-white">{myLeagues.length}</p>
+                  <p className="ff-kicker mt-2">Active leagues</p>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="ff-field-shell bg-white/3">
+                    <p className="ff-kicker">Best current rank</p>
+                    <p className="mt-2 text-3xl font-black text-[#e9c400]">
+                      {typeof bestRank === "number" ? `P${bestRank}` : "—"}
+                    </p>
+                  </div>
+                  <div className="ff-field-shell bg-white/3">
+                    <p className="ff-kicker">League mix</p>
+                    <p className="mt-2 text-3xl font-black text-white">
+                      {privateLeagueCount}/{publicLeagueCount}
+                    </p>
+                    <p className="text-sm text-[#989aa2]">private / public</p>
+                  </div>
+                </div>
+
+                <div className="ff-field-shell border-l-2 border-[#e9c400] bg-white/3">
+                  <p className="ff-kicker">Next Race</p>
+                  <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em] text-white">
+                    {nextRaceName}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[#989aa2]">
+                    {nextRace?.round ? `Round ${nextRace.round} · ` : ""}
+                    {nextRaceTime}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="ff-hero-band overflow-hidden border-white/8 bg-[linear-gradient(135deg,#111217_0%,#191b20_58%,#23262d_100%)]">
+              <CardContent className="space-y-5 px-8 py-8 text-white">
+                <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
+                  League Control
+                </span>
+                <h3 className="ff-display text-4xl text-white">
+                  Build the next grid
+                </h3>
+                <p className="text-sm leading-6 text-white/70">
+                  Create a private paddock for your group or add another competition
+                  before the next race window opens.
+                </p>
+                <Button asChild variant="outline">
+                  <Link to="/leagues/create">Create League</Link>
+                </Button>
+              </CardContent>
+            </Card>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -196,21 +196,21 @@ export function InvitePage() {
   }
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-10">
+    <section className="ff-page">
+      <div className="ff-shell">
         <div className="space-y-4 text-center">
           <p className="ff-kicker">Incoming Transmission</p>
           <h1 className="ff-display mx-auto max-w-4xl text-5xl text-white md:text-7xl">
             Enter The Paddock
           </h1>
           <p className="mx-auto max-w-3xl text-base leading-8 text-[#b8bac2] md:text-2xl md:leading-10">
-            You&apos;ve been drafted to compete in a high-velocity fantasy championship.
-            Secure your seat on the grid before the next qualifying session begins.
+            Review the invite details, sign in if needed, and join the league from
+            one place.
           </p>
         </div>
 
-        <div className="mx-auto max-w-5xl">
-          <Card className="border-white/8 bg-[#15161b]">
+        <div className="ff-grid-main mx-auto max-w-6xl" data-layout="rail">
+          <Card className="ff-table-card border-white/8">
             <CardHeader className="space-y-3 pb-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
@@ -308,7 +308,7 @@ export function InvitePage() {
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="border border-white/6 bg-white/2 p-5">
+                    <div className="ff-field-shell bg-white/2">
                       <p className="ff-kicker">Invite Status</p>
                       <p className="mt-3 text-lg font-semibold text-white">
                         {inviteStatus === "pending"
@@ -317,14 +317,14 @@ export function InvitePage() {
                             ? "Invite has already been used"
                             : inviteStatus === "expired"
                               ? "Invite window has closed"
-                              : "Invite is no longer active"}
+                            : "Invite is no longer active"}
                       </p>
                     </div>
-                    <div className="border border-white/6 bg-white/2 p-5">
-                      <p className="ff-kicker">What Happens Next</p>
+                    <div className="ff-field-shell bg-white/2">
+                      <p className="ff-kicker">Join Flow</p>
                       <p className="mt-3 text-lg font-semibold text-white">
-                        Join the league, open the hub, then submit your race card
-                        before predictions lock.
+                        Sign in if needed, join the league, then open the league
+                        hub from the confirmation state.
                       </p>
                     </div>
                   </div>
@@ -367,36 +367,37 @@ export function InvitePage() {
               ) : null}
             </CardContent>
           </Card>
-        </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card className="border-white/8 bg-[#15161b]">
-            <CardContent className="space-y-2 py-6">
-              <p className="ff-kicker">Secure Entry</p>
-              <p className="text-sm leading-6 text-[#989aa2]">
-                One clean invite link now shows the league first so people know
-                exactly what they are joining.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-white/8 bg-[#15161b]">
-            <CardContent className="space-y-2 py-6">
-              <p className="ff-kicker">Real-Time Telemetry</p>
-              <p className="text-sm leading-6 text-[#989aa2]">
-                One card per race. Save early, edit until lock, then let the
-                scoring engine take over.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-white/8 bg-[#15161b]">
-            <CardContent className="space-y-2 py-6">
-              <p className="ff-kicker">Verified Drivers</p>
-              <p className="text-sm leading-6 text-[#989aa2]">
-                Score points from live race outcomes and climb the standings
-                against your group every weekend.
-              </p>
-            </CardContent>
-          </Card>
+          <div className="ff-side-stack">
+            <Card className="ff-table-card border-white/8">
+              <CardContent className="space-y-4 py-6">
+                <p className="ff-kicker">This Screen Uses Real Data Only</p>
+                <p className="text-sm leading-6 text-[#989aa2]">
+                  League name, visibility, member count, invite status, and expiry
+                  come from the invite preview. Nothing here depends on race or
+                  scoring data.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="ff-table-card border-white/8">
+              <CardContent className="space-y-4 py-6">
+                <p className="ff-kicker">Authentication</p>
+                <p className="text-sm leading-6 text-[#989aa2]">
+                  Signed-out users are sent to sign in first, then returned to this
+                  invite flow before joining.
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="ff-table-card border-white/8">
+              <CardContent className="space-y-4 py-6">
+                <p className="ff-kicker">After Acceptance</p>
+                <p className="text-sm leading-6 text-[#989aa2]">
+                  Once the invite is accepted, the primary next step is opening the
+                  league itself.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>

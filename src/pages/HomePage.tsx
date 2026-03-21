@@ -95,7 +95,7 @@ function LeagueListRow({ league, index }: { league: League; index: number }) {
   return (
     <Link
       to={`/league/${league.id}`}
-      className="grid gap-4 border-b border-white/6 bg-white/2 px-5 py-5 transition hover:bg-white/4 hover:no-underline md:grid-cols-[minmax(0,1.4fr)_130px_120px]"
+      className="ff-data-row transition hover:bg-white/6 hover:no-underline md:grid-cols-[minmax(0,1.4fr)_130px_120px]"
     >
       <div className="flex min-w-0 items-center gap-4">
         <div
@@ -135,14 +135,14 @@ function HowToPlayCard({
   accent: ReactNode;
 }) {
   return (
-    <Card className="overflow-hidden border-white/8 bg-[#15161b]">
+    <Card className="ff-table-card overflow-hidden border-white/8">
       <CardContent className="grid gap-6 px-6 py-6 md:grid-cols-[0.9fr_1.1fr] md:items-center">
         <div className="space-y-4">
           <p className="ff-kicker">How It Works</p>
           <h3 className="ff-display text-3xl text-white md:text-4xl">{title}</h3>
           <p className="max-w-xl text-sm leading-6 text-[#989aa2] md:text-base">{body}</p>
         </div>
-        <div className="border border-white/8 bg-white/3 p-6">{accent}</div>
+        <div className="ff-field-shell bg-white/3">{accent}</div>
       </CardContent>
     </Card>
   );
@@ -387,9 +387,9 @@ export function HomePage() {
       };
 
   return (
-    <section className="px-6 py-12 md:py-16">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <section className="overflow-hidden border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.26),transparent_30%),linear-gradient(135deg,#0d0e12_0%,#16171c_55%,#21242b_100%)]">
+    <section className="ff-page">
+      <div className="ff-shell">
+        <section className="ff-hero-band overflow-hidden border border-white/8">
           <div className="grid gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1.45fr)_320px] lg:px-10 lg:py-12">
             <div className="space-y-8">
               {loading ? (
@@ -451,8 +451,8 @@ export function HomePage() {
                     </Button>
                   </div>
 
-                  <div className="grid gap-4 pt-2 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                  <div className="ff-stat-strip pt-2 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="ff-stat bg-black/20">
                       <p className="ff-kicker">Window status</p>
                       <p className="mt-2 text-3xl font-black text-white">
                         {predictionStatus === "open"
@@ -462,15 +462,15 @@ export function HomePage() {
                             : "Locked"}
                       </p>
                     </div>
-                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                    <div className="ff-stat bg-black/20">
                       <p className="ff-kicker">Opens at</p>
                       <p className="mt-2 text-sm font-semibold text-white">{openAtLabel}</p>
                     </div>
-                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                    <div className="ff-stat bg-black/20">
                       <p className="ff-kicker">Locks at</p>
                       <p className="mt-2 text-sm font-semibold text-white">{lockAtLabel}</p>
                     </div>
-                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                    <div className="ff-stat bg-black/20">
                       <p className="ff-kicker">Active leagues</p>
                       <p className="mt-2 text-3xl font-black text-[#e9c400]">
                         {session?.user ? leagueCount : "—"}
@@ -482,7 +482,7 @@ export function HomePage() {
             </div>
 
             <div className="space-y-5">
-              <Card className="border-white/8 bg-black/20">
+              <Card className="ff-table-card border-white/8 bg-black/20">
                 <CardContent className="space-y-5 px-6 py-6">
                   <p className="ff-kicker">Race Signal</p>
                   <div>
@@ -496,11 +496,11 @@ export function HomePage() {
                     </p>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                    <div className="border border-white/8 bg-white/4 p-4">
+                    <div className="ff-field-shell bg-white/4">
                       <p className="ff-kicker">Track status</p>
                       <p className="mt-2 text-2xl font-black text-white">{raceName}</p>
                     </div>
-                    <div className="border border-white/8 bg-white/4 p-4">
+                    <div className="ff-field-shell bg-white/4">
                       <p className="ff-kicker">Race start</p>
                       <p className="mt-2 text-sm font-semibold leading-6 text-white">
                         {localRaceTime}
@@ -510,7 +510,7 @@ export function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-4 px-6 py-6">
                   <p className="ff-kicker">Invite Access</p>
                   <div className="space-y-2">
@@ -550,10 +550,10 @@ export function HomePage() {
         </section>
 
         {session?.user && !sessionPending ? (
-          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_320px]">
-            <Card className="border-white/8 bg-[#15161b]">
+          <section className="ff-grid-main" data-layout="rail">
+            <Card className="ff-table-card border-white/8">
               <CardContent className="px-0 py-0">
-                <div className="flex items-center justify-between border-b border-white/6 px-6 py-5">
+                <div className="ff-panel-strip">
                   <div>
                     <p className="ff-display text-3xl text-white">My Leagues</p>
                     <p className="mt-2 text-sm text-[#989aa2]">
@@ -606,7 +606,7 @@ export function HomePage() {
             </Card>
 
             <div className="space-y-6">
-              <Card className="border-white/8 bg-[linear-gradient(180deg,#1d120d_0%,#100e0d_100%)]">
+              <Card className="ff-hero-band border-white/8 bg-[linear-gradient(180deg,#1d120d_0%,#100e0d_100%)]">
                 <CardContent className="space-y-5 px-6 py-6">
                   <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
                     Current Focus
@@ -627,13 +627,13 @@ export function HomePage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-[#15161b]">
+              <Card className="ff-table-card border-white/8">
                 <CardContent className="space-y-4 px-6 py-6">
                   <p className="ff-kicker">Quick Access</p>
                   <div className="grid gap-4">
                     <Link
                       to="/join"
-                      className="border border-white/8 bg-white/3 px-4 py-4 text-white transition hover:bg-white/6 hover:no-underline"
+                      className="ff-field-shell bg-white/3 text-white transition hover:bg-white/6 hover:no-underline"
                     >
                       <p className="ff-display text-2xl text-white">Join A League</p>
                       <p className="mt-2 text-sm text-[#989aa2]">
@@ -642,7 +642,7 @@ export function HomePage() {
                     </Link>
                     <Link
                       to="/leagues/create"
-                      className="border border-white/8 bg-white/3 px-4 py-4 text-white transition hover:bg-white/6 hover:no-underline"
+                      className="ff-field-shell bg-white/3 text-white transition hover:bg-white/6 hover:no-underline"
                     >
                       <p className="ff-display text-2xl text-white">Create A League</p>
                       <p className="mt-2 text-sm text-[#989aa2]">
@@ -704,8 +704,8 @@ export function HomePage() {
                       <Badge tone="success">Scored</Badge>
                     </div>
                     <div className="border border-white/8 bg-black/20 p-4">
-                      <p className="ff-kicker">Accuracy Snapshot</p>
-                      <p className="mt-2 text-3xl font-black text-white">31%</p>
+                      <p className="ff-kicker">Scored Round</p>
+                      <p className="mt-2 text-3xl font-black text-white">Review</p>
                     </div>
                   </div>
                 }

@@ -30,10 +30,11 @@ export function AppShell() {
     import.meta.env.DEV &&
     import.meta.env.VITE_ALLOW_DEBUG_AUTH === "true" &&
     debugUserId.length > 0;
+  const hasUserShell = (Boolean(user) && !isPending) || hasDebugAuth;
   const isImpersonating = Boolean((session?.session as { impersonatedBy?: string } | undefined)?.impersonatedBy);
 
   const displayName = useMemo(
-    () => user?.name ?? user?.email ?? (hasDebugAuth ? "Debug Admin" : "Manager"),
+    () => user?.name ?? user?.email ?? (hasDebugAuth ? "Debug Manager" : "Manager"),
     [hasDebugAuth, user],
   );
   const currentYear = new Date().getFullYear();
@@ -84,7 +85,7 @@ export function AppShell() {
             >
               Home
             </NavLink>
-            {user && !isPending ? (
+            {hasUserShell ? (
               <>
                 <NavLink
                   to="/results"
@@ -99,18 +100,11 @@ export function AppShell() {
                   Leagues
                 </NavLink>
               </>
-            ) : hasDebugAuth ? (
-              <NavLink
-                to="/admin"
-                className={({ isActive }) => navLinkClass(isActive)}
-              >
-                Admin
-              </NavLink>
             ) : null}
           </nav>
 
           <div className="flex flex-1 items-center justify-end gap-2">
-            {user && !isPending ? (
+            {hasUserShell ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -129,6 +123,14 @@ export function AppShell() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+                  {hasDebugAuth ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="text-[#ff8e8e] focus:text-[#ff8e8e]">
+                        Debug Auth Active
+                      </DropdownMenuItem>
+                    </>
+                  ) : null}
                   {isImpersonating ? (
                     <>
                       <DropdownMenuSeparator />
@@ -146,34 +148,30 @@ export function AppShell() {
                   <DropdownMenuItem asChild>
                     <Link to="/profile">Profile</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={(event) => {
-                      event.preventDefault();
-                      void authClient.signOut();
-                    }}
-                  >
-                    Sign out
-                  </DropdownMenuItem>
+                  {hasDebugAuth ? (
+                    <DropdownMenuItem
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        if (typeof window !== "undefined") {
+                          window.localStorage.removeItem("ff_debug_user_id");
+                          window.location.assign("/");
+                        }
+                      }}
+                    >
+                      Exit Debug
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem
+                      onSelect={(event) => {
+                        event.preventDefault();
+                        void authClient.signOut();
+                      }}
+                    >
+                      Sign out
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : hasDebugAuth ? (
-              <div className="flex items-center gap-2">
-                <span className="ff-kicker border border-[#5a1010] bg-[#2a0c0c] px-3 py-2 text-[#ff7373]">
-                  Debug Admin
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.localStorage.removeItem("ff_debug_user_id");
-                      window.location.assign("/");
-                    }
-                  }}
-                >
-                  Exit Debug
-                </Button>
-              </div>
             ) : (
               <>
                 <Button
@@ -203,7 +201,7 @@ export function AppShell() {
             <NavLink to="/" end className={({ isActive }) => mobileNavLinkClass(isActive)}>
               Home
             </NavLink>
-            {user && !isPending ? (
+            {hasUserShell ? (
               <>
                 <NavLink
                   to="/results"
@@ -223,27 +221,20 @@ export function AppShell() {
                 >
                   Profile
                 </NavLink>
-              </>
-            ) : hasDebugAuth ? (
-              <>
-                <NavLink
-                  to="/admin"
-                  className={({ isActive }) => mobileNavLinkClass(isActive)}
-                >
-                  Admin
-                </NavLink>
-                <button
-                  type="button"
-                  className="ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#7f828b] transition-colors hover:text-white"
-                  onClick={() => {
-                    if (typeof window !== "undefined") {
-                      window.localStorage.removeItem("ff_debug_user_id");
-                      window.location.assign("/");
-                    }
-                  }}
-                >
-                  Exit Debug
-                </button>
+                {hasDebugAuth ? (
+                  <button
+                    type="button"
+                    className="ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#7f828b] transition-colors hover:text-white"
+                    onClick={() => {
+                      if (typeof window !== "undefined") {
+                        window.localStorage.removeItem("ff_debug_user_id");
+                        window.location.assign("/");
+                      }
+                    }}
+                  >
+                    Exit Debug
+                  </button>
+                ) : null}
               </>
             ) : (
               <>

@@ -32,10 +32,15 @@ type Member = {
 type LeagueResponse = {
   id?: string;
   name?: string;
+  visibility?: "public" | "private";
   members?: Member[];
+  gameMode?: string;
+  ownerUserId?: string;
+  createdAt?: string;
   league?: {
     id?: string;
     name?: string;
+    visibility?: "public" | "private";
     members?: Member[];
   };
 };
@@ -106,16 +111,6 @@ type EntryResponse = {
   lockedAt?: string;
 };
 
-type Driver = {
-  id?: string;
-  driverId?: string;
-  code?: string;
-  givenName?: string;
-  familyName?: string;
-  displayName?: string;
-  name?: string;
-};
-
 type NextRaceResponse = {
   predictionLocked?: boolean;
   entriesLocked?: boolean;
@@ -150,11 +145,6 @@ type InviteResponse = {
   token?: string;
 };
 
-type EntrySummaryRow = {
-  label: string;
-  value: string;
-};
-
 const LEADERBOARD_PAGE_SIZE = 25;
 
 function resolveInviteLink(data: InviteResponse): string | null {
@@ -164,39 +154,6 @@ function resolveInviteLink(data: InviteResponse): string | null {
   const token = data.token;
   if (!token || typeof window === "undefined") return null;
   return `${window.location.origin}/invite/${token}`;
-}
-
-function driverId(driver: Driver): string {
-  return driver.id ?? driver.driverId ?? "";
-}
-
-function driverName(driver: Driver): string {
-  if (driver.givenName || driver.familyName) {
-    return `${driver.givenName ?? ""} ${driver.familyName ?? ""}`.trim();
-  }
-  return driver.displayName ?? driver.name ?? driver.code ?? driverId(driver);
-}
-
-function driverLabel(driver: Driver): string {
-  const code = driver.code ? ` (${driver.code})` : "";
-  return `${driverName(driver)}${code}`;
-}
-
-function formatPickValue(
-  value: string | boolean | undefined,
-  driversById: Map<string, string>,
-): string {
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
-  if (!value) {
-    return "Pending";
-  }
-  if (value === "0_TO_9") return "0 to 9 finishers";
-  if (value === "10_TO_12") return "10 to 12 finishers";
-  if (value === "13_TO_15") return "13 to 15 finishers";
-  if (value === "16_TO_20") return "16 to 20 finishers";
-  return driversById.get(value) ?? value;
 }
 
 function normalizeLeaderboardRows(
@@ -338,6 +295,111 @@ function buildNextRaceWindowSummary(
   };
 }
 
+function LeaguePageSkeleton() {
+  return (
+    <>
+      <Card className="ff-hero-band overflow-hidden border-white/8">
+        <CardContent className="grid gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1.35fr)_300px] lg:px-8">
+          <div className="space-y-6">
+            <div className="flex flex-wrap gap-3">
+              <div className="skeleton-line h-9 w-32" />
+              <div className="skeleton-line h-9 w-28" />
+              <div className="skeleton-line h-9 w-32" />
+            </div>
+            <div className="space-y-4">
+              <div className="skeleton-line h-16 w-2/3" />
+              <div className="skeleton-line h-5 w-full max-w-3xl" />
+              <div className="skeleton-line h-5 w-5/6 max-w-2xl" />
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <div className="skeleton-line h-12 w-36" />
+              <div className="skeleton-line h-12 w-40" />
+            </div>
+          </div>
+          <div className="ff-field-shell bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-6">
+            <div className="skeleton-line h-4 w-24" />
+            <div className="mt-5 skeleton-line h-16 w-24" />
+            <div className="mt-6 grid gap-3">
+              {[1, 2, 3].map((value) => (
+                <div key={value} className="ff-stat bg-white/3">
+                  <div className="skeleton-line h-4 w-20" />
+                  <div className="mt-3 skeleton-line h-8 w-20" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="ff-grid-main" data-layout="rail">
+        <div className="space-y-6">
+          <Card className="ff-table-card overflow-hidden border-white/8">
+            <div className="ff-panel-strip">
+              <div className="space-y-2">
+                <div className="skeleton-line h-8 w-40" />
+              </div>
+              <div className="flex gap-2">
+                <div className="skeleton-line h-8 w-28" />
+                <div className="skeleton-line h-8 w-32" />
+              </div>
+            </div>
+            <CardContent className="space-y-5 px-0 py-0">
+              <div className="grid gap-4 border-b border-white/6 px-6 py-5 md:grid-cols-3">
+                {[1, 2, 3].map((value) => (
+                  <div key={value} className="ff-field-shell bg-white/2">
+                    <div className="skeleton-line h-4 w-24" />
+                    <div className="mt-3 skeleton-line h-8 w-24" />
+                    <div className="mt-2 skeleton-line h-4 w-20" />
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-px bg-white/4">
+                {[1, 2, 3, 4].map((value) => (
+                  <div
+                    key={value}
+                    className="grid gap-4 bg-[#15161b] px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px]"
+                  >
+                    <div className="skeleton-line h-10 w-16" />
+                    <div className="space-y-2">
+                      <div className="skeleton-line h-5 w-44" />
+                      <div className="skeleton-line h-4 w-64" />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="skeleton-line h-4 w-16" />
+                      <div className="skeleton-line h-5 w-14" />
+                    </div>
+                    <div className="skeleton-line h-10 w-20 md:justify-self-end" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="space-y-6">
+          {[1, 2].map((value) => (
+            <Card key={value} className="ff-table-card border-white/8">
+              <div className="ff-panel-strip">
+                <div className="skeleton-line h-8 w-40" />
+              </div>
+              <CardContent className="space-y-4">
+                {[1, 2, 3].map((inner) => (
+                  <div key={inner} className="ff-field-shell bg-white/3">
+                    <div className="skeleton-line h-4 w-24" />
+                    <div className="skeleton-line h-8 w-32" />
+                    <div className="skeleton-line h-4 w-full" />
+                  </div>
+                ))}
+                {value === 1 ? <div className="skeleton-line h-12 w-full" /> : null}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
 export function LeaguePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
   const [inviteLink, setInviteLink] = useState("");
@@ -367,7 +429,6 @@ export function LeaguePage() {
         leaderboardData,
         entryData,
         nextRaceData,
-        driversData,
       ] =
         await Promise.all([
           apiClient.get<{ userId: string }>("/me"),
@@ -383,7 +444,6 @@ export function LeaguePage() {
           apiClient
             .get<NextRaceResponse>("/f1/next-race")
             .catch(() => ({}) as NextRaceResponse),
-          apiClient.get<Driver[]>("/f1/next-race/drivers").catch(() => [] as Driver[]),
         ]);
 
       const closeAt =
@@ -409,26 +469,24 @@ export function LeaguePage() {
       return {
         currentUserId: userData.userId ?? null,
         leagueName: leagueData.name ?? leagueData.league?.name ?? "League",
+        leagueVisibility: leagueData.visibility ?? leagueData.league?.visibility ?? "private",
         members: leagueData.members ?? leagueData.league?.members ?? [],
         leaderboard: leaderboardData,
-        drivers: driversData ?? [],
         nextRace: nextRaceData,
         entryLocked,
         entrySubmitted,
-        entryPicks: entryData.picks ?? null,
       };
     },
   });
 
   const currentUserId = data?.currentUserId ?? null;
   const leagueName = data?.leagueName ?? "League";
+  const leagueVisibility = data?.leagueVisibility ?? "private";
   const members = data?.members ?? [];
   const leaderboard = data?.leaderboard ?? null;
   const nextRace = data?.nextRace ?? null;
   const entrySubmitted = data?.entrySubmitted ?? false;
   const entryLocked = data?.entryLocked ?? false;
-  const entryPicks = data?.entryPicks ?? null;
-  const drivers = data?.drivers ?? [];
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   useEffect(() => {
@@ -446,17 +504,15 @@ export function LeaguePage() {
   const topScorer = leaderboardRows[0];
   const scoringAvailable = leaderboard?.scoringAvailable ?? leaderboard?.scoring?.available ?? false;
   const currentUserRow = leaderboardRows.find((entry) => entry.isCurrentUser) ?? null;
-  const biggestMovers = useMemo(
-    () => leaderboardRows
-      .filter((entry) => entry.rankDelta > 0)
-      .sort((left, right) => {
-        if (left.rankDelta !== right.rankDelta) return right.rankDelta - left.rankDelta;
-        return left.rank - right.rank;
-      })
-      .slice(0, 3),
-    [leaderboardRows],
+  const leagueHasScoredRounds = leaderboardRows.some(
+    (entry) =>
+      entry.racesScored > 0 ||
+      entry.points > 0 ||
+      entry.lastRacePoints > 0,
   );
-
+  const latestLeagueRace = leagueHasScoredRounds
+    ? leaderboard?.latestCompletedRace
+    : null;
   const isMember = useMemo(() => {
     if (!currentUserId) return false;
     return members.some(
@@ -472,41 +528,28 @@ export function LeaguePage() {
   );
 
   const isOwner = currentMember?.role === "owner";
-
-  const driversById = useMemo(
-    () => new Map(drivers.map((driver) => [driverId(driver), driverLabel(driver)])),
-    [drivers],
-  );
-
-  const entrySummary = useMemo<EntrySummaryRow[]>(() => {
-    if (!entryPicks) return [];
-    return [
-      { label: "P1", value: formatPickValue(entryPicks.P1, driversById) },
-      { label: "P2", value: formatPickValue(entryPicks.P2, driversById) },
-      { label: "P3", value: formatPickValue(entryPicks.P3, driversById) },
-      {
-        label: "Fastest lap",
-        value: formatPickValue(entryPicks.FASTEST_LAP, driversById),
-      },
-      {
-        label: "Biggest gainer",
-        value: formatPickValue(entryPicks.BIGGEST_GAINER, driversById),
-      },
-      {
-        label: "Safety car",
-        value: formatPickValue(entryPicks.SAFETY_CAR, driversById),
-      },
-      {
-        label: "Classified finishers",
-        value: formatPickValue(entryPicks.CLASSIFIED_FINISHERS, driversById),
-      },
-    ];
-  }, [driversById, entryPicks]);
+  const visibilityLabel = leagueVisibility === "public" ? "Public League" : "Private League";
+  const inviteDescription = leagueVisibility === "public"
+    ? "This league is listed publicly, and the owner can still share a direct invite link for faster access."
+    : "League membership is private for MVP. Share an invite link to bring in rivals.";
+  const inviteFootnote = isOwner
+    ? null
+    : leagueVisibility === "public"
+      ? "Anyone can join from the public leagues list, while the owner can also share a direct invite."
+      : "Only the league owner can generate invites.";
 
   const nextRaceWindow = useMemo(
     () => buildNextRaceWindowSummary(nextRace, nowMs),
     [nextRace, nowMs],
   );
+  const canEditPredictions = nextRaceWindow.status === "open";
+  const canOpenPredictionRoute = entryLocked || canEditPredictions;
+  const heroPredictionLabel = entryLocked ? "Review Entry" : "Edit Predictions";
+  const nextEventPredictionLabel = entryLocked
+    ? "Review Entry"
+    : entrySubmitted
+      ? "Edit Predictions"
+      : "Open Prediction Card";
   const totalPages = Math.max(
     1,
     Math.ceil(leaderboardRows.length / LEADERBOARD_PAGE_SIZE),
@@ -515,18 +558,6 @@ export function LeaguePage() {
     const start = (currentPage - 1) * LEADERBOARD_PAGE_SIZE;
     return leaderboardRows.slice(start, start + LEADERBOARD_PAGE_SIZE);
   }, [currentPage, leaderboardRows]);
-
-  const orderedMembers = useMemo(() => {
-    return [...members].sort((left, right) => {
-      const leftRank = left.role === "owner" ? 0 : 1;
-      const rightRank = right.role === "owner" ? 0 : 1;
-      if (leftRank !== rightRank) return leftRank - rightRank;
-
-      const leftName = left.displayName ?? left.name ?? left.handle ?? "";
-      const rightName = right.displayName ?? right.name ?? right.handle ?? "";
-      return leftName.localeCompare(rightName);
-    });
-  }, [members]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -570,16 +601,21 @@ export function LeaguePage() {
       setCopyState("error");
     }
   }
+  const isInitialLoading = loading && !data;
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <Card className="overflow-hidden border-white/8 bg-[#121318]">
+    <section className="ff-page">
+      <div className="ff-shell space-y-8">
+        {isInitialLoading ? (
+          <LeaguePageSkeleton />
+        ) : (
+          <>
+        <Card className="ff-hero-band overflow-hidden border-white/8">
           <CardContent className="grid gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1.35fr)_300px] lg:px-8">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
-                  Private League
+                  {visibilityLabel}
                 </span>
                 <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
                   {members.length} Members
@@ -611,15 +647,21 @@ export function LeaguePage() {
                     {createInviteMutation.isPending ? "Generating Invite..." : "Invite Driver"}
                   </Button>
                 ) : null}
-                <Button asChild variant="outline" size="lg">
-                  <Link to={`/league/${leagueId}/predict`}>
-                    {entryLocked ? "Review Entry" : "Edit Predictions"}
-                  </Link>
-                </Button>
-                {leaderboard?.latestCompletedRace?.raceId ? (
+                {canOpenPredictionRoute ? (
+                  <Button asChild variant="outline" size="lg">
+                    <Link to={`/league/${leagueId}/predict`}>
+                      {heroPredictionLabel}
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button variant="outline" size="lg" disabled>
+                    {heroPredictionLabel}
+                  </Button>
+                )}
+                {latestLeagueRace?.raceId ? (
                   <Button asChild variant="secondary" size="lg">
                     <Link
-                      to={`/league/${leagueId}/races/${leaderboard.latestCompletedRace.raceId}/review`}
+                      to={`/league/${leagueId}/races/${latestLeagueRace.raceId}/review`}
                     >
                       Last Race Review
                     </Link>
@@ -628,7 +670,7 @@ export function LeaguePage() {
               </div>
             </div>
 
-            <div className="border-l-2 border-[#cc0000] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-6">
+            <div className="ff-field-shell border-l-2 border-[#cc0000] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-6">
               <p className="ff-kicker">Your Standing</p>
               <div className="mt-5 flex items-end gap-3">
                 <p className="ff-display text-6xl text-white">
@@ -636,19 +678,19 @@ export function LeaguePage() {
                 </p>
               </div>
               <div className="mt-6 grid gap-3">
-                <div className="border border-white/8 bg-white/3 p-4">
-                  <p className="ff-kicker">Global Rank</p>
+                <div className="ff-stat bg-white/3">
+                  <p className="ff-kicker">League Rank</p>
                   <p className="mt-2 text-3xl font-black text-white">
                     {currentUserRow ? `#${currentUserRow.rank}` : "—"}
                   </p>
                 </div>
-                <div className="border border-white/8 bg-white/3 p-4">
+                <div className="ff-stat bg-white/3">
                   <p className="ff-kicker">Total Points</p>
                   <p className="mt-2 text-3xl font-black text-[#e9c400]">
                     {currentUserRow?.points ?? 0}
                   </p>
                 </div>
-                <div className="border border-white/8 bg-white/3 p-4">
+                <div className="ff-stat bg-white/3">
                   <p className="ff-kicker">Last Race Gain</p>
                   <p className="mt-2 text-2xl font-black text-[#6ee7a8]">
                     {currentUserRow ? `${currentUserRow.lastRacePoints} pts` : "—"}
@@ -694,141 +736,29 @@ export function LeaguePage() {
 
         {!loading && !error ? (
           <>
-            <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="ff-grid-main" data-layout="rail">
               <div className="space-y-6">
-                <Card className="border-white/8 bg-[#15161b]">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Next Event</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="border-l-2 border-[#cc0000] bg-white/3 p-4">
-                      <p className="ff-kicker">Window Status</p>
-                      <p className="ff-display mt-3 text-3xl text-white">
-                        {nextRaceWindow.badgeLabel}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                        {nextRaceWindow.headline}
-                      </p>
-                    </div>
-                    <div className="border border-white/8 bg-white/2 p-4">
-                      <p className="ff-kicker">Timer</p>
-                      <p className="mt-2 text-3xl font-black text-[#e9c400]">
-                        {nextRaceWindow.timestampLabel}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                        {nextRaceWindow.detail}
-                      </p>
-                    </div>
-                    <Button asChild className="w-full" size="lg">
-                      <Link to={`/league/${leagueId}/predict`}>
-                        {entryLocked
-                          ? "Review Entry"
-                          : entrySubmitted
-                            ? "Edit Predictions"
-                            : "Open Prediction Card"}
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-white/8 bg-[#15161b]">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">League Details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="border border-white/8 bg-white/3 p-4">
-                      <p className="ff-kicker">Status</p>
-                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
-                        {isOwner ? "You own this league" : "You are a league member"}
-                      </p>
-                    </div>
-                    <div className="border border-white/8 bg-white/3 p-4">
-                      <p className="ff-kicker">Latest Scored Round</p>
-                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
-                        {leaderboard?.latestCompletedRace?.raceName ?? "No scored rounds yet"}
-                      </p>
-                      <p className="mt-1 text-sm text-[#7f828b]">
-                        {leaderboard?.latestCompletedRace?.round
-                          ? `Round ${leaderboard.latestCompletedRace.round}`
-                          : "Waiting for completed scoring"}
-                      </p>
-                    </div>
-                    <div className="border border-white/8 bg-white/3 p-4">
-                      <p className="ff-kicker">Invite Grid</p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                        League membership is private for MVP. Share an invite link to bring in rivals.
-                      </p>
-                      {isOwner ? (
-                        <Button
-                          onClick={handleCreateInvite}
-                          disabled={!isMember || createInviteMutation.isPending}
-                          className="mt-4 w-full"
-                        >
-                          {createInviteMutation.isPending ? "Generating Invite..." : "Create Invite Link"}
-                        </Button>
-                      ) : (
-                        <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#7f828b]">
-                          Only the league owner can generate invites.
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-white/8 bg-[#15161b]">
-                  <CardHeader>
-                    <CardTitle className="text-2xl">Top Of The Grid</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {orderedMembers.length > 0 ? (
-                      orderedMembers.slice(0, 8).map((member, index) => (
-                        <div
-                          key={member.id ?? member.userId ?? `${member.displayName}-${index}`}
-                          className="flex items-center justify-between border border-white/8 bg-white/3 px-4 py-3"
-                        >
-                          <div>
-                            <p className="text-sm font-semibold uppercase tracking-[0.08em] text-white">
-                              {member.displayName ?? member.name ?? member.handle ?? "Unknown manager"}
-                            </p>
-                            <p className="ff-kicker mt-1">{member.role ?? "member"}</p>
-                          </div>
-                          <span className="ff-display text-2xl text-[#7f828b]">
-                            {String(index + 1).padStart(2, "0")}
-                          </span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm text-[#989aa2]">No members loaded.</p>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="space-y-6">
-                <Card className="overflow-hidden border-white/8 bg-[#15161b]">
-                  <CardHeader className="border-b border-white/6 bg-white/3">
+                <Card className="ff-table-card overflow-hidden border-white/8">
+                  <div className="ff-panel-strip">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div>
                         <CardTitle className="text-3xl">Leaderboard</CardTitle>
-                        <p className="mt-2 text-sm text-[#989aa2]">
-                          Full championship order for this league, paged for larger grids.
-                        </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={scoringAvailable ? "success" : "warning"}>
                           {scoringAvailable ? "Season Live" : "Awaiting Scoring"}
                         </Badge>
-                        {leaderboard?.latestCompletedRace ? (
+                        {latestLeagueRace ? (
                           <Badge tone="neutral">
-                            Latest: {leaderboard.latestCompletedRace.raceName}
+                            Latest: {latestLeagueRace.raceName}
                           </Badge>
                         ) : null}
                       </div>
                     </div>
-                  </CardHeader>
+                  </div>
                   <CardContent className="space-y-5 px-0 py-0">
                     <div className="grid gap-4 border-b border-white/6 px-6 py-5 md:grid-cols-3">
-                      <div className="border-l-2 border-[#e9c400] bg-white/2 p-4">
+                      <div className="ff-field-shell border-l-2 border-[#e9c400] bg-white/2">
                         <p className="ff-kicker">League Leader</p>
                         <p className="mt-3 text-xl font-black uppercase tracking-[0.08em] text-white">
                           {topScorer?.displayName ?? "Waiting"}
@@ -837,13 +767,13 @@ export function LeaguePage() {
                           {topScorer ? `${topScorer.points} pts` : "No leader yet"}
                         </p>
                       </div>
-                      <div className="border-l-2 border-white/10 bg-white/2 p-4">
+                      <div className="ff-field-shell border-l-2 border-white/10 bg-white/2">
                         <p className="ff-kicker">Managers</p>
                         <p className="mt-3 text-3xl font-black text-white">
                           {members.length}
                         </p>
                       </div>
-                      <div className="border-l-2 border-[#cc0000] bg-white/2 p-4">
+                      <div className="ff-field-shell border-l-2 border-[#cc0000] bg-white/2">
                         <p className="ff-kicker">Your Rank</p>
                         <p className="mt-3 text-3xl font-black text-white">
                           {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
@@ -863,11 +793,11 @@ export function LeaguePage() {
                               : "text-[#7f828b]";
 
                         return (
-                          <div
-                            key={entry.userId || `${entry.rank}-${entry.displayName}`}
-                            className={`grid gap-4 border-b border-white/6 px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
-                              entry.isCurrentUser ? "bg-[#2a1414]" : "bg-transparent"
-                            }`}
+                        <div
+                          key={entry.userId || `${entry.rank}-${entry.displayName}`}
+                          className={`ff-data-row border-b border-white/6 px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
+                            entry.isCurrentUser ? "bg-[#2a1414]" : "bg-transparent"
+                          }`}
                           >
                             <div className="flex items-center gap-3">
                               <span className={`ff-display text-4xl ${isLeader ? "text-[#e9c400]" : "text-[#7f828b]"}`}>
@@ -947,99 +877,96 @@ export function LeaguePage() {
                   </CardContent>
                 </Card>
 
-                <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
-                  <Card className="border-white/8 bg-[#15161b]">
-                    <CardHeader>
-                      <CardTitle className="text-2xl">Your Next Card</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        {entrySubmitted ? <Badge tone="success">Submitted</Badge> : <Badge tone="warning">Not Submitted</Badge>}
-                        {entryLocked ? <Badge tone="danger">Locked</Badge> : <Badge tone="info">Editable</Badge>}
-                        <Badge tone={nextRaceWindow.tone}>{nextRaceWindow.badgeLabel}</Badge>
-                      </div>
-                      <div className="border border-white/8 bg-white/3 p-4">
-                        <p className="ff-kicker">Race Window</p>
-                        <p className="mt-2 text-lg font-semibold text-white">
-                          {nextRaceWindow.headline}
-                        </p>
-                        <p className="mt-3 text-sm leading-6 text-[#989aa2]">
-                          {entrySubmitted
-                            ? entryLocked
-                              ? "Your prediction card is locked in for this race."
-                              : "Your prediction card is saved. You can still edit it before lock."
-                            : nextRaceWindow.status === "upcoming"
-                              ? "The next card is not open yet, but the lock time is already set."
-                              : nextRaceWindow.status === "locked"
-                                ? "This race is locked. You can review the card and get ready for the next round."
-                                : "You have not submitted picks for the next race yet."}
-                        </p>
-                        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.16em] text-[#e9c400]">
-                          {nextRaceWindow.timestampLabel}
-                        </p>
-                      </div>
-                      {entrySubmitted && entrySummary.length > 0 ? (
-                        <div className="grid gap-3 sm:grid-cols-2">
-                          {entrySummary.map((row) => (
-                            <div
-                              key={row.label}
-                              className="border border-white/8 bg-white/2 px-4 py-3"
-                            >
-                              <p className="ff-kicker">{row.label}</p>
-                              <p className="mt-2 text-sm font-medium text-white">
-                                {row.value}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                      <Button asChild variant={entryLocked ? "outline" : "default"} className="w-full" size="lg">
+              </div>
+
+              <div className="space-y-6">
+                <Card className="ff-table-card border-white/8">
+                  <div className="ff-panel-strip">
+                    <CardTitle className="text-2xl">Next Event</CardTitle>
+                  </div>
+                  <CardContent className="space-y-4">
+                    <div className="ff-field-shell border-l-2 border-[#cc0000] bg-white/3">
+                      <p className="ff-kicker">Window Status</p>
+                      <p className="ff-display mt-3 text-3xl text-white">
+                        {nextRaceWindow.badgeLabel}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
+                        {nextRaceWindow.headline}
+                      </p>
+                    </div>
+                    <div className="ff-field-shell bg-white/2">
+                      <p className="ff-kicker">Timer</p>
+                      <p className="mt-2 text-3xl font-black text-[#e9c400]">
+                        {nextRaceWindow.timestampLabel}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
+                        {nextRaceWindow.detail}
+                      </p>
+                    </div>
+                    {canOpenPredictionRoute ? (
+                      <Button asChild className="w-full" size="lg">
                         <Link to={`/league/${leagueId}/predict`}>
-                          {entryLocked
-                            ? "Review Entry"
-                            : entrySubmitted
-                              ? "Edit Prediction Card"
-                              : "Build Prediction Card"}
+                          {nextEventPredictionLabel}
                         </Link>
                       </Button>
-                    </CardContent>
-                  </Card>
+                    ) : (
+                      <Button className="w-full" size="lg" disabled>
+                        {nextEventPredictionLabel}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
 
-                  <Card className="border-white/8 bg-[#15161b]">
-                    <CardHeader>
-                      <CardTitle className="text-2xl">Movement Tracker</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {biggestMovers.length > 0 ? (
-                        biggestMovers.map((entry) => (
-                          <div
-                            key={`mover-${entry.userId || entry.displayName}`}
-                            className="flex items-center justify-between border border-[#205038] bg-[#102317] px-3 py-3"
-                          >
-                            <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold uppercase tracking-[0.08em] text-white">
-                                {entry.displayName}
-                              </p>
-                              <p className="ff-kicker mt-1">Now P{entry.rank}</p>
-                            </div>
-                            <div className="flex items-center gap-1 text-sm font-semibold text-[#6ee7a8]">
-                              <ArrowUpRight className="h-4 w-4" />
-                              +{entry.rankDelta}
-                            </div>
-                          </div>
-                        ))
+                <Card className="ff-table-card border-white/8">
+                  <div className="ff-panel-strip">
+                    <CardTitle className="text-2xl">League Details</CardTitle>
+                  </div>
+                  <CardContent className="space-y-4">
+                    <div className="ff-field-shell bg-white/3">
+                      <p className="ff-kicker">Status</p>
+                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
+                        {isOwner ? "You own this league" : "You are a league member"}
+                      </p>
+                    </div>
+                    <div className="ff-field-shell bg-white/3">
+                      <p className="ff-kicker">Latest Scored Round</p>
+                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
+                        {latestLeagueRace?.raceName ?? "No scored rounds yet"}
+                      </p>
+                      <p className="mt-1 text-sm text-[#7f828b]">
+                        {latestLeagueRace?.round
+                          ? `Round ${latestLeagueRace.round}`
+                          : "Waiting for completed scoring"}
+                      </p>
+                    </div>
+                    <div className="ff-field-shell bg-white/3">
+                      <p className="ff-kicker">Invite Grid</p>
+                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
+                        {inviteDescription}
+                      </p>
+                      {isOwner ? (
+                        <Button
+                          onClick={handleCreateInvite}
+                          disabled={!isMember || createInviteMutation.isPending}
+                          className="mt-4 w-full"
+                        >
+                          {createInviteMutation.isPending ? "Generating Invite..." : "Create Invite Link"}
+                        </Button>
                       ) : (
-                        <p className="text-sm text-[#989aa2]">
-                          Position changes appear once the league has multiple scored rounds.
+                        <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#7f828b]">
+                          {inviteFootnote}
                         </p>
                       )}
-                    </CardContent>
-                  </Card>
-                </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
               </div>
             </div>
           </>
         ) : null}
+          </>
+        )}
       </div>
 
       <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>

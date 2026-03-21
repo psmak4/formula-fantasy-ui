@@ -10,6 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/Card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 
 type Driver = {
   id?: string;
@@ -178,6 +185,8 @@ const classifiedFinisherOptions: Array<{
   },
 ];
 
+const EMPTY_SELECT_VALUE = "__empty__";
+
 function classifiedFinishersLabel(
   value?: ClassifiedFinishersBucket | string,
 ): string {
@@ -212,22 +221,28 @@ function DriverPicker({
   return (
     <fieldset className="space-y-2" disabled={disabled}>
       <legend className="ff-kicker">{label}</legend>
-      <select
-        className="w-full border border-white/10 bg-[#0d0e12] px-4 py-3 text-sm text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-label={label}
+      <Select
+        value={value || EMPTY_SELECT_VALUE}
+        onValueChange={(nextValue) =>
+          onChange(nextValue === EMPTY_SELECT_VALUE ? "" : nextValue)
+        }
+        disabled={disabled}
       >
-        <option value="">Select driver</option>
-        {filteredDrivers.map((driver) => {
-          const id = driverId(driver);
-          return (
-            <option key={id} value={id}>
-              {driverDisplayLabel(driver)}
-            </option>
-          );
-        })}
-      </select>
+        <SelectTrigger aria-label={label}>
+          <SelectValue placeholder="Select driver" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={EMPTY_SELECT_VALUE}>Select driver</SelectItem>
+          {filteredDrivers.map((driver) => {
+            const id = driverId(driver);
+            return (
+              <SelectItem key={id} value={id}>
+                {driverDisplayLabel(driver)}
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </Select>
     </fieldset>
   );
 }
@@ -546,10 +561,10 @@ export function LeaguePredictPage() {
   }
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
-          <Card className="overflow-hidden border-white/8 bg-[radial-gradient(circle_at_top_left,_rgba(248,113,113,0.18),_transparent_32%),linear-gradient(145deg,_#140f14_0%,_#111827_48%,_#191919_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
+    <section className="ff-page">
+      <div className="ff-shell space-y-8">
+        <div className="ff-grid-main" data-layout="rail">
+          <Card className="ff-hero-band overflow-hidden border-white/8 text-white">
             <CardHeader className="space-y-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-white/12 text-white" tone="info">
@@ -574,8 +589,8 @@ export function LeaguePredictPage() {
                   call, then forecast how many cars make the flag.
                 </p>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="border border-white/10 bg-white/6 p-4">
+              <div className="ff-stat-strip sm:grid-cols-3">
+                <div className="ff-stat bg-white/6">
                   <p className="ff-kicker text-white/58">
                     Window
                   </p>
@@ -587,7 +602,7 @@ export function LeaguePredictPage() {
                         : "Locked"}
                   </p>
                 </div>
-                <div className="border border-white/10 bg-white/6 p-4">
+                <div className="ff-stat bg-white/6">
                   <p className="ff-kicker text-white/58">
                     Countdown
                   </p>
@@ -595,7 +610,7 @@ export function LeaguePredictPage() {
                     {countdownLabel || "Awaiting schedule"}
                   </p>
                 </div>
-                <div className="border border-white/10 bg-white/6 p-4">
+                <div className="ff-stat bg-white/6">
                   <p className="ff-kicker text-white/58">
                     Race start
                   </p>
@@ -607,17 +622,17 @@ export function LeaguePredictPage() {
             </CardHeader>
           </Card>
 
-          <Card className="border-white/8 bg-[#15161b]">
-            <CardHeader className="space-y-4">
+          <Card className="ff-table-card border-white/8">
+            <div className="ff-panel-strip">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-2xl">
                   Race Status
                 </CardTitle>
                 <Badge tone={statusTone}>{windowMessage}</Badge>
               </div>
-            </CardHeader>
+            </div>
             <CardContent className="space-y-4">
-              <div className="border border-white/8 bg-white/3 p-4">
+              <div className="ff-field-shell bg-white/3">
                 <p className="ff-kicker">
                   Card status
                 </p>
@@ -634,7 +649,7 @@ export function LeaguePredictPage() {
                     : "Changes are local until you save the card."}
                 </p>
               </div>
-              <div className="border border-white/8 bg-white/2 px-4 py-3 text-sm text-[#989aa2]">
+              <div className="ff-field-shell bg-white/2 text-sm text-[#989aa2]">
                 {windowStatus === "locked"
                   ? "The prediction window has closed for this race."
                   : windowStatus === "opening_soon"
@@ -694,14 +709,14 @@ export function LeaguePredictPage() {
 
         {/* Prediction Form */}
         {pageReady && !criticalLoadError && (
-          <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
+          <form onSubmit={handleSubmit} className="ff-grid-main" data-layout="rail">
             <div className="space-y-6">
-            <Card className="border-white/8 bg-[#15161b]">
-              <CardHeader>
+            <Card className="ff-table-card border-white/8">
+              <div className="ff-panel-strip">
                 <CardTitle className="text-2xl">
                   Podium Picks
                 </CardTitle>
-              </CardHeader>
+              </div>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
                   {[
@@ -723,7 +738,7 @@ export function LeaguePredictPage() {
                   ].map((slot) => (
                     <div
                       key={slot.label}
-                      className="border border-white/8 bg-white/3 p-4"
+                      className="ff-field-shell bg-white/3"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="ff-kicker">
@@ -784,15 +799,15 @@ export function LeaguePredictPage() {
             </Card>
 
             {/* Race Props */}
-            <Card className="border-white/8 bg-[#15161b]">
-              <CardHeader>
+            <Card className="ff-table-card border-white/8">
+              <div className="ff-panel-strip">
                 <CardTitle className="text-2xl">
                   Race Props
                 </CardTitle>
-              </CardHeader>
+              </div>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="ff-field-shell bg-white/3">
                     <p className="ff-kicker">
                       Fastest lap
                     </p>
@@ -800,7 +815,7 @@ export function LeaguePredictPage() {
                       {driverLabelById(drivers, fastestLapDriverId)}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="ff-field-shell bg-white/3">
                     <p className="ff-kicker">
                       Biggest gainer
                     </p>
@@ -808,7 +823,7 @@ export function LeaguePredictPage() {
                       {driverLabelById(drivers, biggestGainerDriverId)}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="ff-field-shell bg-white/3">
                     <p className="ff-kicker">
                       Safety car
                     </p>
@@ -816,7 +831,7 @@ export function LeaguePredictPage() {
                       {safetyCarDeployed ? "Deployed" : "No call"}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 p-4 md:col-span-3">
+                  <div className="ff-field-shell bg-white/3 md:col-span-3">
                     <p className="ff-kicker">
                       Classified finishers
                     </p>
@@ -845,23 +860,27 @@ export function LeaguePredictPage() {
                   <legend className="ff-kicker">
                     Classified Finishers
                   </legend>
-                  <select
-                    className="w-full border border-white/10 bg-[#0d0e12] px-4 py-3 text-sm text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
-                    value={classifiedFinishersBucket}
-                    onChange={(event) =>
+                  <Select
+                    value={classifiedFinishersBucket || EMPTY_SELECT_VALUE}
+                    onValueChange={(nextValue) =>
                       setClassifiedFinishersBucket(
-                        event.target.value as ClassifiedFinishersBucket,
+                        (nextValue === EMPTY_SELECT_VALUE ? "" : nextValue) as ClassifiedFinishersBucket,
                       )
                     }
-                    aria-label="Classified Finishers"
+                    disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}
                   >
-                    <option value="">Select finishers bucket</option>
-                    {classifiedFinisherOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label} · {option.description}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger aria-label="Classified Finishers">
+                      <SelectValue placeholder="Select finishers bucket" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={EMPTY_SELECT_VALUE}>Select finishers bucket</SelectItem>
+                      {classifiedFinisherOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label} · {option.description}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <p className="text-sm text-[#989aa2]">
                     Predict how many cars will be classified at the finish.
                   </p>
@@ -885,14 +904,14 @@ export function LeaguePredictPage() {
             </Card>
             </div>
             <div className="space-y-6">
-              <Card className="border-white/8 bg-[#15161b]">
-                <CardHeader>
+              <Card className="ff-table-card border-white/8">
+                <div className="ff-panel-strip">
                   <CardTitle className="text-2xl">
                     Submit Card
                   </CardTitle>
-                </CardHeader>
+                </div>
                 <CardContent className="space-y-4">
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="ff-field-shell bg-white/3">
                     <p className="ff-kicker">
                       Validation
                     </p>
@@ -929,12 +948,12 @@ export function LeaguePredictPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-white/8 bg-[#15161b]">
-                <CardHeader>
+              <Card className="ff-table-card border-white/8">
+                <div className="ff-panel-strip">
                   <CardTitle className="text-2xl">
                     Pick Notes
                   </CardTitle>
-                </CardHeader>
+                </div>
                 <CardContent className="space-y-3 text-sm leading-6 text-[#989aa2]">
                   <p>
                     Podium calls are exclusive. Once a driver is in P1, they cannot

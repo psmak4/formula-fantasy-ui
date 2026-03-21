@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
+import { getDebugUserId } from "@/api/apiClient";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,11 @@ export function SignUpPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: session, isPending } = authClient.useSession();
+  const debugUserId = getDebugUserId();
+  const hasDebugAuth =
+    import.meta.env.DEV &&
+    import.meta.env.VITE_ALLOW_DEBUG_AUTH === "true" &&
+    debugUserId.length > 0;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,10 +39,10 @@ export function SignUpPage() {
     redirect && redirect.startsWith("/") ? redirect : "/";
 
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user || hasDebugAuth) {
       navigate(redirectTarget, { replace: true });
     }
-  }, [navigate, redirectTarget, session]);
+  }, [hasDebugAuth, navigate, redirectTarget, session]);
 
   async function handleCreateAccount(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,8 +71,8 @@ export function SignUpPage() {
   }
 
   return (
-    <section className="ff-auth-page relative w-full px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section className="ff-page ff-auth-page relative w-full">
+      <div className="ff-shell">
         <div className="ff-auth-grid min-h-[calc(100svh-16rem)]">
           <div className="space-y-8">
             <div className="space-y-4">
@@ -85,20 +91,20 @@ export function SignUpPage() {
               </div>
             </div>
 
-            <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
-              <div className="ff-panel border border-white/6 p-5">
+            <div className="ff-panel-strip max-w-4xl">
+              <div className="ff-field-shell">
                 <p className="ff-kicker">Prediction cards</p>
                 <p className="mt-3 text-sm text-[#b8bac2]">
                   Lock podium calls and bonus picks before the window closes.
                 </p>
               </div>
-              <div className="ff-panel border border-white/6 p-5">
+              <div className="ff-field-shell">
                 <p className="ff-kicker">League competition</p>
                 <p className="mt-3 text-sm text-[#b8bac2]">
                   Create private leagues or join public grids.
                 </p>
               </div>
-              <div className="ff-panel border border-white/6 p-5">
+              <div className="ff-field-shell">
                 <p className="ff-kicker">Results tracking</p>
                 <p className="mt-3 text-sm text-[#b8bac2]">
                   Review each race and measure your season performance.

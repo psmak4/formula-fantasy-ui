@@ -71,9 +71,9 @@ export function CreateLeaguePage() {
   }
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <div className="space-y-5">
+    <section className="ff-page">
+      <div className="ff-shell">
+        <div className="ff-section-title">
           <Link
             to="/leagues"
             className="ff-kicker inline-flex items-center text-[#7f828b] transition-colors hover:text-white"
@@ -81,26 +81,28 @@ export function CreateLeaguePage() {
             ← Back To Leagues
           </Link>
 
-          <div className="space-y-4">
-            <p className="ff-kicker">League Build Sheet</p>
-            <h1 className="ff-display text-5xl text-white md:text-7xl">
-              Create League
-            </h1>
-            <p className="max-w-3xl text-base leading-7 text-[#a3a6af] md:text-lg">
-              Start your own league and invite friends to compete in race-by-race
-              Formula Fantasy predictions.
-            </p>
-          </div>
+          <p className="ff-kicker">Sector 07 // League Initialization</p>
+          <h1 className="ff-display text-5xl text-white md:text-7xl">
+            Create League
+          </h1>
+          <p className="max-w-3xl text-base leading-7 text-[#a3a6af] md:text-lg">
+            Configure the paddock, choose your access protocol, and launch a league
+            that is ready for invite sharing the moment it clears inspection.
+          </p>
         </div>
 
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.82fr)]">
-          <Card className="border-white/8 bg-[#15161b]">
-            <CardContent className="space-y-10 px-6 py-8 md:px-8">
-              <div className="space-y-3">
-                <Label htmlFor="leagueName">League Identification</Label>
+        <div className="ff-grid-main" data-layout="split">
+          <Card className="ff-table-card border-white/8">
+            <div className="ff-panel-strip">
+              <span className="ff-kicker text-[#ffb4a8]">Telemetry Setup</span>
+              <span className="ff-kicker">Build sheet active</span>
+            </div>
+            <CardContent className="space-y-8 px-6 py-8 md:px-8">
+              <div className="ff-field-shell">
+                <Label htmlFor="leagueName">Sector 01: Identity</Label>
                 <Input
                   id="leagueName"
-                  placeholder="Enter league name..."
+                  placeholder="Grand Prix Masters"
                   maxLength={25}
                   value={leagueName}
                   onChange={(event) => setLeagueName(event.target.value)}
@@ -112,15 +114,15 @@ export function CreateLeaguePage() {
               </div>
 
               <div className="space-y-5">
-                <Label>Visibility Parameters</Label>
+                <Label>Sector 02: Access Protocol</Label>
                 <div className="grid gap-4 md:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => setVisibility("public")}
-                    className={`relative border p-6 text-left transition ${
+                    className={`relative p-6 text-left transition ${
                       visibility === "public"
-                        ? "border-[#cc0000] bg-[#1d1f25] text-white shadow-[0_0_0_1px_rgba(204,0,0,0.16)]"
-                        : "border-white/6 bg-white/3 text-[#d7d9df] hover:border-white/12"
+                        ? "bg-[#1d1f25] text-white shadow-[0_0_0_1px_rgba(204,0,0,0.2)]"
+                        : "bg-white/3 text-[#d7d9df] hover:bg-white/5"
                     }`}
                   >
                     <span className="ff-kicker text-[#ffb0b0]">Public Circuit</span>
@@ -128,15 +130,16 @@ export function CreateLeaguePage() {
                     <p className="mt-4 text-sm leading-6 text-[#9699a2]">
                       Anyone can find and join your league from the public list.
                     </p>
+                    <p className="mt-5 ff-kicker text-[#d0d3d9]">Fast growth • discoverable</p>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setVisibility("private")}
-                    className={`relative border p-6 text-left transition ${
+                    className={`relative p-6 text-left transition ${
                       visibility === "private"
-                        ? "border-[#cc0000] bg-[#1d1f25] text-white shadow-[0_0_0_1px_rgba(204,0,0,0.16)]"
-                        : "border-white/6 bg-white/3 text-[#d7d9df] hover:border-white/12"
+                        ? "bg-[#1d1f25] text-white shadow-[0_0_0_1px_rgba(204,0,0,0.2)]"
+                        : "bg-white/3 text-[#d7d9df] hover:bg-white/5"
                     }`}
                   >
                     <span className="ff-kicker text-[#ffb0b0]">Private Paddock</span>
@@ -144,12 +147,13 @@ export function CreateLeaguePage() {
                     <p className="mt-4 text-sm leading-6 text-[#9699a2]">
                       Players join with an invite link that you share after creation.
                     </p>
+                    <p className="mt-5 ff-kicker text-[#d0d3d9]">Controlled access • commissioner led</p>
                   </button>
                 </div>
               </div>
 
-              <div className="ff-panel border border-white/6 px-5 py-4">
-                <p className="ff-kicker mb-2">
+              <div className="ff-field-shell">
+                <p className="ff-kicker">
                   {visibility === "private" ? "Private setup" : "Public setup"}
                 </p>
                 <p className="text-sm leading-6 text-[#a3a6af]">
@@ -159,7 +163,7 @@ export function CreateLeaguePage() {
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <div className="ff-action-rail">
                 <Button
                   className="w-full md:w-auto md:min-w-64"
                   size="lg"
@@ -168,82 +172,85 @@ export function CreateLeaguePage() {
                 >
                   {createState === "creating" ? "Creating..." : "Create League"}
                 </Button>
-                {createState !== "idle" &&
-                createState !== "creating" &&
-                createState !== "created" ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
-                    {createState}
-                  </p>
-                ) : null}
+                <Button asChild variant="outline" size="lg">
+                  <Link to="/leagues">Cancel</Link>
+                </Button>
               </div>
+              {createState !== "idle" &&
+              createState !== "creating" &&
+              createState !== "created" ? (
+                <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  {createState}
+                </p>
+              ) : null}
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
-            <CardContent className="p-5">
-              <div className="relative min-h-[540px] overflow-hidden border border-white/6 bg-[linear-gradient(180deg,#345c67_0%,#1c2026_46%,#121318_100%)] p-8">
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-[linear-gradient(140deg,rgba(255,255,255,0.08),transparent_34%),linear-gradient(180deg,transparent,rgba(0,0,0,0.42))]"
-                />
-                <div className="relative z-10 flex h-full flex-col">
-                  <div className="flex items-start justify-between gap-4">
-                    <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
-                      New League
-                    </span>
-                    <span className="text-[#a3a6af]">↗</span>
+          <div className="ff-side-stack">
+            <Card className="ff-hero-band border-white/8 text-white">
+              <CardContent className="relative z-10 space-y-6 px-8 py-8">
+                <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
+                  Live Preview
+                </span>
+                <div className="space-y-3">
+                  <p className="ff-kicker text-[#d0d3d9]">League Identity</p>
+                  <p className="ff-display text-5xl text-white">{previewName}</p>
+                </div>
+
+                <div className="ff-stat-strip sm:grid-cols-2">
+                  <div className="ff-stat">
+                    <p className="ff-kicker">Status</p>
+                    <p className="mt-2 text-xl font-black text-white">Recruiting</p>
                   </div>
-
-                  <div className="mt-auto space-y-6">
-                    <div>
-                      <p className="ff-kicker text-[#d0d3d9]">Live Preview</p>
-                      <p className="ff-display mt-3 text-4xl text-white md:text-5xl">
-                        {previewName}
-                      </p>
-                    </div>
-
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="border-l-2 border-[#cc0000] bg-black/28 p-4">
-                        <p className="ff-kicker">Status</p>
-                        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-white">
-                          Recruiting
-                        </p>
-                      </div>
-                      <div className="border-l-2 border-[#e9c400] bg-black/28 p-4">
-                        <p className="ff-kicker">Members</p>
-                        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-white">
-                          1 manager
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="border border-white/6 bg-black/16 p-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center border border-white/10 bg-white/6 text-lg font-black text-white">
-                          {leagueInitials(previewName)}
-                        </div>
-                        <div>
-                          <p className="ff-kicker">Commissioner</p>
-                          <p className="text-sm font-semibold uppercase tracking-[0.1em] text-white">
-                            You
-                          </p>
-                        </div>
-                        <p className="ml-auto text-sm font-semibold uppercase tracking-[0.1em] text-[#8d9099]">
-                          {visibility} league
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 text-xs uppercase tracking-[0.16em] text-[#6f727b] sm:grid-cols-3">
-                      <p>Engine AP-2026.4</p>
-                      <p>Latency 0.02ms</p>
-                      <p>Security AES-256</p>
-                    </div>
+                  <div className="ff-stat">
+                    <p className="ff-kicker">Access</p>
+                    <p className="mt-2 text-xl font-black text-[#e9c400]">
+                      {visibility === "private" ? "Private" : "Public"}
+                    </p>
                   </div>
                 </div>
+
+                <div className="ff-field-shell bg-black/20">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center bg-white/8 text-lg font-black text-white">
+                      {leagueInitials(previewName)}
+                    </div>
+                    <div>
+                      <p className="ff-kicker">Commissioner</p>
+                      <p className="text-sm font-semibold uppercase tracking-[0.1em] text-white">
+                        You
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm leading-6 text-[#c7cad2]">
+                    {visibility === "private"
+                      ? "Invite links unlock immediately after creation."
+                      : "This league will be discoverable from the public join flow."}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-white/8">
+              <div className="ff-panel-strip">
+                <span className="ff-kicker text-[#e9c400]">Launch Notes</span>
               </div>
-            </CardContent>
-          </Card>
+              <CardContent className="space-y-4 px-6 py-6">
+                <div className="ff-field-shell">
+                  <p className="ff-kicker">After creation</p>
+                  <p className="text-sm leading-6 text-[#989aa2]">
+                    You will land in league overview with invite controls, current
+                    standings state, and the next-race prediction window.
+                  </p>
+                </div>
+                <div className="grid gap-3 text-xs uppercase tracking-[0.16em] text-[#6f727b] sm:grid-cols-3">
+                  <p>Engine AP-2026.4</p>
+                  <p>Latency 0.02ms</p>
+                  <p>Security AES-256</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>

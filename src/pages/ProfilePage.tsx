@@ -2,10 +2,10 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
-import { API_BASE_URL, ApiError, apiClient } from "@/api/apiClient";
+import { API_BASE_URL, ApiError, apiClient, getDebugUserId } from "@/api/apiClient";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -54,6 +54,11 @@ export function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: session, isPending } = authClient.useSession();
+  const debugUserId = getDebugUserId();
+  const hasDebugAuth =
+    import.meta.env.DEV &&
+    import.meta.env.VITE_ALLOW_DEBUG_AUTH === "true" &&
+    debugUserId.length > 0;
 
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -71,10 +76,10 @@ export function ProfilePage() {
   const [isSavingPassword, setIsSavingPassword] = useState(false);
 
   useEffect(() => {
-    if (!isPending && !session?.user) {
+    if (!isPending && !session?.user && !hasDebugAuth) {
       navigate("/sign-in", { replace: true });
     }
-  }, [isPending, navigate, session]);
+  }, [hasDebugAuth, isPending, navigate, session]);
 
   useEffect(() => {
     if (!session?.user) {
@@ -87,7 +92,7 @@ export function ProfilePage() {
 
   const meQuery = useQuery({
     queryKey: ["me"],
-    enabled: Boolean(session?.user),
+    enabled: Boolean(session?.user) || hasDebugAuth,
     queryFn: () => apiClient.get<MeResponse>("/me"),
   });
 
@@ -100,7 +105,7 @@ export function ProfilePage() {
     setAvatarUrl(meQuery.data.avatarUrl ?? "");
   }, [meQuery.data]);
 
-  const isPageLoading = isPending || (!session?.user && isPending);
+  const isPageLoading = isPending || (!session?.user && !hasDebugAuth && isPending);
 
   const canSaveProfile = useMemo(() => displayName.trim().length > 0, [displayName]);
 
@@ -211,9 +216,9 @@ export function ProfilePage() {
   const memberSince = formatMemberSince(profile?.createdAt);
 
   return (
-    <section className="px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <section className="overflow-hidden border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.22),transparent_26%),linear-gradient(135deg,#0d0e12_0%,#15171c_55%,#20232b_100%)]">
+    <section className="ff-page">
+      <div className="ff-shell">
+        <section className="ff-hero-band overflow-hidden border border-white/8">
           <div className="grid gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1.3fr)_300px] lg:px-10 lg:py-12">
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-3">
@@ -231,16 +236,16 @@ export function ProfilePage() {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-3">
-                <div className="border border-white/8 bg-black/20 px-4 py-4">
+              <div className="ff-stat-strip sm:grid-cols-3">
+                <div className="ff-stat bg-black/20">
                   <p className="ff-kicker">Account email</p>
                   <p className="mt-2 break-all text-sm font-semibold text-white">{email}</p>
                 </div>
-                <div className="border border-white/8 bg-black/20 px-4 py-4">
+                <div className="ff-stat bg-black/20">
                   <p className="ff-kicker">Profile state</p>
                   <p className="mt-2 text-3xl font-black text-[#e9c400]">Live</p>
                 </div>
-                <div className="border border-white/8 bg-black/20 px-4 py-4">
+                <div className="ff-stat bg-black/20">
                   <p className="ff-kicker">Security mode</p>
                   <p className="mt-2 text-3xl font-black text-white">
                     {revokeOtherSessions ? "Strict" : "Normal"}
@@ -266,11 +271,11 @@ export function ProfilePage() {
                 <CardContent className="space-y-4 px-6 py-6">
                   <p className="ff-kicker">Identity Snapshot</p>
                   <div className="space-y-3">
-                    <div className="border border-white/8 bg-white/4 p-4">
+                    <div className="ff-field-shell bg-white/4">
                       <p className="ff-kicker">Display name</p>
                       <p className="mt-2 text-2xl font-black text-white">{displayHandle}</p>
                     </div>
-                    <div className="border border-white/8 bg-white/4 p-4">
+                    <div className="ff-field-shell bg-white/4">
                       <p className="ff-kicker">Avatar source</p>
                       <p className="mt-2 text-sm leading-6 text-[#d0d3d9]">
                         {avatarUrl.trim() || "No avatar URL set"}
@@ -284,17 +289,17 @@ export function ProfilePage() {
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
-            <CardHeader>
+          <Card className="ff-table-card overflow-hidden border-white/8">
+            <div className="ff-panel-strip">
               <CardTitle>Profile Settings</CardTitle>
+            </div>
+            <CardContent className="space-y-4">
               <CardDescription>Update your account details and visual identity.</CardDescription>
-            </CardHeader>
-            <CardContent>
               {meQuery.isLoading ? (
                 <p className="text-sm text-[#989aa2]">Loading profile...</p>
               ) : (
                 <form className="space-y-4" onSubmit={handleSaveProfile}>
-                  <div className="space-y-2">
+                  <div className="ff-field-shell">
                     <Label htmlFor="profileDisplayName">Display name</Label>
                     <Input
                       id="profileDisplayName"
@@ -303,7 +308,7 @@ export function ProfilePage() {
                       required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="ff-field-shell">
                     <Label htmlFor="profileEmail">Email</Label>
                     <Input
                       id="profileEmail"
@@ -313,7 +318,7 @@ export function ProfilePage() {
                       disabled
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="ff-field-shell">
                     <Label htmlFor="profileAvatarUrl">Avatar URL</Label>
                     <Input
                       id="profileAvatarUrl"
@@ -347,14 +352,14 @@ export function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
-            <CardHeader>
+          <Card className="ff-table-card overflow-hidden border-white/8">
+            <div className="ff-panel-strip">
               <CardTitle>Security Controls</CardTitle>
+            </div>
+            <CardContent className="space-y-4">
               <CardDescription>Set a new password and decide whether to revoke other sessions.</CardDescription>
-            </CardHeader>
-            <CardContent>
               <form className="space-y-4" onSubmit={handleChangePassword}>
-                <div className="space-y-2">
+                <div className="ff-field-shell">
                   <Label htmlFor="currentPassword">Current password</Label>
                   <Input
                     id="currentPassword"
@@ -365,7 +370,7 @@ export function ProfilePage() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="ff-field-shell">
                   <Label htmlFor="newPassword">New password</Label>
                   <Input
                     id="newPassword"
@@ -377,7 +382,7 @@ export function ProfilePage() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="ff-field-shell">
                   <Label htmlFor="confirmPassword">Confirm new password</Label>
                   <Input
                     id="confirmPassword"
@@ -390,7 +395,7 @@ export function ProfilePage() {
                   />
                 </div>
 
-                <label className="flex items-center gap-3 border border-white/8 bg-white/3 px-4 py-4 text-sm text-[#d0d3d9]">
+                <label className="flex items-center gap-3 bg-white/3 px-4 py-4 text-sm text-[#d0d3d9]">
                   <input
                     type="checkbox"
                     checked={revokeOtherSessions}

@@ -373,6 +373,152 @@ summary {
   gap: 2rem;
 }
 
+.ff-page {
+  padding: 3.5rem 1.5rem 5rem;
+}
+
+.ff-shell {
+  margin: 0 auto;
+  max-width: 80rem;
+  display: grid;
+  gap: 2rem;
+}
+
+.ff-hero-band {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(204, 0, 0, 0.22), transparent 28%),
+    linear-gradient(140deg, rgba(255, 255, 255, 0.03), transparent 38%),
+    linear-gradient(135deg, #111216 0%, #171920 54%, #20232b 100%);
+}
+
+.ff-hero-band::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.18)),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 24px,
+      rgba(255, 255, 255, 0.012) 24px,
+      rgba(255, 255, 255, 0.012) 25px
+    );
+}
+
+.ff-grid-main {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.ff-grid-main[data-layout="rail"] {
+  grid-template-columns: minmax(0, 1.45fr) minmax(19rem, 0.8fr);
+}
+
+.ff-grid-main[data-layout="split"] {
+  grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
+}
+
+.ff-telemetry-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
+    #18191f;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.025),
+    0 18px 42px rgba(0, 0, 0, 0.22);
+}
+
+.ff-panel-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ff-stat-strip {
+  display: grid;
+  gap: 1rem;
+}
+
+.ff-stat {
+  background: rgba(255, 255, 255, 0.035);
+  padding: 1rem;
+}
+
+.ff-stat-value {
+  margin-top: 0.5rem;
+  font-size: clamp(1.8rem, 2.8vw, 3.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  color: white;
+}
+
+.ff-section-title {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ff-action-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ff-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.ff-table-card {
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)),
+    #16171c;
+}
+
+.ff-data-list {
+  display: grid;
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ff-data-row {
+  display: grid;
+  gap: 1rem;
+  align-items: center;
+  background: #17181d;
+  padding: 1.25rem;
+}
+
+.ff-data-row:nth-child(even) {
+  background: #121318;
+}
+
+.ff-field-shell {
+  display: grid;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 1rem;
+}
+
+.ff-side-stack {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+
+.ff-muted {
+  color: #989aa2;
+}
+
 @media (min-width: 960px) {
   .ff-auth-grid {
     grid-template-columns: minmax(0, 1fr) minmax(420px, 0.88fr);
@@ -387,5 +533,24 @@ summary {
 @media (max-width: 1080px) {
   .league-grid {
     grid-template-columns: 1fr;
+  }
+
+  .ff-grid-main[data-layout="rail"],
+  .ff-grid-main[data-layout="split"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .ff-page {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .ff-panel-strip {
+    padding: 0.875rem 1rem;
+  }
+
+  .ff-data-row {
+    padding: 1rem;
   }
 }

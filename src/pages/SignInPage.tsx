@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
+import { getDebugUserId } from "@/api/apiClient";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,11 @@ export function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { data: session, isPending } = authClient.useSession();
+  const debugUserId = getDebugUserId();
+  const hasDebugAuth =
+    import.meta.env.DEV &&
+    import.meta.env.VITE_ALLOW_DEBUG_AUTH === "true" &&
+    debugUserId.length > 0;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,10 +39,10 @@ export function SignInPage() {
     redirect && redirect.startsWith("/") ? redirect : "/";
 
   useEffect(() => {
-    if (session?.user) {
+    if (session?.user || hasDebugAuth) {
       navigate(redirectTarget, { replace: true });
     }
-  }, [navigate, redirectTarget, session]);
+  }, [hasDebugAuth, navigate, redirectTarget, session]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -63,40 +69,37 @@ export function SignInPage() {
   }
 
   return (
-    <section className="ff-auth-page relative w-full px-6 py-14 md:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section className="ff-auth-page ff-page relative w-full">
+      <div className="ff-shell">
         <div className="ff-auth-grid min-h-[calc(100svh-16rem)]">
           <div className="space-y-8">
-            <div className="space-y-4">
-              <p className="ff-display text-4xl text-[#f20b0b] md:text-6xl">
-                Formula Fantasy
-              </p>
+            <div className="ff-section-title">
+              <p className="ff-display text-4xl text-[#f20b0b] md:text-6xl">Formula Fantasy</p>
               <div className="h-px w-28 bg-[#cc0000]" />
-              <div className="space-y-4">
-                <p className="ff-display max-w-xl text-5xl text-white md:text-7xl">
-                  Start Engine
-                </p>
-                <p className="max-w-xl text-lg leading-8 text-[#b8bac2]">
-                  Re-enter the paddock, check the next race window, and get your
-                  predictions locked before lights out.
-                </p>
-              </div>
+              <p className="ff-kicker">Paddock Access</p>
+              <p className="ff-display max-w-xl text-5xl text-white md:text-7xl">
+                Start Engine
+              </p>
+              <p className="max-w-xl text-lg leading-8 text-[#b8bac2]">
+                Re-enter the grid, confirm the next race window, and get back into
+                prediction flow before lights out.
+              </p>
             </div>
 
             <div className="grid max-w-2xl gap-4 sm:grid-cols-3">
-              <div className="ff-panel border border-white/6 p-5">
+              <div className="ff-field-shell">
                 <p className="ff-kicker">Secure entry</p>
                 <p className="mt-3 text-sm text-[#b8bac2]">
                   Protected session and account controls.
                 </p>
               </div>
-              <div className="ff-panel border border-white/6 p-5">
+              <div className="ff-field-shell">
                 <p className="ff-kicker">League ready</p>
                 <p className="mt-3 text-sm text-[#b8bac2]">
                   Jump back into leagues, results, and race cards.
                 </p>
               </div>
-              <div className="ff-panel border border-white/6 p-5">
+              <div className="ff-field-shell">
                 <p className="ff-kicker">Live window</p>
                 <p className="mt-3 text-sm text-[#b8bac2]">
                   Real-time access to current prediction status.
@@ -106,8 +109,8 @@ export function SignInPage() {
           </div>
 
           <div className="mx-auto w-full max-w-xl">
-            <Card className="overflow-hidden border-white/8 bg-[#18191f]">
-              <div className="flex items-center justify-between border-b border-white/6 bg-white/4 px-8 py-4">
+            <Card className="ff-table-card overflow-hidden border-white/8">
+              <div className="ff-panel-strip">
                 <span className="ff-kicker">Auth Protocol // 01</span>
                 <span className="h-2 w-2 rounded-full bg-[#cc0000]" />
               </div>
@@ -118,41 +121,41 @@ export function SignInPage() {
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
-              <form className="space-y-4" onSubmit={handleSubmit}>
-                <div className="space-y-2">
-                  <Label htmlFor="signInEmail">Grid Identity (Email)</Label>
-                  <Input
-                    id="signInEmail"
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    required
-                  />
-                </div>
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                  <div className="ff-field-shell">
+                    <Label htmlFor="signInEmail">Grid Identity (Email)</Label>
+                    <Input
+                      id="signInEmail"
+                      type="email"
+                      autoComplete="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      required
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="signInPassword">Secure Key (Password)</Label>
-                  <Input
-                    id="signInPassword"
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    required
-                  />
-                </div>
+                  <div className="ff-field-shell">
+                    <Label htmlFor="signInPassword">Secure Key (Password)</Label>
+                    <Input
+                      id="signInPassword"
+                      type="password"
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      required
+                    />
+                  </div>
 
-                {error ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
-                    {error}
-                  </p>
-                ) : null}
+                  {error ? (
+                    <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                      {error}
+                    </p>
+                  ) : null}
 
-                <Button type="submit" className="w-full" size="lg" disabled={isPending || isSubmitting}>
-                  {isSubmitting ? "Signing in..." : "Sign in"}
-                </Button>
-              </form>
+                  <Button type="submit" className="w-full" size="lg" disabled={isPending || isSubmitting}>
+                    {isSubmitting ? "Signing in..." : "Start Engine"}
+                  </Button>
+                </form>
 
                 <div className="border-t border-white/6 pt-6 text-center">
                   <p className="text-sm text-[#7f828b]">
