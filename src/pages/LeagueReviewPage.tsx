@@ -360,9 +360,10 @@ export function LeagueReviewPage() {
   }, [activeIndex, reviewSlides.length]);
 
   return (
-    <section className="bg-[linear-gradient(180deg,#f6f3ee_0%,#f2ede6_100%)] pb-14 pt-10">
-      <div className="mx-auto max-w-6xl space-y-8 px-6">
-        <div className="rounded-[32px] bg-black px-6 py-5 text-white">
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <Card className="overflow-hidden border-white/8 bg-[linear-gradient(145deg,#111217_0%,#15161b_58%,#1d1f25_100%)]">
+          <CardContent className="px-6 py-8 text-white">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2">
@@ -374,7 +375,7 @@ export function LeagueReviewPage() {
                 </Badge>
               </div>
               <div>
-                <h1 className="font-['Orbitron'] text-4xl font-black uppercase tracking-tight text-white md:text-5xl">
+                <h1 className="ff-display text-5xl text-white md:text-7xl">
                   Result Details
                 </h1>
                 <p className="mt-2 max-w-3xl text-sm leading-6 text-white/72 md:text-base">
@@ -385,24 +386,24 @@ export function LeagueReviewPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-3xl border border-white/10 bg-white/8 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              <div className="border-l-2 border-[#cc0000] bg-white/8 px-4 py-4">
+                <p className="ff-kicker text-white/55">
                   Round total
                 </p>
-                <p className="mt-2 font-['Orbitron'] text-4xl font-black text-white">
+                <p className="mt-2 text-4xl font-black text-white">
                   {data?.score?.pointsTotal ?? 0}
                 </p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/8 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              <div className="border-l-2 border-[#e9c400] bg-white/8 px-4 py-4">
+                <p className="ff-kicker text-white/55">
                   Hits
                 </p>
-                <p className="mt-2 font-['Orbitron'] text-4xl font-black text-white">
+                <p className="mt-2 text-4xl font-black text-white">
                   {hits}
                 </p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/8 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">
+              <div className="border-l-2 border-white/10 bg-white/8 px-4 py-4">
+                <p className="ff-kicker text-white/55">
                   Scored at
                 </p>
                 <p className="mt-2 text-sm font-semibold leading-6 text-white/82">
@@ -411,18 +412,19 @@ export function LeagueReviewPage() {
               </div>
             </div>
           </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {isLoading ? (
-          <Card className="animate-pulse rounded-[32px] border-[#ddd6cc] bg-white">
+          <Card className="animate-pulse border-white/8 bg-[#15161b]">
             <CardContent className="py-20">
-              <div className="h-8 w-1/3 rounded bg-neutral-200" />
+              <div className="h-8 w-1/3 rounded bg-white/8" />
             </CardContent>
           </Card>
         ) : null}
 
         {error ? (
-          <Card className="rounded-[32px] border-red-200 bg-red-50">
+          <Card className="border-[#7a0d0d] bg-[#350909]">
             <CardContent className="space-y-4 py-5">
               <Badge tone="danger">
                 {error instanceof Error ? error.message : "Failed to load race review"}
@@ -436,20 +438,20 @@ export function LeagueReviewPage() {
 
         {!isLoading && !error ? (
           <>
-            <Card className="overflow-hidden rounded-[32px] border-[#ddd6cc] bg-white shadow-[0_18px_48px_rgba(15,23,42,0.06)]">
+            <Card className="overflow-hidden border-white/8 bg-[#15161b] shadow-[0_18px_48px_rgba(0,0,0,0.26)]">
               <CardContent className="px-8 py-8">
                 {activeSlide ? (
                   <div className="space-y-8">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="space-y-4">
-                        <p className="font-['Orbitron'] text-5xl font-black tracking-tight text-slate-300">
+                        <p className="ff-display text-5xl text-[#5d6069]">
                           Q{activeIndex + 1}
                         </p>
                         <div>
-                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          <p className="ff-kicker">
                             {activeSlide.label}
                           </p>
-                          <h2 className="mt-2 max-w-3xl text-2xl font-semibold leading-tight text-slate-950 md:text-3xl">
+                          <h2 className="mt-2 max-w-3xl text-2xl font-semibold leading-tight text-white md:text-4xl">
                             {activeSlide.prompt}
                           </h2>
                         </div>
@@ -474,8 +476,8 @@ export function LeagueReviewPage() {
                     </div>
 
                     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_88px_minmax(0,1fr)] lg:items-center">
-                      <div className="rounded-[28px] border border-[#eadfd2] bg-[linear-gradient(180deg,#fff7f1_0%,#fff_100%)] p-6">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      <div className="border border-white/8 bg-white/3 p-6">
+                        <p className="ff-kicker">
                           Your pick
                         </p>
                         <div className="mt-6 flex items-center gap-5">
@@ -485,10 +487,10 @@ export function LeagueReviewPage() {
                             {activeSlide.pickedShort}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            <p className="ff-kicker">
                               Selected value
                             </p>
-                            <p className="mt-2 text-xl font-semibold leading-8 text-slate-950">
+                            <p className="mt-2 text-xl font-semibold leading-8 text-white">
                               {activeSlide.pickedLabel}
                             </p>
                           </div>
@@ -511,8 +513,8 @@ export function LeagueReviewPage() {
                         </div>
                       </div>
 
-                      <div className="rounded-[28px] border border-[#eadfd2] bg-[linear-gradient(180deg,#f2f8ff_0%,#fff_100%)] p-6">
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      <div className="border border-white/8 bg-white/3 p-6">
+                        <p className="ff-kicker">
                           Actual result
                         </p>
                         <div className="mt-6 flex items-center gap-5">
@@ -522,10 +524,10 @@ export function LeagueReviewPage() {
                             {activeSlide.actualShort}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            <p className="ff-kicker">
                               Classified value
                             </p>
-                            <p className="mt-2 text-xl font-semibold leading-8 text-slate-950">
+                            <p className="mt-2 text-xl font-semibold leading-8 text-white">
                               {activeSlide.actualLabel}
                             </p>
                           </div>
@@ -541,14 +543,14 @@ export function LeagueReviewPage() {
                             type="button"
                             aria-label={`Open question ${index + 1}`}
                             onClick={() => setActiveIndex(index)}
-                            className={`flex h-8 w-8 items-center justify-center rounded-full border text-xs font-bold transition ${
+                            className={`flex h-8 w-8 items-center justify-center border text-xs font-bold transition ${
                               index === activeIndex
-                                ? "border-black bg-black text-white"
+                                ? "border-[#cc0000] bg-[#cc0000] text-white"
                                 : slide.isPending
-                                  ? "border-amber-300 bg-amber-100 text-amber-700"
+                                  ? "border-[#594b11] bg-[#2b2508] text-[#f3db53]"
                                   : slide.isMatch
-                                    ? "border-emerald-300 bg-emerald-100 text-emerald-700"
-                                    : "border-rose-300 bg-rose-100 text-rose-700"
+                                    ? "border-[#205038] bg-[#102317] text-[#6ee7a8]"
+                                    : "border-[#7a0d0d] bg-[#350909] text-[#ff8e8e]"
                             }`}
                           >
                             {index + 1}
@@ -578,9 +580,9 @@ export function LeagueReviewPage() {
                         </Button>
                       </div>
                     </div>
-                  </div>
+                    </div>
                 ) : (
-                  <div className="py-12 text-center text-slate-500">
+                  <div className="py-12 text-center text-[#989aa2]">
                     No prediction details available for this round.
                   </div>
                 )}
@@ -588,42 +590,42 @@ export function LeagueReviewPage() {
             </Card>
 
             <div className="grid gap-6 lg:grid-cols-3">
-              <Card className="rounded-[32px] border-[#ddd6cc] bg-white">
+              <Card className="border-white/8 bg-[#15161b]">
                 <CardContent className="space-y-4 px-6 py-6">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white">
+                    <div className="flex h-12 w-12 items-center justify-center bg-white/8 text-white">
                       <Trophy className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-['Orbitron'] text-xl font-black uppercase text-black">
+                      <p className="ff-display text-xl text-white">
                         Round summary
                       </p>
-                      <p className="text-sm text-slate-500">
+                      <p className="text-sm text-[#989aa2]">
                         Quick read on how the card performed.
                       </p>
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 px-4 py-4">
+                    <p className="ff-kicker">
                       Correct calls
                     </p>
-                    <p className="mt-2 font-['Orbitron'] text-3xl font-black text-black">
+                    <p className="mt-2 text-3xl font-black text-white">
                       {hits}/{reviewSlides.length}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 px-4 py-4">
+                    <p className="ff-kicker">
                       Missed calls
                     </p>
-                    <p className="mt-2 font-['Orbitron'] text-3xl font-black text-black">
+                    <p className="mt-2 text-3xl font-black text-white">
                       {misses}
                     </p>
                   </div>
-                  <div className="rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 px-4 py-4">
+                    <p className="ff-kicker">
                       Result status
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">
+                    <p className="mt-2 text-sm font-semibold text-white">
                       {data?.actual?.available
                         ? "Race result data loaded"
                         : "Awaiting result data"}
@@ -632,9 +634,9 @@ export function LeagueReviewPage() {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[32px] border-[#ddd6cc] bg-white">
+              <Card className="border-white/8 bg-[#15161b]">
                 <CardContent className="space-y-4 px-6 py-6">
-                  <p className="font-['Orbitron'] text-xl font-black uppercase text-black">
+                  <p className="ff-display text-xl text-white">
                     Score breakdown
                   </p>
                   {reviewBreakdownEntries.length > 0 ? (
@@ -642,32 +644,32 @@ export function LeagueReviewPage() {
                       {reviewBreakdownEntries.map(([key, value]) => (
                         <div
                           key={key}
-                          className="flex items-center justify-between rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm"
+                          className="flex items-center justify-between border border-white/8 bg-white/3 px-4 py-3 text-sm"
                         >
-                          <span className="text-slate-600">
+                          <span className="text-[#c4c8d0]">
                             {key.replace(/_/g, " ")}
                           </span>
-                          <span className="font-semibold text-slate-950">+{value}</span>
+                          <span className="font-semibold text-white">+{value}</span>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-[#989aa2]">
                       No scoring breakdown is available yet.
                     </p>
                   )}
                 </CardContent>
               </Card>
 
-              <Card className="rounded-[32px] border-[#ddd6cc] bg-white">
+              <Card className="border-white/8 bg-[#15161b]">
                 <CardContent className="space-y-3 px-6 py-6">
-                  <p className="font-['Orbitron'] text-xl font-black uppercase text-black">
+                  <p className="ff-display text-xl text-white">
                     Navigation
                   </p>
-                  <Button asChild variant="outline" className="w-full rounded-full">
+                  <Button asChild variant="outline" className="w-full">
                     <Link to={`/league/${leagueId}`}>Back to league</Link>
                   </Button>
-                  <Button asChild variant="outline" className="w-full rounded-full">
+                  <Button asChild variant="outline" className="w-full">
                     <Link to={`/league/${leagueId}/races/${raceId}/leaderboard`}>
                       Open race leaderboard
                     </Link>

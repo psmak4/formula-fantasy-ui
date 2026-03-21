@@ -211,9 +211,9 @@ function DriverPicker({
 
   return (
     <fieldset className="space-y-2" disabled={disabled}>
-      <legend className="text-sm font-medium text-slate-700">{label}</legend>
+      <legend className="ff-kicker">{label}</legend>
       <select
-        className="w-full rounded-xl border border-neutral-300 px-4 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+        className="w-full border border-white/10 bg-[#0d0e12] px-4 py-3 text-sm text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
         value={value}
         onChange={(event) => onChange(event.target.value)}
         aria-label={label}
@@ -546,19 +546,10 @@ export function LeaguePredictPage() {
   }
 
   return (
-    <section className="relative w-full overflow-hidden bg-background bg-linear-to-b from-neutral-50 to-white pb-12 pt-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-          opacity: 0.02,
-        }}
-      />
-      <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-8">
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)]">
-          <Card className="overflow-hidden border-neutral-900 bg-[radial-gradient(circle_at_top_left,_rgba(248,113,113,0.22),_transparent_32%),linear-gradient(145deg,_#140f14_0%,_#111827_48%,_#191919_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
+          <Card className="overflow-hidden border-white/8 bg-[radial-gradient(circle_at_top_left,_rgba(248,113,113,0.18),_transparent_32%),linear-gradient(145deg,_#140f14_0%,_#111827_48%,_#191919_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
             <CardHeader className="space-y-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-white/12 text-white" tone="info">
@@ -572,10 +563,10 @@ export function LeaguePredictPage() {
                 </Badge>
               </div>
               <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.36em] text-white/60">
+                <p className="ff-kicker text-white/60">
                   {raceName}
                 </p>
-                <h2 className="font-['Orbitron'] text-4xl font-bold uppercase tracking-tight text-white md:text-5xl">
+                <h2 className="ff-display text-4xl text-white md:text-6xl">
                   Race Weekend Calls
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-white/72 md:text-base">
@@ -584,11 +575,11 @@ export function LeaguePredictPage() {
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                <div className="border border-white/10 bg-white/6 p-4">
+                  <p className="ff-kicker text-white/58">
                     Window
                   </p>
-                  <p className="mt-2 font-['Orbitron'] text-xl font-bold uppercase text-white">
+                  <p className="mt-2 text-xl font-black uppercase text-white">
                     {windowStatus === "open"
                       ? "Open"
                       : windowStatus === "opening_soon"
@@ -596,16 +587,16 @@ export function LeaguePredictPage() {
                         : "Locked"}
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                <div className="border border-white/10 bg-white/6 p-4">
+                  <p className="ff-kicker text-white/58">
                     Countdown
                   </p>
-                  <p className="mt-2 font-['Orbitron'] text-xl font-bold uppercase text-white">
+                  <p className="mt-2 text-xl font-black uppercase text-white">
                     {countdownLabel || "Awaiting schedule"}
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                <div className="border border-white/10 bg-white/6 p-4">
+                  <p className="ff-kicker text-white/58">
                     Race start
                   </p>
                   <p className="mt-2 text-sm font-medium text-white/82">
@@ -616,34 +607,34 @@ export function LeaguePredictPage() {
             </CardHeader>
           </Card>
 
-          <Card className="border-neutral-300 bg-white/96">
+          <Card className="border-white/8 bg-[#15161b]">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.18em] text-slate-900">
+                <CardTitle className="text-2xl">
                   Race Status
                 </CardTitle>
                 <Badge tone={statusTone}>{windowMessage}</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+              <div className="border border-white/8 bg-white/3 p-4">
+                <p className="ff-kicker">
                   Card status
                 </p>
-                <p className="mt-2 font-['Orbitron'] text-2xl font-bold uppercase text-slate-950">
+                <p className="mt-2 text-2xl font-black uppercase text-white">
                   {saveState === "saved"
                     ? "Saved"
                     : windowStatus === "locked"
                       ? "Closed"
                       : "Editable"}
                 </p>
-                <p className="mt-1 text-sm leading-6 text-slate-600">
+                <p className="mt-1 text-sm leading-6 text-[#989aa2]">
                   {saveState === "saved"
                     ? "Your latest calls are stored."
                     : "Changes are local until you save the card."}
                 </p>
               </div>
-              <div className="rounded-3xl border border-dashed border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-slate-600">
+              <div className="border border-white/8 bg-white/2 px-4 py-3 text-sm text-[#989aa2]">
                 {windowStatus === "locked"
                   ? "The prediction window has closed for this race."
                   : windowStatus === "opening_soon"
@@ -659,16 +650,16 @@ export function LeaguePredictPage() {
 
         {/* Loading State */}
         {loading && !pageReady ? (
-          <Card className="animate-pulse bg-background">
+          <Card className="animate-pulse border-white/8 bg-[#15161b]">
             <CardContent className="py-8">
-              <div className="h-6 w-1/3 rounded bg-neutral-200" />
+              <div className="h-6 w-1/3 rounded bg-white/8" />
             </CardContent>
           </Card>
         ) : null}
 
         {/* Error State */}
         {criticalLoadError ? (
-          <Card className="bg-red-50">
+          <Card className="border-[#7a0d0d] bg-[#350909]">
             <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
               <Badge tone="danger">
                 {formatServerError(criticalLoadError, "Failed to load prediction page")}
@@ -685,12 +676,12 @@ export function LeaguePredictPage() {
             {loadIssues.map((issue) => (
               <Card
                 key={issue.title}
-                className={issue.tone === "danger" ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"}
+                className={issue.tone === "danger" ? "border-[#7a0d0d] bg-[#350909]" : "border-[#594b11] bg-[#2b2508]"}
               >
                 <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-slate-900">{issue.title}</p>
-                    <p className="text-sm text-slate-600">{issue.message}</p>
+                    <p className="text-sm font-semibold text-white">{issue.title}</p>
+                    <p className="text-sm text-[#989aa2]">{issue.message}</p>
                   </div>
                   <Button variant="outline" onClick={() => void refreshPredictionData()} disabled={!canRefresh}>
                     Retry
@@ -705,9 +696,9 @@ export function LeaguePredictPage() {
         {pageReady && !criticalLoadError && (
           <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
             <div className="space-y-6">
-            <Card className="bg-background transition hover:border-neutral-400">
+            <Card className="border-white/8 bg-[#15161b]">
               <CardHeader>
-                <CardTitle className="font-['Orbitron'] uppercase tracking-[0.14em]">
+                <CardTitle className="text-2xl">
                   Podium Picks
                 </CardTitle>
               </CardHeader>
@@ -732,15 +723,15 @@ export function LeaguePredictPage() {
                   ].map((slot) => (
                     <div
                       key={slot.label}
-                      className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4"
+                      className="border border-white/8 bg-white/3 p-4"
                     >
                       <div className="flex items-center justify-between gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                        <p className="ff-kicker">
                           {slot.label}
                         </p>
                         <Badge tone={slot.tone}>{slot.value === "Pending" ? "Pending" : "Ready"}</Badge>
                       </div>
-                      <p className="mt-3 font-medium text-slate-900">
+                      <p className="mt-3 font-medium text-white">
                         {slot.value}
                       </p>
                     </div>
@@ -780,12 +771,12 @@ export function LeaguePredictPage() {
                 </div>
 
                 {missingRequiredPick && (
-                  <p className="text-sm text-yellow-600">
+                  <p className="text-sm text-[#f3db53]">
                     Select every required slot.
                   </p>
                 )}
                 {duplicatePodiumPick && (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-[#ff8e8e]">
                     P1, P2, and P3 must be unique.
                   </p>
                 )}
@@ -793,43 +784,43 @@ export function LeaguePredictPage() {
             </Card>
 
             {/* Race Props */}
-            <Card className="bg-background transition hover:border-neutral-400">
+            <Card className="border-white/8 bg-[#15161b]">
               <CardHeader>
-                <CardTitle className="font-['Orbitron'] uppercase tracking-[0.14em]">
+                <CardTitle className="text-2xl">
                   Race Props
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
-                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 p-4">
+                    <p className="ff-kicker">
                       Fastest lap
                     </p>
-                    <p className="mt-2 font-medium text-slate-900">
+                    <p className="mt-2 font-medium text-white">
                       {driverLabelById(drivers, fastestLapDriverId)}
                     </p>
                   </div>
-                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 p-4">
+                    <p className="ff-kicker">
                       Biggest gainer
                     </p>
-                    <p className="mt-2 font-medium text-slate-900">
+                    <p className="mt-2 font-medium text-white">
                       {driverLabelById(drivers, biggestGainerDriverId)}
                     </p>
                   </div>
-                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 p-4">
+                    <p className="ff-kicker">
                       Safety car
                     </p>
-                    <p className="mt-2 font-medium text-slate-900">
+                    <p className="mt-2 font-medium text-white">
                       {safetyCarDeployed ? "Deployed" : "No call"}
                     </p>
                   </div>
-                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4 md:col-span-3">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 p-4 md:col-span-3">
+                    <p className="ff-kicker">
                       Classified finishers
                     </p>
-                    <p className="mt-2 font-medium text-slate-900">
+                    <p className="mt-2 font-medium text-white">
                       {classifiedFinishersLabel(classifiedFinishersBucket)}
                     </p>
                   </div>
@@ -851,11 +842,11 @@ export function LeaguePredictPage() {
                   />
                 </div>
                 <fieldset className="space-y-2" disabled={!isOpen || saveState === "saving" || hasBlockingDriversError}>
-                  <legend className="text-sm font-medium text-slate-700">
+                  <legend className="ff-kicker">
                     Classified Finishers
                   </legend>
                   <select
-                    className="w-full rounded-xl border border-neutral-300 px-4 py-2 text-sm focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
+                    className="w-full border border-white/10 bg-[#0d0e12] px-4 py-3 text-sm text-white focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500"
                     value={classifiedFinishersBucket}
                     onChange={(event) =>
                       setClassifiedFinishersBucket(
@@ -867,16 +858,16 @@ export function LeaguePredictPage() {
                     <option value="">Select finishers bucket</option>
                     {classifiedFinisherOptions.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                        {option.label} · {option.description}
                       </option>
                     ))}
                   </select>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-[#989aa2]">
                     Predict how many cars will be classified at the finish.
                   </p>
                 </fieldset>
 
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-[#d0d3d9]">
                   <input
                     type="checkbox"
                     checked={safetyCarDeployed}
@@ -884,9 +875,9 @@ export function LeaguePredictPage() {
                     onChange={(event) =>
                       setSafetyCarDeployed(event.target.checked)
                     }
-                    className="h-4 w-4 rounded border-neutral-300 text-red-600 focus:ring-red-500"
+                    className="h-4 w-4 border-white/20 bg-[#0d0e12] text-red-600 focus:ring-red-500"
                   />
-                  <span className="text-sm text-slate-700">
+                  <span className="text-sm">
                     Safety car deployed
                   </span>
                 </label>
@@ -894,18 +885,18 @@ export function LeaguePredictPage() {
             </Card>
             </div>
             <div className="space-y-6">
-              <Card className="border-neutral-300">
+              <Card className="border-white/8 bg-[#15161b]">
                 <CardHeader>
-                  <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
+                  <CardTitle className="text-2xl">
                     Submit Card
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <div className="border border-white/8 bg-white/3 p-4">
+                    <p className="ff-kicker">
                       Validation
                     </p>
-                    <ul className="mt-3 space-y-2 text-sm text-slate-600">
+                    <ul className="mt-3 space-y-2 text-sm text-[#989aa2]">
                       <li>{missingRequiredPick ? "Complete every required slot." : "All required slots filled."}</li>
                       <li>{duplicatePodiumPick ? "Podium picks must be unique." : "Podium picks are unique."}</li>
                       <li>{isOpen ? "Prediction window is open." : "Prediction window is not open."}</li>
@@ -938,13 +929,13 @@ export function LeaguePredictPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-neutral-300">
+              <Card className="border-white/8 bg-[#15161b]">
                 <CardHeader>
-                  <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.14em]">
+                  <CardTitle className="text-2xl">
                     Pick Notes
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm leading-6 text-slate-600">
+                <CardContent className="space-y-3 text-sm leading-6 text-[#989aa2]">
                   <p>
                     Podium calls are exclusive. Once a driver is in P1, they cannot
                     also appear in P2 or P3.

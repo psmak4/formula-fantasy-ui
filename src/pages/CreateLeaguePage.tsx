@@ -26,7 +26,7 @@ export function CreateLeaguePage() {
     "idle" | "creating" | "created" | string
   >("idle");
 
-  const previewName = leagueName.trim() || "League Title";
+  const previewName = leagueName.trim() || "Grand Prix Masters";
 
   const createLeagueMutation = useMutation({
     mutationFn: async () => {
@@ -71,114 +71,107 @@ export function CreateLeaguePage() {
   }
 
   return (
-    <section className="bg-[linear-gradient(180deg,#f6f3ee_0%,#f2ede6_100%)] pb-14 pt-14">
-      <div className="mx-auto max-w-6xl space-y-8 px-6">
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-10">
         <div className="space-y-5">
           <Link
             to="/leagues"
-            className="inline-flex items-center text-sm font-semibold text-slate-600 hover:text-black hover:no-underline"
+            className="ff-kicker inline-flex items-center text-[#7f828b] transition-colors hover:text-white"
           >
-            ← Back
+            ← Back To Leagues
           </Link>
 
-          <div>
-            <h1 className="font-['Orbitron'] text-4xl font-black uppercase tracking-tight text-black md:text-5xl">
-              Create A League
+          <div className="space-y-4">
+            <p className="ff-kicker">League Build Sheet</p>
+            <h1 className="ff-display text-5xl text-white md:text-7xl">
+              Create League
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
+            <p className="max-w-3xl text-base leading-7 text-[#a3a6af] md:text-lg">
               Start your own league and invite friends to compete in race-by-race
               Formula Fantasy predictions.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.95fr)]">
-          <Card className="rounded-[32px] border-[#ddd6cc] bg-white shadow-[0_16px_38px_rgba(15,23,42,0.05)]">
-            <CardContent className="space-y-8 px-6 py-6 md:px-8 md:py-8">
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.82fr)]">
+          <Card className="border-white/8 bg-[#15161b]">
+            <CardContent className="space-y-10 px-6 py-8 md:px-8">
               <div className="space-y-3">
-                <Label htmlFor="leagueName" className="text-sm font-semibold text-black">
-                  League name
-                </Label>
+                <Label htmlFor="leagueName">League Identification</Label>
                 <Input
                   id="leagueName"
-                  placeholder="Enter a league name"
+                  placeholder="Enter league name..."
                   maxLength={25}
                   value={leagueName}
                   onChange={(event) => setLeagueName(event.target.value)}
-                  className="h-12 rounded-2xl border-neutral-400 text-base"
+                  className="ff-display h-16 text-2xl text-white placeholder:text-[#4d5058] md:text-4xl"
                 />
-                <p className="text-sm text-slate-500">
-                  Max 25 characters.
+                <p className="text-sm text-[#777a84]">
+                  Max 25 characters. Keep it sharp and easy to spot in standings.
                 </p>
               </div>
 
-              <div className="border-t border-[#ece5dc] pt-8">
-                <p className="text-sm font-semibold text-black">Type of league</p>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => setVisibility("private")}
-                    className={`rounded-[24px] border px-5 py-5 text-left transition ${
-                      visibility === "private"
-                        ? "border-black bg-neutral-950 text-white"
-                        : "border-[#ddd6cc] bg-white text-black"
-                    }`}
-                  >
-                    <p className="font-['Orbitron'] text-2xl font-black tracking-tight">
-                      Private
-                    </p>
-                    <p
-                      className={`mt-3 text-sm leading-6 ${
-                        visibility === "private" ? "text-white/72" : "text-slate-600"
-                      }`}
-                    >
-                      Players join with an invite link that you share after creation.
-                    </p>
-                  </button>
-
+              <div className="space-y-5">
+                <Label>Visibility Parameters</Label>
+                <div className="grid gap-4 md:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => setVisibility("public")}
-                    className={`rounded-[24px] border px-5 py-5 text-left transition ${
+                    className={`relative border p-6 text-left transition ${
                       visibility === "public"
-                        ? "border-black bg-neutral-950 text-white"
-                        : "border-[#ddd6cc] bg-white text-black"
+                        ? "border-[#cc0000] bg-[#1d1f25] text-white shadow-[0_0_0_1px_rgba(204,0,0,0.16)]"
+                        : "border-white/6 bg-white/3 text-[#d7d9df] hover:border-white/12"
                     }`}
                   >
-                    <p className="font-['Orbitron'] text-2xl font-black tracking-tight">
-                      Public
-                    </p>
-                    <p
-                      className={`mt-3 text-sm leading-6 ${
-                        visibility === "public" ? "text-white/72" : "text-slate-600"
-                      }`}
-                    >
+                    <span className="ff-kicker text-[#ffb0b0]">Public Circuit</span>
+                    <p className="ff-display mt-4 text-3xl">Open Grid</p>
+                    <p className="mt-4 text-sm leading-6 text-[#9699a2]">
                       Anyone can find and join your league from the public list.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setVisibility("private")}
+                    className={`relative border p-6 text-left transition ${
+                      visibility === "private"
+                        ? "border-[#cc0000] bg-[#1d1f25] text-white shadow-[0_0_0_1px_rgba(204,0,0,0.16)]"
+                        : "border-white/6 bg-white/3 text-[#d7d9df] hover:border-white/12"
+                    }`}
+                  >
+                    <span className="ff-kicker text-[#ffb0b0]">Private Paddock</span>
+                    <p className="ff-display mt-4 text-3xl">Invite Only</p>
+                    <p className="mt-4 text-sm leading-6 text-[#9699a2]">
+                      Players join with an invite link that you share after creation.
                     </p>
                   </button>
                 </div>
               </div>
 
-              <div className="border-t border-[#ece5dc] pt-8">
-                <div className="rounded-[24px] border border-neutral-200 bg-neutral-50 px-5 py-4 text-sm leading-6 text-slate-600">
+              <div className="ff-panel border border-white/6 px-5 py-4">
+                <p className="ff-kicker mb-2">
+                  {visibility === "private" ? "Private setup" : "Public setup"}
+                </p>
+                <p className="text-sm leading-6 text-[#a3a6af]">
                   {visibility === "private"
                     ? "Private leagues are best for friend groups, office pools, or invite-only rivalries."
-                    : "Public leagues are discoverable in the Join A League page and can grow without manual invites."}
-                </div>
+                    : "Public leagues are discoverable in the Join League page and can grow without manual invites."}
+                </p>
               </div>
 
-              <div className="space-y-4 border-t border-[#ece5dc] pt-8">
+              <div className="space-y-4">
                 <Button
-                  className="w-full rounded-full"
+                  className="w-full md:w-auto md:min-w-64"
+                  size="lg"
                   onClick={handleCreateLeague}
                   disabled={createState === "creating"}
                 >
-                  {createState === "creating" ? "Creating..." : "Create a league"}
+                  {createState === "creating" ? "Creating..." : "Create League"}
                 </Button>
                 {createState !== "idle" &&
                 createState !== "creating" &&
                 createState !== "created" ? (
-                  <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
                     {createState}
                   </p>
                 ) : null}
@@ -186,29 +179,71 @@ export function CreateLeaguePage() {
             </CardContent>
           </Card>
 
-          <div className="rounded-[32px] border border-[#ddd6cc] bg-white p-5 shadow-[0_16px_38px_rgba(15,23,42,0.04)]">
-            <div className="flex h-full min-h-[420px] flex-col justify-center rounded-[28px] bg-[linear-gradient(180deg,#f7f4ec_0%,#efebe3_100%)] px-8 py-10 text-center">
-              <div
-                className={`mx-auto flex h-20 w-20 items-center justify-center rounded-full text-2xl font-black ${
-                  visibility === "private"
-                    ? "bg-black text-white"
-                    : "bg-red-600 text-white"
-                }`}
-              >
-                {leagueInitials(previewName)}
+          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
+            <CardContent className="p-5">
+              <div className="relative min-h-[540px] overflow-hidden border border-white/6 bg-[linear-gradient(180deg,#345c67_0%,#1c2026_46%,#121318_100%)] p-8">
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-[linear-gradient(140deg,rgba(255,255,255,0.08),transparent_34%),linear-gradient(180deg,transparent,rgba(0,0,0,0.42))]"
+                />
+                <div className="relative z-10 flex h-full flex-col">
+                  <div className="flex items-start justify-between gap-4">
+                    <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
+                      New League
+                    </span>
+                    <span className="text-[#a3a6af]">↗</span>
+                  </div>
+
+                  <div className="mt-auto space-y-6">
+                    <div>
+                      <p className="ff-kicker text-[#d0d3d9]">Live Preview</p>
+                      <p className="ff-display mt-3 text-4xl text-white md:text-5xl">
+                        {previewName}
+                      </p>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="border-l-2 border-[#cc0000] bg-black/28 p-4">
+                        <p className="ff-kicker">Status</p>
+                        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-white">
+                          Recruiting
+                        </p>
+                      </div>
+                      <div className="border-l-2 border-[#e9c400] bg-black/28 p-4">
+                        <p className="ff-kicker">Members</p>
+                        <p className="mt-3 text-sm font-semibold uppercase tracking-[0.1em] text-white">
+                          1 manager
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="border border-white/6 bg-black/16 p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center border border-white/10 bg-white/6 text-lg font-black text-white">
+                          {leagueInitials(previewName)}
+                        </div>
+                        <div>
+                          <p className="ff-kicker">Commissioner</p>
+                          <p className="text-sm font-semibold uppercase tracking-[0.1em] text-white">
+                            You
+                          </p>
+                        </div>
+                        <p className="ml-auto text-sm font-semibold uppercase tracking-[0.1em] text-[#8d9099]">
+                          {visibility} league
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3 text-xs uppercase tracking-[0.16em] text-[#6f727b] sm:grid-cols-3">
+                      <p>Engine AP-2026.4</p>
+                      <p>Latency 0.02ms</p>
+                      <p>Security AES-256</p>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="mt-6 font-['Orbitron'] text-3xl font-black tracking-tight text-black">
-                {previewName}
-              </p>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                {visibility} league
-              </p>
-              <p className="mx-auto mt-6 max-w-sm text-sm leading-6 text-slate-600">
-                Your league preview updates as you type. Once created, you can
-                invite other players or share it publicly depending on the league type.
-              </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </section>

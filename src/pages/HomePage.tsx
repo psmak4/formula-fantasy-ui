@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
@@ -6,7 +6,6 @@ import { apiClient } from "../api/apiClient";
 import { toastApiError } from "../lib/api-error";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
-import { HeroBackdrop } from "../components/HeroBackdrop";
 import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -82,11 +81,13 @@ function formatRank(value?: number | null): string {
   if (typeof value !== "number" || Number.isNaN(value) || value <= 0) {
     return "-";
   }
+
   if (value >= 1000) {
     const compact =
       value >= 10000 ? Math.round(value / 1000) : Math.round((value / 1000) * 10) / 10;
     return `${compact}K+`;
   }
+
   return value.toLocaleString();
 }
 
@@ -94,29 +95,31 @@ function LeagueListRow({ league, index }: { league: League; index: number }) {
   return (
     <Link
       to={`/league/${league.id}`}
-      className="group flex items-center gap-4 rounded-[26px] border border-[#ddd6cc] bg-white px-5 py-5 transition hover:-translate-y-0.5 hover:border-neutral-400 hover:no-underline"
+      className="grid gap-4 border-b border-white/6 bg-white/2 px-5 py-5 transition hover:bg-white/4 hover:no-underline md:grid-cols-[minmax(0,1.4fr)_130px_120px]"
     >
-      <div
-        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
-      >
-        {leagueInitials(league.name)}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-['Orbitron'] text-2xl font-black tracking-tight text-black">
-          {league.name}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-          <span>{league.visibility ?? "private"}</span>
-          <span>Total Players: {league.memberCount ?? 0}</span>
+      <div className="flex min-w-0 items-center gap-4">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 text-sm font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
+        >
+          {leagueInitials(league.name)}
+        </div>
+        <div className="min-w-0">
+          <p className="ff-display truncate text-2xl text-white">{league.name}</p>
+          <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7f828b]">
+            <span>{league.visibility ?? "private"}</span>
+            <span>{league.memberCount ?? 0} members</span>
+          </div>
         </div>
       </div>
-      <div className="shrink-0 text-right">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Rank
-        </p>
-        <p className="mt-1 font-['Orbitron'] text-2xl font-black text-black">
-          {formatRank(league.rank)}
-        </p>
+
+      <div>
+        <p className="ff-kicker">Players</p>
+        <p className="mt-2 text-3xl font-black text-white">{league.memberCount ?? 0}</p>
+      </div>
+
+      <div className="text-left md:text-right">
+        <p className="ff-kicker">Rank</p>
+        <p className="mt-2 text-3xl font-black text-[#e9c400]">{formatRank(league.rank)}</p>
       </div>
     </Link>
   );
@@ -129,22 +132,17 @@ function HowToPlayCard({
 }: {
   title: string;
   body: string;
-  accent: React.ReactNode;
+  accent: ReactNode;
 }) {
   return (
-    <Card className="overflow-hidden rounded-[28px] border-[#ddd6cc] bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]">
-      <CardContent className="grid gap-6 px-6 py-6 md:grid-cols-[0.95fr_1.05fr] md:items-center">
+    <Card className="overflow-hidden border-white/8 bg-[#15161b]">
+      <CardContent className="grid gap-6 px-6 py-6 md:grid-cols-[0.9fr_1.1fr] md:items-center">
         <div className="space-y-4">
-          <h3 className="font-['Orbitron'] text-3xl font-black tracking-tight text-black">
-            {title}
-          </h3>
-          <p className="max-w-xl text-sm leading-6 text-slate-600 md:text-base">
-            {body}
-          </p>
+          <p className="ff-kicker">How It Works</p>
+          <h3 className="ff-display text-3xl text-white md:text-4xl">{title}</h3>
+          <p className="max-w-xl text-sm leading-6 text-[#989aa2] md:text-base">{body}</p>
         </div>
-        <div className="rounded-[24px] border border-[#ece5dc] bg-[#f7f3ec] p-6">
-          {accent}
-        </div>
+        <div className="border border-white/8 bg-white/3 p-6">{accent}</div>
       </CardContent>
     </Card>
   );
@@ -235,6 +233,7 @@ export function HomePage() {
   const lockAtLabel = useMemo(() => formatDateLabel(entryClosesAt), [entryClosesAt]);
   const leagues = myLeaguesQuery.data ?? [];
   const leagueCount = leagues.length;
+  const primaryLeague = leagues[0] ?? null;
 
   useEffect(() => {
     const targetAt =
@@ -325,8 +324,8 @@ export function HomePage() {
       setJoinState("joining");
     },
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["leagues-page"] });
-      queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] });
+      void queryClient.invalidateQueries({ queryKey: ["leagues-page"] });
+      void queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] });
       const joinedLeagueId = result.leagueId;
       if (!joinedLeagueId) {
         throw new Error("Invite join succeeded but no league id returned");
@@ -370,406 +369,349 @@ export function HomePage() {
   const heroButton = session?.user
     ? predictionStatus === "open"
       ? {
-          href: leagueCount > 0 ? `/league/${leagues[0]?.id}/predict` : "/leagues/create",
-          label: leagueCount > 0 ? "Make predictions" : "Create a league",
+          href: primaryLeague ? `/league/${primaryLeague.id}/predict` : "/leagues/create",
+          label: primaryLeague ? "Build race card" : "Create a league",
         }
       : predictionStatus === "opens_soon"
         ? {
-            href: leagueCount > 0 ? "/leagues" : "/leagues/create",
-            label: leagueCount > 0 ? "View my leagues" : "Create a league",
+            href: primaryLeague ? "/leagues" : "/leagues/create",
+            label: primaryLeague ? "View my leagues" : "Create a league",
           }
         : {
             href: "/results",
-            label: "View my results",
+            label: "Review results",
           }
     : {
         href: predictionStatus === "open" ? "/sign-up" : "#how-to-play",
-        label: predictionStatus === "open" ? "Login / Register" : "How to play",
+        label: predictionStatus === "open" ? "Create account" : "How it works",
       };
 
   return (
-    <section className="bg-[linear-gradient(180deg,#f6f3ee_0%,#f2ede6_100%)] pb-14 pt-10">
-      <section className="relative overflow-hidden">
-        <HeroBackdrop />
-        <div className="relative z-10 mx-auto max-w-6xl px-6">
-          <div className="mx-auto mb-3 h-2 max-w-[92%] bg-red-600" />
-          <div className="mx-auto max-w-[92%] rounded-[32px] bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.10),_transparent_32%),linear-gradient(180deg,#8f0229_0%,#a0022f_42%,#b00436_100%)] px-8 py-10 text-white shadow-[0_24px_60px_rgba(127,29,29,0.24)]">
-            {loading ? (
-              <div className="space-y-4 py-12">
-                <div className="h-5 w-24 animate-pulse rounded bg-white/20" />
-                <div className="h-16 w-72 animate-pulse rounded bg-white/20" />
-                <div className="h-6 w-56 animate-pulse rounded bg-white/20" />
-              </div>
-            ) : error ? (
-              <div className="space-y-3 py-10">
-                <h2 className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight">
-                  Couldn&apos;t load next race
-                </h2>
-                <p className="text-white/80">{error}</p>
-                <Button variant="secondary" onClick={() => void nextRaceQuery.refetch()}>
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-8 text-center">
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.28em] text-white/75">
-                    Round {nextRace?.round ?? "—"}
-                  </p>
-                  <h1 className="font-['Orbitron'] text-5xl font-black tracking-tight text-white md:text-7xl">
-                    {raceName}
-                  </h1>
-                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">
-                    {localRaceTime}
-                  </p>
+    <section className="px-6 py-12 md:py-16">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <section className="overflow-hidden border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.26),transparent_30%),linear-gradient(135deg,#0d0e12_0%,#16171c_55%,#21242b_100%)]">
+          <div className="grid gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1.45fr)_320px] lg:px-10 lg:py-12">
+            <div className="space-y-8">
+              {loading ? (
+                <div className="space-y-4 py-10">
+                  <div className="h-5 w-24 animate-pulse bg-white/10" />
+                  <div className="h-16 w-80 animate-pulse bg-white/10" />
+                  <div className="h-6 w-64 animate-pulse bg-white/10" />
                 </div>
-
-                <div className="flex flex-col items-center gap-3">
-                  <Badge
-                    className={`rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] ${
-                      predictionStatus === "open"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : predictionStatus === "opens_soon"
-                          ? "bg-white/12 text-white"
-                          : "bg-black/20 text-white"
-                    }`}
-                  >
-                    {predictionStatus === "open"
-                      ? "Predictions Open"
-                      : predictionStatus === "opens_soon"
-                        ? "Next round will open soon"
-                        : "Predictions locked"}
-                  </Badge>
-                  <p className="text-lg font-semibold text-white">
-                    {countdown}
-                  </p>
-                  <p className="max-w-2xl text-sm text-white/78 md:text-base">
-                    {predictionStatus === "open"
-                      ? `Submit or edit your card before ${lockAtLabel}.`
-                      : predictionStatus === "opens_soon"
-                        ? `Prediction window opens ${openAtLabel}.`
-                        : "This round is locked. Review results and prepare for the next race."}
-                  </p>
-                  <Button
-                    asChild
-                    variant={session?.user ? "outline" : "secondary"}
-                    className={`mt-1 rounded-full px-6 ${
-                      session?.user
-                        ? "border-white/24 bg-white/10 text-white hover:bg-white/16 hover:text-white"
-                        : "border-white bg-white text-black hover:bg-white/90"
-                    }`}
-                  >
-                    <Link to={heroButton.href}>{heroButton.label}</Link>
+              ) : error ? (
+                <div className="space-y-4 py-8">
+                  <p className="ff-kicker text-[#ff7373]">Race Control</p>
+                  <h1 className="ff-display text-5xl text-white md:text-6xl">
+                    Next race unavailable
+                  </h1>
+                  <p className="max-w-xl text-sm leading-6 text-[#c2c4cb]">{error}</p>
+                  <Button variant="secondary" onClick={() => void nextRaceQuery.refetch()}>
+                    Retry feed
                   </Button>
                 </div>
-              </div>
-            )}
-          </div>
-
-          {!loading && !error ? (
-            <div className="mx-auto mt-4 grid max-w-[92%] gap-4 rounded-[28px] border border-[#ddd6cc] bg-white px-6 py-5 shadow-[0_14px_28px_rgba(15,23,42,0.04)] md:grid-cols-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Window status
-                </p>
-                <p className="mt-2 font-['Orbitron'] text-2xl font-black text-black">
-                  {predictionStatus === "open"
-                    ? "Open"
-                    : predictionStatus === "opens_soon"
-                      ? "Soon"
-                      : "Locked"}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Opens at
-                </p>
-                <p className="mt-2 text-sm font-semibold text-slate-900">
-                  {openAtLabel}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Locks at
-                </p>
-                <p className="mt-2 text-sm font-semibold text-slate-900">
-                  {lockAtLabel}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Live leagues
-                </p>
-                <p className="mt-2 font-['Orbitron'] text-2xl font-black text-black">
-                  {session?.user ? leagueCount : "-"}
-                </p>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <div className="mx-auto mt-10 max-w-6xl space-y-10 px-6">
-        {session?.user && !sessionPending ? (
-          <>
-            <section className="space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h2 className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight text-black md:text-4xl">
-                    My Leagues
-                  </h2>
-                  <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                    Your current competitions, with quick access back to the
-                    leaderboard and next card.
-                  </p>
-                </div>
-                <Button asChild variant="outline" className="rounded-full border-2 border-black px-5">
-                  <Link to="/leagues">View all</Link>
-                </Button>
-              </div>
-
-              {myLeaguesQuery.isLoading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((value) => (
-                    <div
-                      key={value}
-                      className="h-24 animate-pulse rounded-[26px] border border-[#ddd6cc] bg-white"
-                    />
-                  ))}
-                </div>
-              ) : myLeaguesQuery.error ? (
-                <Card className="rounded-[28px] border-red-200 bg-red-50">
-                  <CardContent className="py-5">
-                    <p className="text-red-700">
-                      {myLeaguesQuery.error instanceof Error
-                        ? myLeaguesQuery.error.message
-                        : "Failed to load leagues"}
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : leagueCount === 0 ? (
-                <Card className="rounded-[28px] border-[#ddd6cc] bg-white">
-                  <CardContent className="space-y-4 py-10 text-center">
-                    <p className="font-['Orbitron'] text-2xl font-black uppercase text-black">
-                      No leagues yet
-                    </p>
-                    <p className="mx-auto max-w-2xl text-sm text-slate-600">
-                      Create your first league or join one with an invite link.
-                    </p>
-                    <div className="flex flex-wrap justify-center gap-3">
-                      <Button asChild className="rounded-full">
-                        <Link to="/leagues/create">Create a league</Link>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
               ) : (
-                <div className="space-y-4">
-                  {leagues.map((league, index) => (
-                    <LeagueListRow key={league.id} league={league} index={index} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-              <Card className="rounded-[28px] border-[#ddd6cc] bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]">
-                <CardContent className="space-y-5 px-6 py-6">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Join league
-                    </p>
-                    <h3 className="mt-2 font-['Orbitron'] text-3xl font-black tracking-tight text-black">
-                      Bring in an invite
-                    </h3>
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
-                      Paste a token, invite URL, or direct league link. If it is
-                      valid, you will be routed straight into the competition.
+                <>
+                  <div className="space-y-4">
+                    <p className="ff-kicker">Round {nextRace?.round ?? "—"} Transmission</p>
+                    <h1 className="ff-display max-w-4xl text-5xl text-white md:text-7xl">
+                      {raceName}
+                    </h1>
+                    <p className="max-w-2xl text-sm font-semibold uppercase tracking-[0.16em] text-[#d0d3d9] md:text-base">
+                      {localRaceTime}
                     </p>
                   </div>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Badge tone={predictionStatus === "open" ? "success" : predictionStatus === "opens_soon" ? "warning" : "neutral"}>
+                      {predictionStatus === "open"
+                        ? "Predictions Open"
+                        : predictionStatus === "opens_soon"
+                          ? "Window Opening Soon"
+                          : "Predictions Locked"}
+                    </Badge>
+                    <Badge tone="info">Countdown {countdown}</Badge>
+                  </div>
+
+                  <p className="max-w-2xl text-base leading-7 text-[#c2c4cb]">
+                    {predictionStatus === "open"
+                      ? `Build your card before ${lockAtLabel} and lock in your race weekend strategy.`
+                      : predictionStatus === "opens_soon"
+                        ? `The next submission window opens ${openAtLabel}. Use the down time to line up your leagues and rivals.`
+                        : "The grid is locked. Review the fallout, track your rank, and get ready for the next window."}
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    <Button asChild size="lg">
+                      <Link to={heroButton.href}>{heroButton.label}</Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg">
+                      <Link to={session?.user ? "/leagues" : "/sign-in"}>
+                        {session?.user ? "League garage" : "Sign in"}
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div className="grid gap-4 pt-2 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                      <p className="ff-kicker">Window status</p>
+                      <p className="mt-2 text-3xl font-black text-white">
+                        {predictionStatus === "open"
+                          ? "Open"
+                          : predictionStatus === "opens_soon"
+                            ? "Soon"
+                            : "Locked"}
+                      </p>
+                    </div>
+                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                      <p className="ff-kicker">Opens at</p>
+                      <p className="mt-2 text-sm font-semibold text-white">{openAtLabel}</p>
+                    </div>
+                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                      <p className="ff-kicker">Locks at</p>
+                      <p className="mt-2 text-sm font-semibold text-white">{lockAtLabel}</p>
+                    </div>
+                    <div className="border border-white/8 bg-black/20 px-4 py-4">
+                      <p className="ff-kicker">Active leagues</p>
+                      <p className="mt-2 text-3xl font-black text-[#e9c400]">
+                        {session?.user ? leagueCount : "—"}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="space-y-5">
+              <Card className="border-white/8 bg-black/20">
+                <CardContent className="space-y-5 px-6 py-6">
+                  <p className="ff-kicker">Race Signal</p>
+                  <div>
+                    <p className="text-5xl font-black text-white">{countdown || "—"}</p>
+                    <p className="mt-2 text-sm text-[#989aa2]">
+                      {predictionStatus === "open"
+                        ? "Remaining until the card locks"
+                        : predictionStatus === "opens_soon"
+                          ? "Remaining until submissions open"
+                          : "Race weekend timing"}
+                    </p>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                    <div className="border border-white/8 bg-white/4 p-4">
+                      <p className="ff-kicker">Track status</p>
+                      <p className="mt-2 text-2xl font-black text-white">{raceName}</p>
+                    </div>
+                    <div className="border border-white/8 bg-white/4 p-4">
+                      <p className="ff-kicker">Race start</p>
+                      <p className="mt-2 text-sm font-semibold leading-6 text-white">
+                        {localRaceTime}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-white/8 bg-[#15161b]">
+                <CardContent className="space-y-4 px-6 py-6">
+                  <p className="ff-kicker">Invite Access</p>
                   <div className="space-y-2">
-                    <Label htmlFor="inviteInput">Invite token or link</Label>
+                    <Label htmlFor="homeInvite" className="text-[#d0d3d9]">
+                      League invite link or token
+                    </Label>
                     <Input
-                      id="inviteInput"
-                      placeholder="https://... or invite token"
+                      id="homeInvite"
+                      placeholder="Paste invite token or league link"
                       value={inviteInput}
-                      onChange={(event) => setInviteInput(event.target.value)}
+                      onChange={(event) => {
+                        setInviteInput(event.target.value);
+                        if (joinState !== "idle") {
+                          setJoinState("idle");
+                        }
+                      }}
                     />
                   </div>
                   <Button
-                    className="w-full rounded-full bg-black text-white hover:bg-neutral-800"
+                    className="w-full"
                     onClick={handleJoinLeague}
                     disabled={joinState === "joining"}
                   >
                     {joinState === "joining" ? "Joining..." : "Join league"}
                   </Button>
-                  {joinState !== "idle" &&
-                  joinState !== "joining" &&
-                  joinState !== "joined" ? (
-                    <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      {joinState}
+                  <p className="text-sm text-[#989aa2]">
+                    {joinState === "idle"
+                      ? "Drop in via invite or open an existing league directly."
+                      : joinState === "joined"
+                        ? "Redirecting..."
+                        : joinState}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {session?.user && !sessionPending ? (
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_320px]">
+            <Card className="border-white/8 bg-[#15161b]">
+              <CardContent className="px-0 py-0">
+                <div className="flex items-center justify-between border-b border-white/6 px-6 py-5">
+                  <div>
+                    <p className="ff-display text-3xl text-white">My Leagues</p>
+                    <p className="mt-2 text-sm text-[#989aa2]">
+                      Active championships and current rank pressure.
                     </p>
-                  ) : null}
+                  </div>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/leagues">Open hub</Link>
+                  </Button>
+                </div>
+
+                {myLeaguesQuery.isLoading ? (
+                  <div className="space-y-4 px-6 py-6">
+                    {[1, 2, 3].map((value) => (
+                      <div
+                        key={value}
+                        className="h-24 animate-pulse border border-white/6 bg-white/3"
+                      />
+                    ))}
+                  </div>
+                ) : null}
+
+                {myLeaguesQuery.error ? (
+                  <div className="px-6 py-6">
+                    <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                      {myLeaguesQuery.error instanceof Error
+                        ? myLeaguesQuery.error.message
+                        : "Failed to load leagues"}
+                    </div>
+                  </div>
+                ) : null}
+
+                {!myLeaguesQuery.isLoading && !myLeaguesQuery.error ? (
+                  leagues.length === 0 ? (
+                    <div className="px-6 py-10 text-center">
+                      <p className="ff-display text-2xl text-white">No Leagues Yet</p>
+                      <p className="mx-auto mt-3 max-w-2xl text-sm text-[#989aa2]">
+                        Start your own paddock or join with an invite to unlock predictions.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      {leagues.slice(0, 4).map((league, index) => (
+                        <LeagueListRow key={league.id} league={league} index={index} />
+                      ))}
+                    </div>
+                  )
+                ) : null}
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card className="border-white/8 bg-[linear-gradient(180deg,#1d120d_0%,#100e0d_100%)]">
+                <CardContent className="space-y-5 px-6 py-6">
+                  <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
+                    Current Focus
+                  </span>
+                  <h2 className="ff-display text-4xl text-white">Prediction Window</h2>
+                  <p className="text-sm leading-6 text-[#d5d7dd]">
+                    {predictionStatus === "open"
+                      ? "Cards are open now. Prioritize your primary league and lock the podium before the field settles."
+                      : predictionStatus === "opens_soon"
+                        ? "The next race card is not live yet. Keep your leagues organized and be ready at opening."
+                        : "The current race is locked. Use this cycle to review performance and reset for the next event."}
+                  </p>
+                  <Button asChild variant="outline">
+                    <Link to={predictionStatus === "locked" ? "/results" : "/leagues"}>
+                      {predictionStatus === "locked" ? "Open results" : "Manage leagues"}
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
 
-              <div className="rounded-[28px] border border-[#ddd6cc] bg-white px-8 py-8">
-                <div className="h-2 w-full bg-red-600" />
-                <div className="mt-6 space-y-4">
-                  <h3 className="font-['Orbitron'] text-4xl font-black tracking-tight text-black">
-                    Create and compete
-                  </h3>
-                  <p className="max-w-xl text-sm leading-6 text-slate-600">
-                    Join public leagues, create your own, or invite friends to
-                    compare scores as you predict the race results for the F1 season.
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Button asChild className="rounded-full">
-                      <Link to="/join">Join a league</Link>
-                    </Button>
-                    <Button asChild variant="outline" className="rounded-full border-2 border-black px-5">
-                      <Link to="/leagues/create">+ Create a league</Link>
-                    </Button>
+              <Card className="border-white/8 bg-[#15161b]">
+                <CardContent className="space-y-4 px-6 py-6">
+                  <p className="ff-kicker">Quick Access</p>
+                  <div className="grid gap-4">
+                    <Link
+                      to="/join"
+                      className="border border-white/8 bg-white/3 px-4 py-4 text-white transition hover:bg-white/6 hover:no-underline"
+                    >
+                      <p className="ff-display text-2xl text-white">Join A League</p>
+                      <p className="mt-2 text-sm text-[#989aa2]">
+                        Redeem an invite or browse public competitions.
+                      </p>
+                    </Link>
+                    <Link
+                      to="/leagues/create"
+                      className="border border-white/8 bg-white/3 px-4 py-4 text-white transition hover:bg-white/6 hover:no-underline"
+                    >
+                      <p className="ff-display text-2xl text-white">Create A League</p>
+                      <p className="mt-2 text-sm text-[#989aa2]">
+                        Start a private grid for your group and own the season narrative.
+                      </p>
+                    </Link>
                   </div>
-                </div>
-              </div>
-            </section>
-          </>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
         ) : (
-          <>
-            <section id="how-to-play" className="space-y-5">
-              <div>
-                <h2 className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight text-black md:text-4xl">
-                  How To Play
-                </h2>
-              </div>
+          <section id="how-to-play" className="space-y-6">
+            <div className="space-y-3">
+              <p className="ff-kicker">How To Play</p>
+              <h2 className="ff-display text-4xl text-white md:text-5xl">
+                Predict The Weekend. Beat Your League.
+              </h2>
+            </div>
 
+            <div className="grid gap-6">
               <HowToPlayCard
-                title="Make your predictions"
-                body="Choose who you think will win the race, grab fastest lap, gain the most places, and how the rest of the weekend will unfold. Every race is its own scoring moment."
+                title="Build your race card"
+                body="Choose the podium, fastest lap, biggest gainer, safety car call, and classified finishers before the window closes."
                 accent={
-                  <div className="flex h-full min-h-40 items-center justify-center">
-                    <div className="flex items-center gap-3">
-                      {[1, 2, 3, 4, 5, 6, 7].map((value) => (
-                        <div
-                          key={value}
-                          className={`h-4 w-4 rounded-full ${
-                            value <= 3 ? "bg-red-600" : "bg-white"
-                          } border border-neutral-300`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                }
-              />
-
-              <HowToPlayCard
-                title="Lock in your answers"
-                body="Cards open 7 days before the race and stay editable until lock. Save early, come back later, and refine your selections before lights out."
-                accent={
-                  <div className="grid min-h-40 grid-cols-3 gap-3">
-                    <div className="rounded-[22px] bg-white" />
-                    <div className="rounded-[22px] bg-white" />
-                    <div className="rounded-[22px] bg-white" />
-                  </div>
-                }
-              />
-
-              <HowToPlayCard
-                title="Race to the top"
-                body="Each correct call adds to your round score. Track movement in your leagues and see how your predictions compare against everyone else on the grid."
-                accent={
-                  <div className="grid min-h-40 grid-cols-3 gap-4">
-                    {[{ c: "bg-blue-100", n: "12" }, { c: "bg-emerald-100", n: "182" }, { c: "bg-rose-100", n: "375" }].map((item) => (
-                      <div key={item.n} className={`rounded-[24px] ${item.c} px-4 py-5 text-center`}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                          Position
-                        </p>
-                        <p className="mt-3 font-['Orbitron'] text-4xl font-black text-black">
-                          {item.n}
-                        </p>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {["P1", "P2", "P3", "Fastest Lap"].map((slot) => (
+                      <div key={slot} className="border border-white/8 bg-black/20 p-4">
+                        <p className="ff-kicker">{slot}</p>
+                        <p className="mt-2 text-xl font-black text-white">Driver Pick</p>
                       </div>
                     ))}
                   </div>
                 }
               />
-
               <HowToPlayCard
-                title="Score big points"
-                body="Strong rounds build your season story. The more accurate your calls are, the more pressure you put on the rest of your league."
+                title="Compete inside leagues"
+                body="Create a private competition for friends or jump into an invite link. Every weekend adds points to your running league table."
                 accent={
-                  <div className="grid min-h-40 gap-3">
-                    <div className="rounded-[22px] bg-[#f3d9cf] px-4 py-4" />
-                    <div className="rounded-[22px] bg-[#d7e6f7] px-4 py-4" />
-                    <div className="rounded-[22px] bg-[#dbeadf] px-4 py-4" />
+                  <div className="space-y-3">
+                    <div className="border border-white/8 bg-black/20 p-4">
+                      <p className="ff-kicker">League Rank</p>
+                      <p className="mt-2 text-3xl font-black text-[#e9c400]">P4</p>
+                    </div>
+                    <div className="border border-white/8 bg-black/20 p-4">
+                      <p className="ff-kicker">Weekend Score</p>
+                      <p className="mt-2 text-3xl font-black text-white">126 pts</p>
+                    </div>
                   </div>
                 }
               />
-            </section>
-
-            <section className="grid gap-6 lg:grid-cols-[1fr_1fr]">
-              <Card className="rounded-[28px] border-[#ddd6cc] bg-white shadow-[0_14px_32px_rgba(15,23,42,0.04)]">
-                <CardContent className="space-y-5 px-6 py-6">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-                      Join league
-                    </p>
-                    <h3 className="mt-2 font-['Orbitron'] text-3xl font-black tracking-tight text-black">
-                      Got an invite?
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                      Paste your invite and we&apos;ll take you to sign in before
-                      joining the league.
-                    </p>
+              <HowToPlayCard
+                title="Review every scored round"
+                body="After the race, compare your picks against the actual results, see where the points came from, and track your season trend."
+                accent={
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border border-white/8 bg-black/20 p-4">
+                      <span className="ff-kicker">Round review</span>
+                      <Badge tone="success">Scored</Badge>
+                    </div>
+                    <div className="border border-white/8 bg-black/20 p-4">
+                      <p className="ff-kicker">Accuracy Snapshot</p>
+                      <p className="mt-2 text-3xl font-black text-white">31%</p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="inviteInputGuest">Invite token or link</Label>
-                    <Input
-                      id="inviteInputGuest"
-                      placeholder="https://... or invite token"
-                      value={inviteInput}
-                      onChange={(event) => setInviteInput(event.target.value)}
-                    />
-                  </div>
-                  <Button
-                    className="w-full rounded-full"
-                    onClick={handleJoinLeague}
-                    disabled={joinState === "joining"}
-                  >
-                    {joinState === "joining" ? "Continuing..." : "Continue to sign in"}
-                  </Button>
-                  {joinState !== "idle" &&
-                  joinState !== "joining" &&
-                  joinState !== "joined" ? (
-                    <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      {joinState}
-                    </p>
-                  ) : null}
-                </CardContent>
-              </Card>
-
-              <div className="rounded-[28px] border border-[#ddd6cc] bg-white px-8 py-8">
-                <div className="h-2 w-full bg-red-600" />
-                <div className="mt-6 space-y-4">
-                  <h3 className="font-['Orbitron'] text-4xl font-black tracking-tight text-black">
-                    Start your season
-                  </h3>
-                  <p className="max-w-xl text-sm leading-6 text-slate-600">
-                    Create a private league, join public competition, and track
-                    every round as the calendar unfolds.
-                  </p>
-                  <div className="flex flex-wrap gap-3">
-                    <Button asChild className="rounded-full">
-                      <Link to="/sign-up">Create account</Link>
-                    </Button>
-                    <Button asChild variant="outline" className="rounded-full border-2 border-black px-5">
-                      <Link to="/sign-in">Sign in</Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </>
+                }
+              />
+            </div>
+          </section>
         )}
       </div>
     </section>

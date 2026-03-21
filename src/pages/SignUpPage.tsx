@@ -65,32 +65,64 @@ export function SignUpPage() {
   }
 
   return (
-    <section className="relative w-full pb-12 pt-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-          opacity: 0.02,
-        }}
-      />
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
-        <div className="mx-auto w-full max-w-lg">
-          <Card className="overflow-hidden">
-            <div className="h-[3px] w-full bg-red-600" />
-            <CardHeader className="space-y-2">
-              <CardTitle className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-neutral-900">
-                Sign up
-              </CardTitle>
-              <p className="text-sm text-slate-600">
-                Create your account to start leagues and submit race predictions.
+    <section className="ff-auth-page relative w-full px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="ff-auth-grid min-h-[calc(100svh-16rem)]">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <p className="ff-display text-4xl text-[#f20b0b] md:text-7xl">
+                Formula Fantasy
               </p>
-            </CardHeader>
-            <CardContent>
+              <div className="h-px w-28 bg-[#cc0000]" />
+              <div className="space-y-4">
+                <p className="ff-display max-w-2xl text-5xl text-white md:text-7xl">
+                  Join The Grid
+                </p>
+                <p className="max-w-2xl text-lg leading-8 text-[#b8bac2]">
+                  Build your account, enter leagues, and track your season race
+                  by race without changing any of the core game flow.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid max-w-3xl gap-4 sm:grid-cols-3">
+              <div className="ff-panel border border-white/6 p-5">
+                <p className="ff-kicker">Prediction cards</p>
+                <p className="mt-3 text-sm text-[#b8bac2]">
+                  Lock podium calls and bonus picks before the window closes.
+                </p>
+              </div>
+              <div className="ff-panel border border-white/6 p-5">
+                <p className="ff-kicker">League competition</p>
+                <p className="mt-3 text-sm text-[#b8bac2]">
+                  Create private leagues or join public grids.
+                </p>
+              </div>
+              <div className="ff-panel border border-white/6 p-5">
+                <p className="ff-kicker">Results tracking</p>
+                <p className="mt-3 text-sm text-[#b8bac2]">
+                  Review each race and measure your season performance.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-xl">
+            <Card className="overflow-hidden border-white/8 bg-[#18191f]">
+              <div className="flex items-center justify-between border-b border-white/6 bg-white/4 px-8 py-4">
+                <span className="ff-kicker">Sector 01 // Initialize Profile</span>
+                <span className="h-2 w-2 rounded-full bg-[#cc0000]" />
+              </div>
+              <CardHeader className="space-y-3 pb-4">
+                <CardTitle className="text-3xl md:text-4xl">Sign Up</CardTitle>
+                <p className="text-sm leading-6 text-[#989aa2]">
+                  Create your account to start leagues and submit race predictions.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
               <form className="space-y-4" onSubmit={handleCreateAccount}>
                 <div className="space-y-2">
-                  <Label htmlFor="signUpEmail">Email</Label>
+                  <Label htmlFor="signUpEmail">Sector 01: Email Address</Label>
                   <Input
                     id="signUpEmail"
                     type="email"
@@ -102,7 +134,7 @@ export function SignUpPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signUpPassword">Password</Label>
+                  <Label htmlFor="signUpPassword">Sector 02: Encryption Key</Label>
                   <Input
                     id="signUpPassword"
                     type="password"
@@ -115,27 +147,31 @@ export function SignUpPage() {
                 </div>
 
                 {error ? (
-                  <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
                     {error}
                   </p>
                 ) : null}
 
-                <Button type="submit" className="w-full" disabled={isPending || isSubmitting}>
+                <Button type="submit" className="w-full" size="lg" disabled={isPending || isSubmitting}>
                   {isSubmitting ? "Creating account..." : "Create account"}
                 </Button>
               </form>
 
-              <p className="mt-4 text-sm text-slate-600">
-                Already have an account?{" "}
-                <Link
-                  to={redirectTarget === "/" ? "/sign-in" : `/sign-in?redirect=${encodeURIComponent(redirectTarget)}`}
-                  className="font-medium text-red-600 hover:text-red-700"
-                >
-                  Sign in
-                </Link>
-              </p>
-            </CardContent>
-          </Card>
+                <div className="border-t border-white/6 pt-6 text-center">
+                  <p className="text-sm text-[#7f828b]">
+                    Already in the paddock?
+                  </p>
+                  <Button asChild variant="outline" className="mt-4 w-full">
+                    <Link
+                      to={redirectTarget === "/" ? "/sign-in" : `/sign-in?redirect=${encodeURIComponent(redirectTarget)}`}
+                    >
+                      Sign in
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>

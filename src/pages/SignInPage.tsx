@@ -63,32 +63,64 @@ export function SignInPage() {
   }
 
   return (
-    <section className="relative w-full pb-12 pt-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-          opacity: 0.02,
-        }}
-      />
-      <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
-        <div className="mx-auto w-full max-w-lg">
-          <Card className="overflow-hidden">
-            <div className="h-[3px] w-full bg-red-600" />
-            <CardHeader className="space-y-2">
-              <CardTitle className="font-['Orbitron'] text-3xl font-bold uppercase tracking-tight text-neutral-900">
-                Sign in
-              </CardTitle>
-              <p className="text-sm text-slate-600">
-                Welcome back. Sign in to manage your leagues and predictions.
+    <section className="ff-auth-page relative w-full px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="ff-auth-grid min-h-[calc(100svh-16rem)]">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <p className="ff-display text-4xl text-[#f20b0b] md:text-6xl">
+                Formula Fantasy
               </p>
-            </CardHeader>
-            <CardContent>
+              <div className="h-px w-28 bg-[#cc0000]" />
+              <div className="space-y-4">
+                <p className="ff-display max-w-xl text-5xl text-white md:text-7xl">
+                  Start Engine
+                </p>
+                <p className="max-w-xl text-lg leading-8 text-[#b8bac2]">
+                  Re-enter the paddock, check the next race window, and get your
+                  predictions locked before lights out.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid max-w-2xl gap-4 sm:grid-cols-3">
+              <div className="ff-panel border border-white/6 p-5">
+                <p className="ff-kicker">Secure entry</p>
+                <p className="mt-3 text-sm text-[#b8bac2]">
+                  Protected session and account controls.
+                </p>
+              </div>
+              <div className="ff-panel border border-white/6 p-5">
+                <p className="ff-kicker">League ready</p>
+                <p className="mt-3 text-sm text-[#b8bac2]">
+                  Jump back into leagues, results, and race cards.
+                </p>
+              </div>
+              <div className="ff-panel border border-white/6 p-5">
+                <p className="ff-kicker">Live window</p>
+                <p className="mt-3 text-sm text-[#b8bac2]">
+                  Real-time access to current prediction status.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mx-auto w-full max-w-xl">
+            <Card className="overflow-hidden border-white/8 bg-[#18191f]">
+              <div className="flex items-center justify-between border-b border-white/6 bg-white/4 px-8 py-4">
+                <span className="ff-kicker">Auth Protocol // 01</span>
+                <span className="h-2 w-2 rounded-full bg-[#cc0000]" />
+              </div>
+              <CardHeader className="space-y-3 pb-4">
+                <CardTitle className="text-3xl md:text-4xl">Sign In</CardTitle>
+                <p className="text-sm leading-6 text-[#989aa2]">
+                  Welcome back. Sign in to manage your leagues and predictions.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div className="space-y-2">
-                  <Label htmlFor="signInEmail">Email</Label>
+                  <Label htmlFor="signInEmail">Grid Identity (Email)</Label>
                   <Input
                     id="signInEmail"
                     type="email"
@@ -100,7 +132,7 @@ export function SignInPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signInPassword">Password</Label>
+                  <Label htmlFor="signInPassword">Secure Key (Password)</Label>
                   <Input
                     id="signInPassword"
                     type="password"
@@ -112,27 +144,31 @@ export function SignInPage() {
                 </div>
 
                 {error ? (
-                  <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
                     {error}
                   </p>
                 ) : null}
 
-                <Button type="submit" className="w-full" disabled={isPending || isSubmitting}>
+                <Button type="submit" className="w-full" size="lg" disabled={isPending || isSubmitting}>
                   {isSubmitting ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
 
-              <p className="mt-4 text-sm text-slate-600">
-                New to Formula Fantasy?{" "}
-                <Link
-                  to={redirectTarget === "/" ? "/sign-up" : `/sign-up?redirect=${encodeURIComponent(redirectTarget)}`}
-                  className="font-medium text-red-600 hover:text-red-700"
-                >
-                  Create an account
-                </Link>
-              </p>
-            </CardContent>
-          </Card>
+                <div className="border-t border-white/6 pt-6 text-center">
+                  <p className="text-sm text-[#7f828b]">
+                    New to Formula Fantasy?
+                  </p>
+                  <Button asChild variant="outline" className="mt-4 w-full">
+                    <Link
+                      to={redirectTarget === "/" ? "/sign-up" : `/sign-up?redirect=${encodeURIComponent(redirectTarget)}`}
+                    >
+                      Create account
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </section>

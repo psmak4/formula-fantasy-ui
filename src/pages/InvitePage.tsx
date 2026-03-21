@@ -3,9 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { ApiError, apiClient } from "@/api/apiClient";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { HeroBackdrop } from "@/components/HeroBackdrop";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
 type InvitePreviewResponse = {
@@ -70,14 +68,14 @@ function formatDateLabel(value?: string): string {
 function getInviteBadgeTone(status: InvitePreviewResponse["status"]) {
   switch (status) {
     case "pending":
-      return "border-emerald-300 bg-emerald-50 text-emerald-700";
+      return "success";
     case "accepted":
-      return "border-sky-300 bg-sky-50 text-sky-700";
+      return "neutral";
     case "expired":
     case "revoked":
-      return "border-red-300 bg-red-50 text-red-700";
+      return "danger";
     default:
-      return "border-neutral-300 bg-neutral-50 text-neutral-700";
+      return "neutral";
   }
 }
 
@@ -198,69 +196,39 @@ export function InvitePage() {
   }
 
   return (
-    <section className="w-full">
-      <section className="relative w-full overflow-hidden bg-linear-to-br from-neutral-950 via-neutral-900 to-black py-20 text-white">
-        <HeroBackdrop />
-        <div className="relative z-10 mx-auto max-w-7xl px-6">
-          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-6">
-              <Badge
-                variant="outline"
-                className="rounded-full border-white/15 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white"
-              >
-                League Invite
-              </Badge>
-              <div className="space-y-3">
-                <h1 className="font-['Orbitron'] text-4xl font-black uppercase tracking-tight md:text-6xl">
-                  Join The Grid
-                </h1>
-                <p className="max-w-2xl text-base text-slate-300 md:text-lg">
-                  See the league first, then jump straight into the competition.
-                  One good invite should get you from link to leaderboard with as
-                  little friction as possible.
-                </p>
-              </div>
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <div className="space-y-4 text-center">
+          <p className="ff-kicker">Incoming Transmission</p>
+          <h1 className="ff-display mx-auto max-w-4xl text-5xl text-white md:text-7xl">
+            Enter The Paddock
+          </h1>
+          <p className="mx-auto max-w-3xl text-base leading-8 text-[#b8bac2] md:text-2xl md:leading-10">
+            You&apos;ve been drafted to compete in a high-velocity fantasy championship.
+            Secure your seat on the grid before the next qualifying session begins.
+          </p>
+        </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
-                    Step 1
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    Check The League
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
-                    Step 2
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    Join In One Click
-                  </p>
-                </div>
-                <div className="rounded-3xl border border-white/15 bg-white/10 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-300">
-                    Step 3
-                  </p>
-                  <p className="mt-2 text-lg font-semibold text-white">
-                    Lock Your Card
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <Card className="border-white/10 bg-white/95 text-black shadow-2xl">
-              <CardHeader className="space-y-3">
-                <Badge
-                  variant="outline"
-                  className={`w-fit rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] ${
+        <div className="mx-auto max-w-5xl">
+          <Card className="border-white/8 bg-[#15161b]">
+            <CardHeader className="space-y-3 pb-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
+                  Private League Invite
+                </span>
+                <span
+                  className={`ff-kicker px-3 py-2 ${
                     isLoading
-                      ? "border-sky-300 bg-sky-50 text-sky-700"
+                      ? "bg-white/6 text-[#d0d3d9]"
                       : previewErrorMessage || joinErrorMessage
-                        ? "border-red-300 bg-red-50 text-red-700"
+                        ? "bg-[#350909] text-[#ff8e8e]"
                         : result
-                          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
-                          : getInviteBadgeTone(inviteStatus)
+                          ? "bg-[#102317] text-[#6ee7a8]"
+                          : getInviteBadgeTone(inviteStatus) === "success"
+                            ? "bg-[#102317] text-[#6ee7a8]"
+                            : getInviteBadgeTone(inviteStatus) === "danger"
+                              ? "bg-[#350909] text-[#ff8e8e]"
+                              : "bg-white/6 text-[#d0d3d9]"
                   }`}
                 >
                   {isLoading
@@ -270,188 +238,167 @@ export function InvitePage() {
                       : result
                         ? "Grid Access Confirmed"
                         : getInviteBadgeLabel(inviteStatus)}
-                </Badge>
-                <CardTitle className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight">
-                  {isLoading
-                    ? "Reading Invite"
-                    : previewErrorMessage || joinErrorMessage
-                      ? "Invite Unavailable"
-                      : result
-                        ? joinedExisting
-                          ? "Already On The Grid"
-                          : "Seat Secured"
-                        : getInviteTitle(inviteStatus)}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                {isLoading ? (
-                  <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      Syncing invite details
-                    </p>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                      <div className="h-full w-2/3 animate-pulse rounded-full bg-red-600" />
-                    </div>
-                    <p className="text-slate-600">
-                      Pulling the league details and invite status.
-                    </p>
+                </span>
+              </div>
+              <CardTitle className="text-4xl md:text-5xl">
+                {isLoading
+                  ? "Reading Invite"
+                  : previewErrorMessage || joinErrorMessage
+                    ? "Invite Unavailable"
+                    : result
+                      ? joinedExisting
+                        ? "Already On The Grid"
+                        : "Seat Secured"
+                      : getInviteTitle(inviteStatus)}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {isLoading ? (
+                <div className="space-y-3">
+                  <p className="ff-kicker">Syncing Invite Details</p>
+                  <div className="h-2 overflow-hidden bg-white/8">
+                    <div className="h-full w-2/3 animate-pulse bg-[#cc0000]" />
                   </div>
-                ) : null}
+                  <p className="text-[#989aa2]">
+                    Pulling the league details and invite status.
+                  </p>
+                </div>
+              ) : null}
 
-                {previewErrorMessage || joinErrorMessage ? (
-                  <>
-                    <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      {previewErrorMessage ?? joinErrorMessage}
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                      <Button asChild className="bg-black text-white hover:bg-neutral-800">
-                        <Link to="/">Back to Home</Link>
-                      </Button>
-                    </div>
-                  </>
-                ) : null}
+              {previewErrorMessage || joinErrorMessage ? (
+                <>
+                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                    {previewErrorMessage ?? joinErrorMessage}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    <Button asChild>
+                      <Link to="/">Back To Home</Link>
+                    </Button>
+                  </div>
+                </>
+              ) : null}
 
-                {!isLoading && !previewErrorMessage && preview ? (
-                  <>
-                    <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        League
-                      </p>
-                      <p className="mt-2 text-2xl font-semibold text-black">
+              {!isLoading && !previewErrorMessage && preview ? (
+                <>
+                  <div className="grid gap-4 md:grid-cols-[minmax(0,1.45fr)_200px_200px]">
+                    <div className="border-l-2 border-[#cc0000] bg-white/3 p-5">
+                      <p className="ff-kicker">League</p>
+                      <p className="ff-display mt-3 text-3xl text-white">
                         {leagueName}
                       </p>
-                      <p className="mt-2 text-sm text-slate-600">
-                        {(preview.leagueVisibility ?? "private").toUpperCase()} league • {memberCount} manager{memberCount === 1 ? "" : "s"}
+                      <p className="mt-3 text-sm text-[#989aa2]">
+                        {(preview.leagueVisibility ?? "private").toUpperCase()} league
                       </p>
                     </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="rounded-3xl border border-neutral-200 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          Invite Status
-                        </p>
-                        <p className="mt-2 text-base font-semibold text-black">
-                          {inviteStatus === "pending"
-                            ? "Ready to join now"
-                            : inviteStatus === "accepted"
-                              ? "Invite has already been used"
-                              : inviteStatus === "expired"
-                                ? "Invite window has closed"
-                                : "Invite is no longer active"}
-                        </p>
-                      </div>
-                      <div className="rounded-3xl border border-neutral-200 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          Expires
-                        </p>
-                        <p className="mt-2 text-base font-semibold text-black">
-                          {formatDateLabel(preview.expiresAt)}
-                        </p>
-                      </div>
+                    <div className="border-l-2 border-white/10 bg-white/3 p-5">
+                      <p className="ff-kicker">Members</p>
+                      <p className="mt-3 text-4xl font-black text-white">
+                        {memberCount}
+                      </p>
+                      <p className="text-sm text-[#7f828b]">
+                        manager{memberCount === 1 ? "" : "s"}
+                      </p>
                     </div>
+                    <div className="border-l-2 border-[#e9c400] bg-white/3 p-5">
+                      <p className="ff-kicker">Invite Expiry</p>
+                      <p className="mt-3 text-2xl font-black text-white">
+                        {formatDateLabel(preview.expiresAt)}
+                      </p>
+                    </div>
+                  </div>
 
-                    {result ? (
-                      <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                          Status
-                        </p>
-                        <p className="mt-2 text-lg font-semibold text-black">
-                          {joinedExisting
-                            ? "You were already in this league."
-                            : "You are now in the league."}
-                        </p>
-                        <p className="mt-2 text-sm text-slate-600">
-                          Head to the league page to check the next race, lock a
-                          card, and track the leaderboard.
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="rounded-3xl border border-neutral-200 p-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          What happens next
-                        </p>
-                        <p className="mt-2 text-base font-semibold text-black">
-                          Join the league, open the hub, then submit your race
-                          card before predictions lock.
-                        </p>
-                      </div>
-                    )}
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="border border-white/6 bg-white/2 p-5">
+                      <p className="ff-kicker">Invite Status</p>
+                      <p className="mt-3 text-lg font-semibold text-white">
+                        {inviteStatus === "pending"
+                          ? "Ready to join now"
+                          : inviteStatus === "accepted"
+                            ? "Invite has already been used"
+                            : inviteStatus === "expired"
+                              ? "Invite window has closed"
+                              : "Invite is no longer active"}
+                      </p>
+                    </div>
+                    <div className="border border-white/6 bg-white/2 p-5">
+                      <p className="ff-kicker">What Happens Next</p>
+                      <p className="mt-3 text-lg font-semibold text-white">
+                        Join the league, open the hub, then submit your race card
+                        before predictions lock.
+                      </p>
+                    </div>
+                  </div>
 
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        type="button"
-                        className="bg-red-600 text-white hover:bg-red-700"
-                        disabled={isJoining}
-                        onClick={handlePrimaryAction}
-                      >
-                        {primaryButtonLabel}
+                  {result ? (
+                    <div className="border border-[#205038] bg-[#102317] p-5">
+                      <p className="ff-kicker text-[#6ee7a8]">Status</p>
+                      <p className="mt-2 text-lg font-semibold text-white">
+                        {joinedExisting
+                          ? "You were already in this league."
+                          : "You are now in the league."}
+                      </p>
+                      <p className="mt-2 text-sm text-[#a7cbb5]">
+                        Head to the league page to check the next race, lock a
+                        card, and track the leaderboard.
+                      </p>
+                    </div>
+                  ) : null}
+
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      type="button"
+                      size="lg"
+                      disabled={isJoining}
+                      onClick={handlePrimaryAction}
+                    >
+                      {primaryButtonLabel}
+                    </Button>
+                    {leagueId ? (
+                      <Button asChild variant="outline" size="lg">
+                        <Link to={`/league/${leagueId}`}>Open League</Link>
                       </Button>
-                      {leagueId ? (
-                        <Button asChild variant="secondary">
-                          <Link to={`/league/${leagueId}`}>Open League</Link>
-                        </Button>
-                      ) : (
-                        <Button asChild variant="secondary">
-                          <Link to="/leagues">View My Leagues</Link>
-                        </Button>
-                      )}
-                    </div>
-                  </>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
+                    ) : (
+                      <Button asChild variant="outline" size="lg">
+                        <Link to="/leagues">View My Leagues</Link>
+                      </Button>
+                    )}
+                  </div>
+                </>
+              ) : null}
+            </CardContent>
+          </Card>
         </div>
-      </section>
 
-      <section className="relative w-full pb-12 pt-14">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-            opacity: 0.02,
-          }}
-        />
-        <div className="relative z-10 mx-auto max-w-7xl px-6">
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card className="rounded-4xl">
-              <CardContent className="space-y-2 py-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Fast Join
-                </p>
-                <p className="text-sm text-slate-600">
-                  One clean invite link now shows the league first so people know
-                  exactly what they are joining.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-4xl">
-              <CardContent className="space-y-2 py-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Single Card
-                </p>
-                <p className="text-sm text-slate-600">
-                  One card per race. Save early, edit until lock, then let the
-                  scoring engine take over.
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="rounded-4xl">
-              <CardContent className="space-y-2 py-6">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Beat Your League
-                </p>
-                <p className="text-sm text-slate-600">
-                  Score points from live race outcomes and climb the standings
-                  against your group every weekend.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="border-white/8 bg-[#15161b]">
+            <CardContent className="space-y-2 py-6">
+              <p className="ff-kicker">Secure Entry</p>
+              <p className="text-sm leading-6 text-[#989aa2]">
+                One clean invite link now shows the league first so people know
+                exactly what they are joining.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-white/8 bg-[#15161b]">
+            <CardContent className="space-y-2 py-6">
+              <p className="ff-kicker">Real-Time Telemetry</p>
+              <p className="text-sm leading-6 text-[#989aa2]">
+                One card per race. Save early, edit until lock, then let the
+                scoring engine take over.
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-white/8 bg-[#15161b]">
+            <CardContent className="space-y-2 py-6">
+              <p className="ff-kicker">Verified Drivers</p>
+              <p className="text-sm leading-6 text-[#989aa2]">
+                Score points from live race outcomes and climb the standings
+                against your group every weekend.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </section>
+      </div>
     </section>
   );
 }

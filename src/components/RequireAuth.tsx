@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
+import { getDebugUserId } from "@/api/apiClient";
 
 type RequireAuthProps = {
   children: ReactNode;
@@ -9,6 +10,8 @@ type RequireAuthProps = {
 export function RequireAuth({ children }: RequireAuthProps) {
   const location = useLocation();
   const { data: session, isPending } = authClient.useSession();
+  const debugUserId = getDebugUserId();
+  const hasDebugAuth = import.meta.env.DEV && import.meta.env.VITE_ALLOW_DEBUG_AUTH === "true" && debugUserId.length > 0;
 
   if (isPending) {
     return (
@@ -18,12 +21,12 @@ export function RequireAuth({ children }: RequireAuthProps) {
         aria-live="polite"
         aria-busy="true"
       >
-        <p className="text-sm text-neutral-600">Checking session…</p>
+        <p className="text-sm text-[#989aa2]">Checking session…</p>
       </div>
     );
   }
 
-  if (!session?.user) {
+  if (!session?.user && !hasDebugAuth) {
     const redirect = `${location.pathname}${location.search}${location.hash}`;
     return <Navigate to={`/sign-in?redirect=${encodeURIComponent(redirect)}`} replace />;
   }

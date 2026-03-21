@@ -26,13 +26,6 @@ const leagueIconBackgrounds = [
   "bg-amber-500",
 ];
 
-function leagueInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "L";
-  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
-  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
-}
-
 function formatRank(value?: number | null): string {
   if (typeof value !== "number" || Number.isNaN(value) || value <= 0) {
     return "-";
@@ -52,29 +45,35 @@ function LeagueListRow({ league, index }: { league: League; index: number }) {
   return (
     <Link
       to={`/league/${league.id}`}
-      className="group flex items-center gap-4 rounded-[28px] border border-[#dbd5cd] bg-white px-5 py-5 transition hover:-translate-y-0.5 hover:border-neutral-400 hover:no-underline md:px-6"
+      className="grid gap-4 border-b border-white/6 bg-white/2 px-5 py-5 transition hover:bg-white/4 hover:no-underline md:grid-cols-[minmax(0,1.5fr)_120px_120px]"
     >
-      <div
-        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-lg font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
-      >
-        {leagueInitials(league.name)}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-['Orbitron'] text-2xl font-black tracking-tight text-black md:text-3xl">
-          {league.name}
-        </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-          <span>{league.visibility ?? "private"}</span>
-          <span>Total Players: {league.memberCount ?? 0}</span>
+      <div className="flex items-center gap-4">
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 text-base font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
+        >
+          {String(index + 1).padStart(2, "0")}
+        </div>
+        <div className="min-w-0">
+          <p className="ff-display truncate text-2xl text-white md:text-3xl">
+            {league.name}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7f828b]">
+            <span>{league.visibility ?? "private"}</span>
+            <span>{league.memberCount ?? 0} members</span>
+          </div>
         </div>
       </div>
 
-      <div className="shrink-0 text-right">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-          Rank
+      <div className="text-left md:text-center">
+        <p className="ff-kicker">Members</p>
+        <p className="mt-2 text-3xl font-black text-white">
+          {league.memberCount ?? 0}
         </p>
-        <p className="mt-1 font-['Orbitron'] text-2xl font-black text-black md:text-3xl">
+      </div>
+
+      <div className="text-left md:text-right">
+        <p className="ff-kicker">My Rank</p>
+        <p className="mt-2 text-3xl font-black text-[#e9c400]">
           {formatRank(league.rank)}
         </p>
       </div>
@@ -101,175 +100,166 @@ export function LeaguesPage() {
     session?.user?.name?.trim() || session?.user?.email?.trim() || "Manager";
   const firstName = displayName.split(/\s+/).filter(Boolean)[0] ?? "Manager";
 
-  // TODO: Replace these placeholder summary metrics with live season calculations.
   const summaryPoints = 136;
   const summaryAccuracy = 25;
 
   return (
-    <section className="bg-[linear-gradient(180deg,#f6f3ee_0%,#f2ede6_100%)] pb-14 pt-14">
-      <div className="mx-auto max-w-6xl space-y-8 px-6">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <p className="font-['Orbitron'] text-4xl font-black uppercase tracking-tight text-black md:text-5xl">
-              Leagues
-            </p>
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-10">
+        <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-4">
+            <p className="ff-kicker">Paddock Management</p>
+            <h1 className="ff-display text-5xl text-white md:text-7xl">
+              Leagues Hub
+            </h1>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              asChild
-              variant="outline"
-              className="h-12 rounded-full border-2 border-black bg-transparent px-6 text-sm font-semibold text-black hover:bg-black hover:text-white"
-            >
-              <Link to="/leagues/create">+ Create a league</Link>
+            <Button asChild variant="secondary" size="lg">
+              <Link to="/join">Join</Link>
             </Button>
-            <Button
-              asChild
-              className="h-12 rounded-full bg-red-600 px-6 text-sm font-semibold text-white hover:bg-red-700"
-            >
-              <Link to="/join">Join a league</Link>
+            <Button asChild size="lg">
+              <Link to="/leagues/create">Create</Link>
             </Button>
           </div>
         </div>
 
-        <Card className="rounded-[32px] border-[#dbd5cd] shadow-none">
-          <CardContent className="flex flex-col gap-4 px-6 py-5 md:flex-row md:items-center md:justify-between md:px-8">
-            <div className="text-sm text-slate-700">
-              Hey <span className="font-bold text-black">{firstName}</span>. How's
-              your season going? Check your stats
-            </div>
+        <div className="grid gap-8 xl:grid-cols-[300px_minmax(0,1fr)]">
+          <div className="space-y-6">
+            <Card className="border-white/8 bg-[#15161b]">
+              <CardContent className="space-y-6 px-6 py-6">
+                <div className="space-y-2">
+                  <p className="ff-kicker">Season Summary</p>
+                  <p className="text-sm text-[#989aa2]">
+                    {firstName}, here&apos;s your current telemetry snapshot.
+                  </p>
+                </div>
 
-            <div className="flex flex-wrap items-center gap-4 md:gap-6">
-              <div className="flex items-baseline gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Pts.
-                </span>
-                <span className="font-['Orbitron'] text-3xl font-black text-black">
-                  {summaryPoints}
-                </span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                  Acc.
-                </span>
-                <span className="font-['Orbitron'] text-3xl font-black text-black">
-                  {summaryAccuracy}%
-                </span>
-              </div>
-              <Button
-                asChild
-                variant="outline"
-                className="h-11 rounded-full border-2 border-black px-5 text-sm font-semibold text-black hover:bg-black hover:text-white"
-              >
-                <Link to="/results">My results</Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                <div>
+                  <p className="text-5xl font-black text-white">{summaryPoints}</p>
+                  <p className="ff-kicker mt-2">Total performance points</p>
+                </div>
 
-        <div className="space-y-5">
-          <div>
-            <h2 className="font-['Orbitron'] text-3xl font-black uppercase tracking-tight text-black md:text-4xl">
-              My Leagues
-            </h2>
-          </div>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1">
+                  <div className="border border-white/8 bg-white/3 p-4">
+                    <p className="ff-kicker">Global Rank</p>
+                    <p className="mt-2 text-3xl font-black text-[#e9c400]">#4,219</p>
+                  </div>
+                  <div className="border border-white/8 bg-white/3 p-4">
+                    <p className="ff-kicker">Accuracy</p>
+                    <p className="mt-2 text-3xl font-black text-white">{summaryAccuracy}%</p>
+                  </div>
+                </div>
 
-          {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((value) => (
-                <div
-                  key={value}
-                  className="h-24 animate-pulse rounded-[28px] border border-[#dbd5cd] bg-white"
-                />
-              ))}
-            </div>
-          ) : null}
+                <div className="border-l-2 border-[#e9c400] bg-white/3 p-4">
+                  <p className="ff-kicker">Next Race</p>
+                  <p className="mt-2 text-lg font-semibold uppercase tracking-[0.08em] text-white">
+                    Monaco
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-[#989aa2]">
+                    Optimize your next card and keep pressure on the top of the board.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
 
-          {errorMessage ? (
-            <Card className="rounded-[28px] border-red-200 bg-red-50">
-              <CardContent className="py-5">
-                <p className="text-sm text-red-700">{errorMessage}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-3"
-                  onClick={() => void refetch()}
-                >
-                  Retry
+            <Card className="overflow-hidden border-white/8 bg-[linear-gradient(135deg,#111217_0%,#191b20_58%,#23262d_100%)]">
+              <CardContent className="space-y-5 px-8 py-8 text-white">
+                <span className="ff-kicker bg-[#cc0000] px-3 py-2 text-white">
+                  Limited Time Event
+                </span>
+                <h3 className="ff-display text-4xl text-white">
+                  The Constructor&apos;s Gauntlet
+                </h3>
+                <p className="text-sm leading-6 text-white/70">
+                  Assemble a league, invite rivals, and turn every race weekend into a
+                  pressure test.
+                </p>
+                <Button asChild variant="outline">
+                  <Link to="/leagues/create">Enter Challenge</Link>
                 </Button>
               </CardContent>
             </Card>
-          ) : null}
-
-          {!isLoading && !errorMessage ? (
-            myLeagues.length === 0 ? (
-              <Card className="rounded-[28px] border-[#dbd5cd]">
-                <CardContent className="py-10 text-center">
-                  <p className="font-['Orbitron'] text-2xl font-black uppercase text-black">
-                    No leagues yet
-                  </p>
-                  <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-600">
-                    Create your own league or join one with an invite link to
-                    start competing.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {myLeagues.map((league, index) => (
-                  <LeagueListRow key={league.id} league={league} index={index} />
-                ))}
-              </div>
-            )
-          ) : null}
-        </div>
-
-        <div className="grid gap-5 lg:grid-cols-2">
-          <div className="relative overflow-hidden rounded-[28px] border border-[#d5d0c7] bg-[linear-gradient(135deg,#101114_0%,#191b20_58%,#23262d_100%)] px-8 py-10 text-white shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 opacity-70"
-              style={{
-                background:
-                  "radial-gradient(circle at top right, rgba(239,68,68,0.28), transparent 32%), linear-gradient(120deg, transparent 0%, transparent 55%, rgba(255,255,255,0.04) 55%, rgba(255,255,255,0.04) 58%, transparent 58%)",
-              }}
-            />
-            <div className="relative z-10">
-            <h3 className="font-['Orbitron'] text-4xl font-black tracking-tight md:text-5xl">
-              Create and compete
-            </h3>
-            <p className="mt-4 max-w-md text-base text-white/72">
-              Create your own league to compete with other Predict players.
-            </p>
-            <Button
-              asChild
-              className="mt-8 h-12 rounded-full bg-red-600 px-6 text-sm font-semibold text-white hover:bg-red-700"
-            >
-              <Link to="/leagues/create">+ Create a league</Link>
-            </Button>
-            </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-[28px] border border-[#d5d0c7] bg-[linear-gradient(140deg,#f7f4ec_0%,#ece7dc_100%)] px-8 py-10 text-black shadow-[0_18px_40px_rgba(15,23,42,0.06)]">
-            <div
-              aria-hidden="true"
-              className="absolute right-0 top-0 h-28 w-28 rounded-full bg-red-600/10 blur-2xl"
-            />
-            <div className="relative z-10">
-            <h3 className="font-['Orbitron'] text-4xl font-black tracking-tight md:text-5xl">
-              Join more leagues!
-            </h3>
-            <p className="mt-4 max-w-md text-base text-black/70">
-              There&apos;s no limit to the number of leagues you can be a part
-              of.
-            </p>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-8 h-12 rounded-full border-2 border-black bg-transparent px-6 text-sm font-semibold text-black hover:bg-black hover:text-white"
-            >
-              <Link to="/join">Join a league</Link>
-            </Button>
+          <div className="space-y-6">
+            <Card className="border-white/8 bg-[#15161b]">
+              <CardContent className="px-0 py-0">
+                <div className="flex items-center justify-between border-b border-white/6 px-6 py-5">
+                  <div>
+                    <p className="ff-display text-3xl text-white">My Leagues</p>
+                    <p className="mt-2 text-sm text-[#989aa2]">
+                      Jump straight into your current competitions.
+                    </p>
+                  </div>
+                  <span className="ff-kicker text-[#7f828b]">Live updates</span>
+                </div>
+
+                {isLoading ? (
+                  <div className="space-y-4 px-6 py-6">
+                    {[1, 2, 3].map((value) => (
+                      <div
+                        key={value}
+                        className="h-24 animate-pulse border border-white/6 bg-white/3"
+                      />
+                    ))}
+                  </div>
+                ) : null}
+
+                {errorMessage ? (
+                  <div className="px-6 py-6">
+                    <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                      {errorMessage}
+                    </div>
+                    <Button variant="secondary" size="sm" className="mt-3" onClick={() => void refetch()}>
+                      Retry
+                    </Button>
+                  </div>
+                ) : null}
+
+                {!isLoading && !errorMessage ? (
+                  myLeagues.length === 0 ? (
+                    <div className="px-6 py-10 text-center">
+                      <p className="ff-display text-2xl text-white">No Leagues Yet</p>
+                      <p className="mx-auto mt-3 max-w-2xl text-sm text-[#989aa2]">
+                        Create your own league or join one with an invite link to start competing.
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      {myLeagues.map((league, index) => (
+                        <LeagueListRow key={league.id} league={league} index={index} />
+                      ))}
+                    </div>
+                  )
+                ) : null}
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-5 lg:grid-cols-2">
+              <Card className="border-white/8 bg-[#15161b]">
+                <CardContent className="space-y-4 px-6 py-6">
+                  <p className="ff-display text-3xl text-white">Create And Compete</p>
+                  <p className="text-sm leading-6 text-[#989aa2]">
+                    Start a private grid for your group and compete all season.
+                  </p>
+                  <Button asChild>
+                    <Link to="/leagues/create">Create A League</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="border-white/8 bg-[#15161b]">
+                <CardContent className="space-y-4 px-6 py-6">
+                  <p className="ff-display text-3xl text-white">Join More Leagues</p>
+                  <p className="text-sm leading-6 text-[#989aa2]">
+                    Stack multiple competitions and track all of them from one hub.
+                  </p>
+                  <Button asChild variant="outline">
+                    <Link to="/join">Join A League</Link>
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>

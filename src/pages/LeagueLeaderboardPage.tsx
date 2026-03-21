@@ -167,19 +167,10 @@ export function LeagueLeaderboardPage() {
   const raceStart = raceStartLabel(data?.nextRace ?? null, raceId);
 
   return (
-    <section className="relative w-full overflow-hidden bg-background bg-linear-to-b from-neutral-50 to-white pb-12 pt-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-          opacity: 0.02,
-        }}
-      />
-      <div className="relative z-10 mx-auto max-w-7xl space-y-8 px-6">
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-8">
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
-          <Card className="overflow-hidden border-neutral-900 bg-[radial-gradient(circle_at_top_left,_rgba(251,113,133,0.22),_transparent_34%),linear-gradient(145deg,_#18181b_0%,_#0f172a_44%,_#111827_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
+          <Card className="overflow-hidden border-white/8 bg-[radial-gradient(circle_at_top_left,_rgba(251,113,133,0.18),_transparent_34%),linear-gradient(145deg,_#18181b_0%,_#0f172a_44%,_#111827_100%)] text-white shadow-[0_24px_80px_rgba(15,23,42,0.28)]">
             <CardHeader className="space-y-5">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className="bg-white/12 text-white" tone="info">
@@ -199,11 +190,11 @@ export function LeagueLeaderboardPage() {
                 )}
               </div>
               <div className="space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-[0.36em] text-white/60">
+                <p className="ff-kicker text-white/60">
                   Race Results
                 </p>
-                <h2 className="font-['Orbitron'] text-4xl font-bold uppercase tracking-tight text-white md:text-5xl">
-                  Leaderboard
+                <h2 className="ff-display text-5xl text-white md:text-7xl">
+                  {leagueName}
                 </h2>
                 <p className="max-w-2xl text-sm leading-6 text-white/72 md:text-base">
                   Final ranking for this race. Compare points swings, inspect the
@@ -211,24 +202,24 @@ export function LeagueLeaderboardPage() {
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                <div className="border-l-2 border-[#e9c400] bg-white/6 p-4">
+                  <p className="ff-kicker text-white/58">
                     Leader
                   </p>
-                  <p className="mt-2 font-['Orbitron'] text-xl font-bold uppercase text-white">
+                  <p className="mt-2 text-xl font-bold uppercase text-white">
                     {topScorer?.displayName ?? "Waiting"}
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                <div className="border-l-2 border-[#cc0000] bg-white/6 p-4">
+                  <p className="ff-kicker text-white/58">
                     Winning score
                   </p>
-                  <p className="mt-2 font-['Orbitron'] text-xl font-bold uppercase text-white">
+                  <p className="mt-2 text-xl font-bold uppercase text-white">
                     {topScorer ? `${topScorer.points} pts` : "TBD"}
                   </p>
                 </div>
-                <div className="rounded-3xl border border-white/10 bg-white/6 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-white/58">
+                <div className="border-l-2 border-white/10 bg-white/6 p-4">
+                  <p className="ff-kicker text-white/58">
                     Schedule
                   </p>
                   <p className="mt-2 text-sm font-medium text-white/82">
@@ -239,10 +230,10 @@ export function LeagueLeaderboardPage() {
             </CardHeader>
           </Card>
 
-          <Card className="border-neutral-300 bg-white/96">
+          <Card className="border-white/8 bg-[#15161b]">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <CardTitle className="font-['Orbitron'] text-xl uppercase tracking-[0.18em] text-slate-900">
+                <CardTitle className="text-2xl">
                   Event Status
                 </CardTitle>
                 <Badge tone={scoringAvailable ? "success" : "warning"}>
@@ -251,11 +242,11 @@ export function LeagueLeaderboardPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+              <div className="border border-white/8 bg-white/3 p-4">
+                <p className="ff-kicker">
                   Summary
                 </p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
+                <p className="mt-2 text-sm leading-6 text-[#989aa2]">
                   {scoringAvailable
                     ? "The race has been scored. Expand any row below to inspect its points breakdown."
                     : "Race scoring is not available yet. Final standings will populate after the result set is complete."}
@@ -269,20 +260,20 @@ export function LeagueLeaderboardPage() {
         </div>
 
         {loading ? (
-          <Card className="animate-pulse bg-background">
+          <Card className="animate-pulse border-white/8 bg-[#15161b]">
             <CardHeader>
-              <div className="h-6 w-1/4 rounded bg-neutral-200" />
+              <div className="h-6 w-1/4 rounded bg-white/8" />
             </CardHeader>
             <CardContent>
-              <div className="h-64 rounded bg-neutral-200" />
+              <div className="h-64 rounded bg-white/8" />
             </CardContent>
           </Card>
         ) : null}
 
         {error ? (
-          <Card className="bg-red-50">
+          <Card className="border-[#7a0d0d] bg-[#350909]">
             <CardContent className="space-y-4 py-4">
-              <p className="text-red-600">
+              <p className="text-[#ff8e8e]">
                 {error instanceof Error ? error.message : "Failed to load leaderboard"}
               </p>
               <Button variant="secondary" onClick={() => void refetch()}>
@@ -293,14 +284,14 @@ export function LeagueLeaderboardPage() {
         ) : null}
 
         {!loading && !error && (
-          <Card className="overflow-hidden bg-background transition hover:border-neutral-400">
+          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
             <CardHeader>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1">
-                  <CardTitle className="font-['Orbitron'] text-2xl uppercase tracking-[0.18em]">
+                  <CardTitle className="text-3xl">
                     Classification
                   </CardTitle>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-[#989aa2]">
                     Ranked league finishers for this race.
                   </p>
                 </div>
@@ -321,10 +312,10 @@ export function LeagueLeaderboardPage() {
                 </thead>
                 <tbody>
                   {rows.map((row) => (
-                    <tr key={`${row.rank}-${row.displayName}`}>
+                    <tr key={`${row.rank}-${row.displayName}`} className={row.rank === 1 ? "bg-white/3" : undefined}>
                       <td>
                         <span className="rank-cell">
-                          <span className="font-semibold">{row.rank}</span>
+                          <span className={`ff-display text-3xl ${row.rank === 1 ? "text-[#e9c400]" : "text-[#d7d9df]"}`}>{String(row.rank).padStart(2, "0")}</span>
                           {rankDelta(row) !== null && (
                             <span
                               className={`rank-delta ${
@@ -342,27 +333,27 @@ export function LeagueLeaderboardPage() {
                           )}
                         </span>
                       </td>
-                      <td>{row.displayName}</td>
-                      <td className="text-right font-semibold">{row.points}</td>
+                      <td className="font-semibold uppercase tracking-[0.06em] text-white">{row.displayName}</td>
+                      <td className="text-right text-xl font-black text-white">{row.points}</td>
                       <td>
                         {row.breakdown ? (
                           <details className="text-sm">
-                            <summary className="cursor-pointer text-slate-500 hover:text-slate-700">
+                            <summary className="cursor-pointer text-[#989aa2] hover:text-white">
                               Show
                             </summary>
-                            <pre className="mt-2 whitespace-pre-wrap text-xs text-slate-600">
+                            <pre className="mt-2 whitespace-pre-wrap text-xs text-[#c4c8d0]">
                               {breakdownText(row.breakdown)}
                             </pre>
                           </details>
                         ) : (
-                          <span className="text-slate-400">N/A</span>
+                          <span className="text-[#7f828b]">N/A</span>
                         )}
                       </td>
                     </tr>
                   ))}
                   {rows.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
+                      <td colSpan={4} className="py-8 text-center text-[#989aa2]">
                         No leaderboard entries yet
                       </td>
                     </tr>

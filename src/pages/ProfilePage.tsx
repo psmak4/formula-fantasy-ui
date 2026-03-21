@@ -1,10 +1,11 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { API_BASE_URL, ApiError, apiClient } from "@/api/apiClient";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -30,6 +31,23 @@ function getErrorMessage(error: unknown, fallback: string): string {
     return error.message;
   }
   return fallback;
+}
+
+function formatMemberSince(value?: string) {
+  if (!value) return "Unknown";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Unknown";
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function initialsFromName(value: string) {
+  const parts = value.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "FF";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 }
 
 export function ProfilePage() {
@@ -84,15 +102,12 @@ export function ProfilePage() {
 
   const isPageLoading = isPending || (!session?.user && isPending);
 
-  const canSaveProfile = useMemo(() => {
-    return displayName.trim().length > 0;
-  }, [displayName]);
+  const canSaveProfile = useMemo(() => displayName.trim().length > 0, [displayName]);
 
   const saveProfileMutation = useMutation({
     mutationFn: async () => {
       const normalizedDisplayName = displayName.trim();
-      const normalizedAvatarUrl =
-        avatarUrl.trim().length > 0 ? avatarUrl.trim() : null;
+      const normalizedAvatarUrl = avatarUrl.trim().length > 0 ? avatarUrl.trim() : null;
       const payload = {
         displayName: normalizedDisplayName,
         avatarUrl: normalizedAvatarUrl,
@@ -121,9 +136,7 @@ export function ProfilePage() {
     setProfileError(null);
     setProfileSuccess(null);
     setIsSavingProfile(true);
-    await saveProfileMutation
-      .mutateAsync()
-      .finally(() => setIsSavingProfile(false));
+    await saveProfileMutation.mutateAsync().finally(() => setIsSavingProfile(false));
   }
 
   const changePasswordMutation = useMutation({
@@ -180,189 +193,230 @@ export function ProfilePage() {
     }
 
     setIsSavingPassword(true);
-    await changePasswordMutation
-      .mutateAsync()
-      .finally(() => setIsSavingPassword(false));
+    await changePasswordMutation.mutateAsync().finally(() => setIsSavingPassword(false));
   }
 
   if (isPageLoading) {
     return (
-      <section className="relative w-full pb-12 pt-20">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-            opacity: 0.02,
-          }}
-        />
-        <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
-          <p className="text-sm text-slate-600">Loading...</p>
+      <section className="px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-sm text-[#989aa2]">Loading profile...</p>
         </div>
       </section>
     );
   }
 
+  const profile = meQuery.data;
+  const displayHandle = displayName.trim() || profile?.displayName || "Manager";
+  const memberSince = formatMemberSince(profile?.createdAt);
+
   return (
-    <section className="relative w-full pb-12 pt-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, rgba(0,0,0,0) 9px, rgba(0,0,0,0) 14px)",
-          opacity: 0.02,
-        }}
-      />
-      <div className="relative z-10 mx-auto grid w-full max-w-7xl gap-6 px-6 lg:grid-cols-2">
-        <Card className="overflow-hidden">
-          <div className="h-[3px] w-full bg-red-600" />
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl font-semibold tracking-tight text-neutral-900">
-              Profile
-            </CardTitle>
-            <p className="text-sm text-slate-600">
-              Update your account details.
-            </p>
-          </CardHeader>
-          <CardContent>
-            {meQuery.isLoading ? (
-              <p className="text-sm text-slate-600">Loading profile...</p>
-            ) : (
-              <form className="space-y-4" onSubmit={handleSaveProfile}>
+    <section className="px-6 py-14 md:py-20">
+      <div className="mx-auto max-w-7xl space-y-8">
+        <section className="overflow-hidden border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.22),transparent_26%),linear-gradient(135deg,#0d0e12_0%,#15171c_55%,#20232b_100%)]">
+          <div className="grid gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1.3fr)_300px] lg:px-10 lg:py-12">
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge tone="info">Driver Profile</Badge>
+                <Badge tone="neutral">Member since {memberSince}</Badge>
+              </div>
+
+              <div className="space-y-4">
+                <p className="ff-kicker">Account Telemetry</p>
+                <h1 className="ff-display text-5xl text-white md:text-7xl">
+                  {displayHandle}
+                </h1>
+                <p className="max-w-2xl text-base leading-7 text-[#c2c4cb]">
+                  Manage your paddock identity, avatar, and security settings without changing any gameplay data or league membership.
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="border border-white/8 bg-black/20 px-4 py-4">
+                  <p className="ff-kicker">Account email</p>
+                  <p className="mt-2 break-all text-sm font-semibold text-white">{email}</p>
+                </div>
+                <div className="border border-white/8 bg-black/20 px-4 py-4">
+                  <p className="ff-kicker">Profile state</p>
+                  <p className="mt-2 text-3xl font-black text-[#e9c400]">Live</p>
+                </div>
+                <div className="border border-white/8 bg-black/20 px-4 py-4">
+                  <p className="ff-kicker">Security mode</p>
+                  <p className="mt-2 text-3xl font-black text-white">
+                    {revokeOtherSessions ? "Strict" : "Normal"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div className="flex h-36 w-36 items-center justify-center border border-white/10 bg-[linear-gradient(180deg,#1f2229_0%,#0f1014_100%)] text-4xl font-black text-white">
+                {avatarUrl.trim() ? (
+                  <img
+                    src={avatarUrl}
+                    alt={displayHandle}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initialsFromName(displayHandle)
+                )}
+              </div>
+
+              <Card className="border-white/8 bg-black/20">
+                <CardContent className="space-y-4 px-6 py-6">
+                  <p className="ff-kicker">Identity Snapshot</p>
+                  <div className="space-y-3">
+                    <div className="border border-white/8 bg-white/4 p-4">
+                      <p className="ff-kicker">Display name</p>
+                      <p className="mt-2 text-2xl font-black text-white">{displayHandle}</p>
+                    </div>
+                    <div className="border border-white/8 bg-white/4 p-4">
+                      <p className="ff-kicker">Avatar source</p>
+                      <p className="mt-2 text-sm leading-6 text-[#d0d3d9]">
+                        {avatarUrl.trim() || "No avatar URL set"}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
+            <CardHeader>
+              <CardTitle>Profile Settings</CardTitle>
+              <CardDescription>Update your account details and visual identity.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {meQuery.isLoading ? (
+                <p className="text-sm text-[#989aa2]">Loading profile...</p>
+              ) : (
+                <form className="space-y-4" onSubmit={handleSaveProfile}>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileDisplayName">Display name</Label>
+                    <Input
+                      id="profileDisplayName"
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileEmail">Email</Label>
+                    <Input
+                      id="profileEmail"
+                      type="email"
+                      value={email}
+                      readOnly
+                      disabled
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileAvatarUrl">Avatar URL</Label>
+                    <Input
+                      id="profileAvatarUrl"
+                      type="url"
+                      placeholder="https://example.com/avatar.jpg"
+                      value={avatarUrl}
+                      onChange={(event) => setAvatarUrl(event.target.value)}
+                    />
+                  </div>
+
+                  {profileError ? (
+                    <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                      {profileError}
+                    </div>
+                  ) : null}
+                  {profileSuccess ? (
+                    <div className="border border-[#205038] bg-[#102317] px-4 py-3 text-sm text-[#6ee7a8]">
+                      {profileSuccess}
+                    </div>
+                  ) : null}
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSavingProfile || !canSaveProfile}
+                  >
+                    {isSavingProfile ? "Saving..." : "Save profile"}
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="overflow-hidden border-white/8 bg-[#15161b]">
+            <CardHeader>
+              <CardTitle>Security Controls</CardTitle>
+              <CardDescription>Set a new password and decide whether to revoke other sessions.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form className="space-y-4" onSubmit={handleChangePassword}>
                 <div className="space-y-2">
-                  <Label htmlFor="profileDisplayName">Display name</Label>
+                  <Label htmlFor="currentPassword">Current password</Label>
                   <Input
-                    id="profileDisplayName"
-                    value={displayName}
-                    onChange={(event) => setDisplayName(event.target.value)}
+                    id="currentPassword"
+                    type="password"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={(event) => setCurrentPassword(event.target.value)}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="profileEmail">Email</Label>
+                  <Label htmlFor="newPassword">New password</Label>
                   <Input
-                    id="profileEmail"
-                    type="email"
-                    value={email}
-                    readOnly
-                    disabled
+                    id="newPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    value={newPassword}
+                    onChange={(event) => setNewPassword(event.target.value)}
+                    minLength={8}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="profileAvatarUrl">Avatar URL</Label>
+                  <Label htmlFor="confirmPassword">Confirm new password</Label>
                   <Input
-                    id="profileAvatarUrl"
-                    type="url"
-                    placeholder="https://example.com/avatar.jpg"
-                    value={avatarUrl}
-                    onChange={(event) => setAvatarUrl(event.target.value)}
+                    id="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    minLength={8}
+                    required
                   />
                 </div>
 
-                {profileError ? (
-                  <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                    {profileError}
-                  </p>
+                <label className="flex items-center gap-3 border border-white/8 bg-white/3 px-4 py-4 text-sm text-[#d0d3d9]">
+                  <input
+                    type="checkbox"
+                    checked={revokeOtherSessions}
+                    onChange={(event) => setRevokeOtherSessions(event.target.checked)}
+                  />
+                  Sign out other devices after password change
+                </label>
+
+                {passwordError ? (
+                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                    {passwordError}
+                  </div>
                 ) : null}
-                {profileSuccess ? (
-                  <p className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-                    {profileSuccess}
-                  </p>
+                {passwordSuccess ? (
+                  <div className="border border-[#205038] bg-[#102317] px-4 py-3 text-sm text-[#6ee7a8]">
+                    {passwordSuccess}
+                  </div>
                 ) : null}
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isSavingProfile || !canSaveProfile}
-                >
-                  {isSavingProfile ? "Saving..." : "Save profile"}
+                <Button type="submit" className="w-full" disabled={isSavingPassword}>
+                  {isSavingPassword ? "Updating..." : "Update password"}
                 </Button>
               </form>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="overflow-hidden">
-          <div className="h-[3px] w-full bg-red-600" />
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl font-semibold tracking-tight text-neutral-900">
-              Change Password
-            </CardTitle>
-            <p className="text-sm text-slate-600">
-              Set a new password for your account.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form className="space-y-4" onSubmit={handleChangePassword}>
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current password</Label>
-                <Input
-                  id="currentPassword"
-                  type="password"
-                  autoComplete="current-password"
-                  value={currentPassword}
-                  onChange={(event) => setCurrentPassword(event.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">New password</Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  minLength={8}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm new password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  minLength={8}
-                  required
-                />
-              </div>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={revokeOtherSessions}
-                  onChange={(event) =>
-                    setRevokeOtherSessions(event.target.checked)
-                  }
-                />
-                Sign out other devices
-              </label>
-
-              {passwordError ? (
-                <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {passwordError}
-                </p>
-              ) : null}
-              {passwordSuccess ? (
-                <p className="rounded-md border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
-                  {passwordSuccess}
-                </p>
-              ) : null}
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSavingPassword}
-              >
-                {isSavingPassword ? "Updating..." : "Update password"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </section>
   );

@@ -4,22 +4,28 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-[color,background-color,border-color] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2',
+  "ff-display inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none border border-transparent text-xs tracking-[0.16em] transition-[color,background-color,border-color,box-shadow,transform] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#111217] active:translate-y-px",
   {
     variants: {
       variant: {
-        default: 'bg-red-600 text-white hover:bg-red-700',
-        destructive: 'bg-red-600 text-white hover:bg-red-700',
-        outline: 'border border-slate-300 bg-white hover:bg-slate-50',
-        secondary: 'bg-slate-100 text-slate-900 hover:bg-slate-200',
-        ghost: 'hover:bg-slate-100',
-        link: 'text-red-600 underline-offset-4 hover:underline'
+        default:
+          "bg-[linear-gradient(180deg,#f20b0b_0%,#b80000_100%)] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_12px_28px_rgba(204,0,0,0.26)] hover:brightness-110 hover:shadow-[0_0_24px_rgba(204,0,0,0.38)]",
+        destructive:
+          "bg-[linear-gradient(180deg,#f20b0b_0%,#b80000_100%)] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.04)_inset,0_12px_28px_rgba(204,0,0,0.26)] hover:brightness-110 hover:shadow-[0_0_24px_rgba(204,0,0,0.38)]",
+        outline:
+          "border-white/12 bg-white/4 text-[#f5f7fa] hover:border-white/20 hover:bg-white/8",
+        secondary:
+          "border-white/6 bg-[#23242b] text-[#f5f7fa] hover:bg-[#2b2c34]",
+        ghost:
+          "border-transparent bg-transparent text-[#b8bac2] hover:bg-white/5 hover:text-white",
+        link:
+          "border-transparent bg-transparent px-0 text-[#f20b0b] hover:text-white"
       },
       size: {
-        default: 'h-10 px-4 py-2',
-        sm: 'h-9 rounded-xl px-3',
-        lg: 'h-11 rounded-xl px-8',
-        icon: 'h-10 w-10'
+        default: "h-11 px-5 py-2",
+        sm: "h-9 px-3",
+        lg: "h-12 px-8",
+        icon: "h-10 w-10 px-0"
       }
     },
     defaultVariants: {
