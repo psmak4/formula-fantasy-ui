@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { apiClient, ApiError } from "@/api/apiClient";
+import { setAuthToken } from "@/auth/tokenStore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -182,11 +183,14 @@ export function AdminUserOperationsDetailPage() {
 
   const impersonateUserMutation = useMutation({
     mutationFn: async () => {
-      return await apiClient.post(`/admin/users/${userId}/impersonate`, {
+      return await apiClient.post<{ bearerToken?: string }>(`/admin/users/${userId}/impersonate`, {
         reason: enforcementReason.trim(),
       });
     },
-    onSuccess: async () => {
+    onSuccess: async (response) => {
+      if (response?.bearerToken) {
+        setAuthToken(response.bearerToken);
+      }
       window.location.assign("/");
     },
   });

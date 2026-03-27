@@ -12,6 +12,7 @@ import {
 import { apiClient } from "@/api/apiClient";
 import { Button } from "@/components/ui/Button";
 import { authClient } from "@/auth/authClient";
+import { setAuthToken } from "@/auth/tokenStore";
 import { getDebugUserId } from "@/api/apiClient";
 
 function initials(name?: string | null): string {
@@ -55,8 +56,11 @@ export function AppShell() {
 
   const stopImpersonating = () => {
     void apiClient
-      .post("/admin/session/stop-impersonation")
-      .then(() => {
+      .post<{ bearerToken?: string }>("/admin/session/stop-impersonation")
+      .then((response) => {
+        if (response?.bearerToken) {
+          setAuthToken(response.bearerToken);
+        }
         window.location.assign("/admin/users");
       });
   };

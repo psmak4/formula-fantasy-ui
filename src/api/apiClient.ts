@@ -1,3 +1,5 @@
+import { getAuthToken } from '@/auth/tokenStore'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 const DEBUG_USER_STORAGE_KEY = 'ff_debug_user_id'
 const ALLOW_DEBUG_AUTH = import.meta.env.VITE_ALLOW_DEBUG_AUTH === 'true'
@@ -59,13 +61,16 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   if (options.body !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
+  const authToken = getAuthToken()
+  if (authToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${authToken}`)
+  }
   if (import.meta.env.DEV && ALLOW_DEBUG_AUTH && debugUserId && !headers.has('X-Debug-User-Id')) {
     headers.set('X-Debug-User-Id', debugUserId)
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
-    credentials: 'include',
     headers,
     body: options.body !== undefined ? JSON.stringify(options.body) : undefined
   })

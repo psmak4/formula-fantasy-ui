@@ -2,7 +2,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
-import { API_BASE_URL, ApiError, apiClient, getDebugUserId } from "@/api/apiClient";
+import { ApiError, apiClient, getDebugUserId } from "@/api/apiClient";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/Card";
@@ -146,31 +146,14 @@ export function ProfilePage() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
+      await authClient.$fetch("/change-password", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           currentPassword,
           newPassword,
           revokeOtherSessions,
         }),
       });
-
-      if (!response.ok) {
-        let message = "Unable to change password.";
-        try {
-          const body = (await response.json()) as { message?: string };
-          if (typeof body.message === "string" && body.message.length > 0) {
-            message = body.message;
-          }
-        } catch {
-          // Ignore parse errors and use fallback message.
-        }
-        throw new Error(message);
-      }
     },
     onSuccess: () => {
       setCurrentPassword("");
