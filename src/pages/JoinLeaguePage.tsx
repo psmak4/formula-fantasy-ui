@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "../api/apiClient";
+import { AppPageHeader } from "../components/layout/AppPageHeader";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/input";
@@ -95,7 +96,7 @@ function PublicLeagueRow({
           {String(index + 1).padStart(2, "0")}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="ff-display truncate text-2xl text-white">
+          <p className="truncate text-xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
             {league.name}
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7f828b]">
@@ -107,7 +108,7 @@ function PublicLeagueRow({
 
       <div className="text-left md:text-center">
         <p className="ff-kicker">Members</p>
-        <p className="mt-2 text-3xl font-black text-white">
+        <p className="mt-2 text-3xl font-black text-[#111318]">
           {league.memberCount ?? 0}
         </p>
       </div>
@@ -226,74 +227,53 @@ export function JoinLeaguePage() {
 
   return (
     <section className="ff-page">
-      <div className="ff-shell">
+      <div className="ff-shell space-y-6">
         <div className="space-y-5">
-          <Link
-            to="/leagues"
-            className="ff-kicker inline-flex items-center text-[#7f828b] transition-colors hover:text-white"
-          >
-            ← Back To Leagues
-          </Link>
-
-          <div className="space-y-4">
-            <p className="ff-kicker">League Access</p>
-            <h1 className="ff-display text-5xl text-white md:text-7xl">
-              Join League
-            </h1>
-            <p className="max-w-3xl text-base leading-7 text-[#a3a6af] md:text-lg">
-              Join using an invite code, invite URL, or explore the full list of
-              public leagues below.
-            </p>
-          </div>
-        </div>
-
-        <div className="ff-grid-main" data-layout="rail">
-          <div className="space-y-6">
-            <Card className="ff-table-card border-white/8">
-              <CardContent className="space-y-5 px-6 py-6">
-                <div className="space-y-3">
-                  <p className="ff-display text-2xl text-white">Private Invitation</p>
-                  <p className="text-sm leading-6 text-[#9699a2]">
-                    Enter the invite token or full invite link shared by the league
-                    commissioner to join a private competition.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="joinLeagueInput">Enter Token Or Invite Link</Label>
+          <AppPageHeader
+            backHref="/leagues"
+            backLabel="Back to leagues"
+            eyebrow="League Access"
+            title="Join League"
+            description="Join with an invite code, paste an invite URL, or browse the public list below."
+            utility={
+              <div className="w-full lg:max-w-[720px]">
+                <Label htmlFor="joinLeagueInput">Invite token or league link</Label>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
                   <Input
                     id="joinLeagueInput"
                     placeholder="Enter token or invite URL"
                     value={inviteInput}
                     onChange={(event) => setInviteInput(event.target.value)}
+                    className="sm:flex-1"
                   />
+                  <Button
+                    size="lg"
+                    className="sm:min-w-36"
+                    onClick={handleJoinSubmit}
+                    disabled={
+                      joinState === "joining" ||
+                      joinInviteMutation.isPending ||
+                      joinPublicLeagueMutation.isPending
+                    }
+                  >
+                    {joinState === "joining" ? "Joining..." : "Join"}
+                  </Button>
                 </div>
+              </div>
+            }
+          />
 
-                <Button
-                  className="w-full"
-                  size="lg"
-                  onClick={handleJoinSubmit}
-                  disabled={
-                    joinState === "joining" ||
-                    joinInviteMutation.isPending ||
-                    joinPublicLeagueMutation.isPending
-                  }
-                >
-                  {joinState === "joining" ? "Joining..." : "Join Grid"}
-                </Button>
+          {joinState !== "idle" && joinState !== "joining" ? (
+            <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+              {joinState}
+            </p>
+          ) : null}
+        </div>
 
-                {joinState !== "idle" && joinState !== "joining" ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
-                    {joinState}
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
-
-            <Card className="ff-table-card border-white/8">
+        <Card className="ff-table-card border-[#d9dee5]">
               <CardContent className="px-0 py-0">
-                <div className="flex items-center justify-between border-b border-white/6 px-5 py-4">
-                  <p className="ff-display text-2xl text-white">Public Grids</p>
+                <div className="flex items-center justify-between border-b border-[#e4e8ee] px-5 py-4">
+                  <p className="text-xl font-semibold uppercase tracking-[0.04em] text-[#111318]">Public Grids</p>
                 </div>
 
                 {publicLeaguesQuery.isLoading ? (
@@ -301,7 +281,7 @@ export function JoinLeaguePage() {
                     {[1, 2, 3, 4].map((value) => (
                       <div
                         key={value}
-                        className="h-24 animate-pulse border border-white/6 bg-white/3"
+                        className="h-24 animate-pulse border border-[#e1e6ec] bg-[#f8f9fb]"
                       />
                     ))}
                   </div>
@@ -318,8 +298,8 @@ export function JoinLeaguePage() {
               {!publicLeaguesQuery.isLoading && !loadError ? (
                   leagues.length === 0 ? (
                     <div className="px-5 py-5">
-                      <div className="border border-white/6 bg-white/3 px-6 py-10 text-center">
-                        <p className="ff-display text-2xl text-white">
+                      <div className="border border-[#e1e6ec] bg-[#f8f9fb] px-6 py-10 text-center">
+                        <p className="text-xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
                           No Public Leagues Yet
                         </p>
                         <p className="mx-auto mt-3 max-w-2xl text-sm text-[#9699a2]">
@@ -343,7 +323,7 @@ export function JoinLeaguePage() {
                 ) : null}
 
                 {hasPagination ? (
-                  <div className="flex items-center justify-between gap-4 border-t border-white/6 px-5 py-5">
+                  <div className="flex items-center justify-between gap-4 border-t border-[#e4e8ee] px-5 py-5">
                     <p className="ff-kicker text-[#6f727b]">
                       Page {page} of {totalPages}
                     </p>
@@ -369,32 +349,6 @@ export function JoinLeaguePage() {
                 ) : null}
               </CardContent>
             </Card>
-          </div>
-
-          <div className="space-y-4">
-            <div className="ff-field-shell">
-              <p className="ff-kicker">Private Leagues</p>
-              <p className="text-sm leading-6 text-[#989aa2]">
-                Use an invite token or invite URL. If the token is valid, you
-                will be redirected straight into the league after joining.
-              </p>
-            </div>
-            <div className="ff-field-shell">
-              <p className="ff-kicker">Public Leagues</p>
-              <p className="text-sm leading-6 text-[#989aa2]">
-                Browse open leagues by name, member count, and visibility. Join
-                instantly or open the league if you are already a member.
-              </p>
-            </div>
-            <div className="ff-field-shell">
-              <p className="ff-kicker">After Joining</p>
-              <p className="text-sm leading-6 text-[#989aa2]">
-                The app takes you to the league hub so you can review the next
-                race and lock in your prediction card.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -42,16 +42,16 @@ export function AppShell() {
 
   const navLinkClass = (isActive: boolean) => {
     if (isActive) {
-      return "relative ff-display text-xs tracking-[0.16em] text-white after:absolute after:-bottom-[1.2rem] after:left-0 after:h-[2px] after:w-full after:bg-[#cc0000]";
+      return "relative ff-display text-xs tracking-[0.16em] text-[#111318] after:absolute after:-bottom-[1.2rem] after:left-0 after:h-[2px] after:w-full after:bg-[#e10600]";
     }
-    return "relative ff-display text-xs tracking-[0.16em] text-[#7f828b] transition-colors hover:text-white";
+    return "relative ff-display text-xs tracking-[0.16em] text-[#45515f] transition-colors hover:text-[#111318]";
   };
 
   const mobileNavLinkClass = (isActive: boolean) => {
     if (isActive) {
-      return "ff-display border-b-2 border-[#cc0000] px-1 pb-2 text-[11px] tracking-[0.16em] text-white";
+      return "ff-display border-b-2 border-[#e10600] px-1 pb-2 text-[11px] tracking-[0.16em] text-[#111318]";
     }
-    return "ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#7f828b] transition-colors hover:text-white";
+    return "ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#45515f] transition-colors hover:text-[#111318]";
   };
 
   const stopImpersonating = () => {
@@ -66,13 +66,13 @@ export function AppShell() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d0d11] text-[#f5f7fa]">
-      <header className="sticky top-0 z-50 w-full border-b border-white/6 bg-[rgba(19,19,23,0.92)] backdrop-blur-md">
+    <div className="min-h-screen bg-[#f3f4f6] text-[#111318]">
+      <header className="sticky top-0 z-50 w-full border-b border-[#d9dee5] bg-[rgba(255,255,255,0.94)] backdrop-blur-md">
         <div className="mx-auto flex min-h-[4.5rem] w-full max-w-7xl items-center justify-between px-6">
           <div className="flex flex-1 items-center">
             <Link
               to="/"
-              className="ff-display flex items-center text-2xl text-[#f20b0b] md:text-3xl"
+              className="ff-display flex items-center text-2xl text-[#111318] md:text-3xl"
             >
               Formula Fantasy
             </Link>
@@ -113,7 +113,7 @@ export function AppShell() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="h-10 w-10 border border-white/10 bg-white/4 p-0 text-white hover:bg-white/10"
+                    className="h-10 w-10 border border-[#d9dee5] bg-white p-0 text-[#111318] hover:border-[#c8cfd8] hover:bg-[#f8f9fb]"
                     aria-label="Open user menu"
                   >
                     <Avatar className="h-9 w-9">
@@ -197,7 +197,7 @@ export function AppShell() {
           </div>
         </div>
 
-        <div className="border-t border-white/6 md:hidden">
+        <div className="border-t border-[#e4e8ee] md:hidden">
           <nav
             className="mx-auto flex w-full max-w-7xl items-center gap-5 overflow-x-auto px-6 pt-3"
             aria-label="Mobile primary"
@@ -228,7 +228,7 @@ export function AppShell() {
                 {hasDebugAuth ? (
                   <button
                     type="button"
-                    className="ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#7f828b] transition-colors hover:text-white"
+                    className="ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#45515f] transition-colors hover:text-[#111318]"
                     onClick={() => {
                       if (typeof window !== "undefined") {
                         window.localStorage.removeItem("ff_debug_user_id");

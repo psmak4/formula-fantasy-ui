@@ -124,6 +124,11 @@ const AdminIncidentsPage = lazy(() =>
     default: module.AdminIncidentsPage,
   })),
 );
+const AdminHeroPreviewPage = lazy(() =>
+  import("./pages/AdminHeroPreviewPage").then((module) => ({
+    default: module.AdminHeroPreviewPage,
+  })),
+);
 
 function RouteLoadingFallback() {
   return (
@@ -231,6 +236,7 @@ function App() {
               >
                 <Route index element={<AdminOperationsPage />} />
                 <Route path="incidents" element={<AdminIncidentsPage />} />
+                <Route path="hero-preview" element={<AdminHeroPreviewPage />} />
                 <Route path="races/:raceId" element={<AdminRaceOperationsDetailPage />} />
                 <Route path="season-assignments" element={<AdminSeasonAssignmentsPage />} />
                 <Route path="leagues" element={<AdminLeagueOperationsPage />} />

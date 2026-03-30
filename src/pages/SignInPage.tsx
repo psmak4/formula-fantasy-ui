@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { getDebugUserId } from "@/api/apiClient";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -71,63 +71,33 @@ export function SignInPage() {
   return (
     <section className="ff-auth-page ff-page relative w-full">
       <div className="ff-shell">
-        <div className="ff-auth-grid min-h-[calc(100svh-16rem)]">
-          <div className="space-y-8">
-            <div className="ff-section-title">
-              <p className="ff-display text-4xl text-[#f20b0b] md:text-6xl">Formula Fantasy</p>
-              <div className="h-px w-28 bg-[#cc0000]" />
-              <p className="ff-kicker">Paddock Access</p>
-              <p className="ff-display max-w-xl text-5xl text-white md:text-7xl">
-                Start Engine
-              </p>
-              <p className="max-w-xl text-lg leading-8 text-[#b8bac2]">
-                Re-enter the grid, confirm the next race window, and get back into
-                prediction flow before lights out.
-              </p>
-            </div>
-
-            <div className="grid max-w-2xl gap-4 sm:grid-cols-3">
-              <div className="ff-field-shell">
-                <p className="ff-kicker">Secure entry</p>
-                <p className="mt-3 text-sm text-[#b8bac2]">
-                  Protected session and account controls.
-                </p>
-              </div>
-              <div className="ff-field-shell">
-                <p className="ff-kicker">League ready</p>
-                <p className="mt-3 text-sm text-[#b8bac2]">
-                  Jump back into leagues, results, and race cards.
-                </p>
-              </div>
-              <div className="ff-field-shell">
-                <p className="ff-kicker">Live window</p>
-                <p className="mt-3 text-sm text-[#b8bac2]">
-                  Real-time access to current prediction status.
-                </p>
-              </div>
-            </div>
+        <div className="ff-auth-grid min-h-[calc(100svh-18rem)]">
+          <div className="max-w-xl space-y-4">
+            <p className="ff-kicker">Account Access</p>
+            <h1 className="ff-display text-5xl text-[#111318] md:text-6xl">Sign in</h1>
+            <p className="max-w-lg text-base leading-7 text-[#66707d] md:text-lg">
+              Use your email and password to manage leagues, edit race cards, and review results.
+            </p>
           </div>
 
           <div className="mx-auto w-full max-w-xl">
-            <Card className="ff-table-card overflow-hidden border-white/8">
-              <div className="ff-panel-strip">
-                <span className="ff-kicker">Auth Protocol // 01</span>
-                <span className="h-2 w-2 rounded-full bg-[#cc0000]" />
-              </div>
-              <CardHeader className="space-y-3 pb-4">
-                <CardTitle className="text-3xl md:text-4xl">Sign In</CardTitle>
-                <p className="text-sm leading-6 text-[#989aa2]">
-                  Welcome back. Sign in to manage your leagues and predictions.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
+            <Card className="ff-table-card border-[#d9dee5]">
+              <CardContent className="space-y-6 px-8 py-8">
+                <div className="space-y-2">
+                  <p className="text-base font-medium text-[#111318]">Welcome back.</p>
+                  <p className="text-sm leading-6 text-[#66707d]">
+                    Sign in to continue to your leagues and predictions.
+                  </p>
+                </div>
+
                 <form className="space-y-4" onSubmit={handleSubmit}>
                   <div className="ff-field-shell">
-                    <Label htmlFor="signInEmail">Grid Identity (Email)</Label>
+                    <Label htmlFor="signInEmail">Email</Label>
                     <Input
                       id="signInEmail"
                       type="email"
                       autoComplete="email"
+                      placeholder="you@example.com"
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       required
@@ -135,11 +105,12 @@ export function SignInPage() {
                   </div>
 
                   <div className="ff-field-shell">
-                    <Label htmlFor="signInPassword">Secure Key (Password)</Label>
+                    <Label htmlFor="signInPassword">Password</Label>
                     <Input
                       id="signInPassword"
                       type="password"
                       autoComplete="current-password"
+                      placeholder="Enter your password"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       required
@@ -153,12 +124,12 @@ export function SignInPage() {
                   ) : null}
 
                   <Button type="submit" className="w-full" size="lg" disabled={isPending || isSubmitting}>
-                    {isSubmitting ? "Signing in..." : "Start Engine"}
+                    {isSubmitting ? "Signing in..." : "Sign in"}
                   </Button>
                 </form>
 
-                <div className="border-t border-white/6 pt-6 text-center">
-                  <p className="text-sm text-[#7f828b]">
+                <div className="border-t border-[#e4e8ee] pt-6 text-center">
+                  <p className="text-sm text-[#66707d]">
                     New to Formula Fantasy?
                   </p>
                   <Button asChild variant="outline" className="mt-4 w-full">

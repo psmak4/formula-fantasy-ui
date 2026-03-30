@@ -41,6 +41,22 @@ async function main() {
     await page.getByRole("button", { name: "Save Entry" }).click();
     await page.getByText("Entry saved").waitFor({ state: "visible", timeout: 30000 });
 
+    logStep("Return to league page");
+    await page.getByText(/Back to League/i).click();
+    await page.waitForURL(/\/league\/[^/]+$/, { timeout: 30000 });
+    await page.getByRole("link", { name: "Edit Predictions", exact: true }).waitFor({ state: "visible", timeout: 30000 });
+
+    logStep("Re-open prediction card");
+    await page.getByRole("link", { name: "Open Prediction Card", exact: true }).click();
+    await page.waitForURL(/\/predict$/, { timeout: 30000 });
+
+    logStep("Verify saved entry");
+    await page.getByText(/Max Verstappen|Verstappen/i).waitFor({ state: "visible", timeout: 30000 });
+    await page.getByText(/Lando Norris|Norris/i).waitFor({ state: "visible", timeout: 30000 });
+    await page.getByText(/Charles Leclerc|Leclerc/i).waitFor({ state: "visible", timeout: 30000 });
+    await page.getByText(/Lewis Hamilton|Hamilton/i).waitFor({ state: "visible", timeout: 30000 });
+    await page.getByText(/George Russell|Russell/i).waitFor({ state: "visible", timeout: 30000 });
+
     console.log(`email=${email}`);
     console.log(`password=${password}`);
     console.log("result=success");

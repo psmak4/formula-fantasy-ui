@@ -6,6 +6,7 @@ const navItems = [
   { to: "/admin/season-assignments", label: "Assignments", code: "S-03" },
   { to: "/admin/leagues", label: "Leagues", code: "L-04" },
   { to: "/admin/users", label: "Users", code: "U-05" },
+  { to: "/admin/hero-preview", label: "Hero Lab", code: "H-06" },
 ];
 
 function railLinkClass(isActive: boolean): string {
@@ -116,6 +117,8 @@ export function AdminLayout() {
                             ? "Ingestion and scoring health"
                             : item.label === "Incidents"
                               ? "Operational repair queue"
+                              : item.label === "Hero Lab"
+                                ? "Race hero preview surface"
                               : item.label === "Assignments"
                                 ? "Season-entry management"
                                 : item.label === "Leagues"

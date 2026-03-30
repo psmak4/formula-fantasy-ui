@@ -5,12 +5,8 @@ import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/Card";
+import { AppPageHeader } from "../components/layout/AppPageHeader";
+import { Card, CardContent, CardTitle } from "../components/ui/Card";
 import {
   Dialog,
   DialogContent,
@@ -164,28 +160,33 @@ function normalizeLeaderboardRows(
   return (data.rows ?? []).map((row, index) => {
     const userId = row.user?.id ?? "";
     const rank = typeof row.rank === "number" ? row.rank : index + 1;
-    const previousRank = typeof row.previousRank === "number" ? row.previousRank : undefined;
+    const previousRank =
+      typeof row.previousRank === "number" ? row.previousRank : undefined;
     const fallbackDelta = row.rankChange ?? row.movement ?? row.delta;
 
     return {
       rank,
       previousRank,
-      rankDelta: typeof row.rankDelta === "number"
-        ? row.rankDelta
-        : typeof fallbackDelta === "number"
-          ? fallbackDelta
-          : typeof previousRank === "number"
-            ? previousRank - rank
-            : 0,
+      rankDelta:
+        typeof row.rankDelta === "number"
+          ? row.rankDelta
+          : typeof fallbackDelta === "number"
+            ? fallbackDelta
+            : typeof previousRank === "number"
+              ? previousRank - rank
+              : 0,
       userId,
-      displayName: row.user?.displayName ?? row.displayName ?? "Unknown manager",
+      displayName:
+        row.user?.displayName ?? row.displayName ?? "Unknown manager",
       avatarUrl: row.user?.avatarUrl,
       points: row.pointsTotal ?? row.points ?? 0,
       racesScored: row.racesScored ?? 0,
       lastRacePoints: row.lastRacePoints ?? 0,
       gapToLeader: row.gapToLeader ?? 0,
       gapToNext: row.gapToNext,
-      isCurrentUser: row.isCurrentUser ?? Boolean(currentUserId && userId && userId === currentUserId),
+      isCurrentUser:
+        row.isCurrentUser ??
+        Boolean(currentUserId && userId && userId === currentUserId),
     };
   });
 }
@@ -232,14 +233,17 @@ function buildNextRaceWindowSummary(
   nextRace: NextRaceResponse | null,
   nowMs: number,
 ): NextRaceWindowSummary {
-  const openAt = nextRace?.entryOpensAt ?? nextRace?.predictionOpensAt ?? nextRace?.openAt;
-  const lockAt = nextRace?.entryClosesAt ?? nextRace?.predictionClosesAt ?? nextRace?.lockAt;
+  const openAt =
+    nextRace?.entryOpensAt ?? nextRace?.predictionOpensAt ?? nextRace?.openAt;
+  const lockAt =
+    nextRace?.entryClosesAt ?? nextRace?.predictionClosesAt ?? nextRace?.lockAt;
   const openTs = openAt ? new Date(openAt).getTime() : NaN;
   const lockTs = lockAt ? new Date(lockAt).getTime() : NaN;
 
-  const status = nextRace?.windowStatus
-    ?? nextRace?.lockStatus
-    ?? (nextRace?.predictionLocked || nextRace?.entriesLocked
+  const status =
+    nextRace?.windowStatus ??
+    nextRace?.lockStatus ??
+    (nextRace?.predictionLocked || nextRace?.entriesLocked
       ? "locked"
       : !Number.isNaN(lockTs) && nowMs >= lockTs
         ? "locked"
@@ -256,12 +260,16 @@ function buildNextRaceWindowSummary(
       detail: lockAt
         ? `This race locked at ${formatDateTimeLabel(lockAt)}.`
         : "This race is no longer editable.",
-      timestampLabel: lockAt ? `Locked ${formatDateTimeLabel(lockAt)}` : "Locked",
+      timestampLabel: lockAt
+        ? `Locked ${formatDateTimeLabel(lockAt)}`
+        : "Locked",
     };
   }
 
   if (status === "upcoming") {
-    const timeToOpen = !Number.isNaN(openTs) ? Math.max(openTs - nowMs, 0) : nextRace?.timeUntilOpenMs;
+    const timeToOpen = !Number.isNaN(openTs)
+      ? Math.max(openTs - nowMs, 0)
+      : nextRace?.timeUntilOpenMs;
     return {
       status,
       tone: "warning",
@@ -272,13 +280,18 @@ function buildNextRaceWindowSummary(
       detail: lockAt
         ? `Cards will lock ${formatDateTimeLabel(lockAt)}.`
         : "Cards will become editable before race start.",
-      timestampLabel: timeToOpen && timeToOpen > 0
-        ? `Opens in ${formatDuration(timeToOpen)}`
-        : (openAt ? `Opens ${formatDateTimeLabel(openAt)}` : "Opens soon"),
+      timestampLabel:
+        timeToOpen && timeToOpen > 0
+          ? `Opens in ${formatDuration(timeToOpen)}`
+          : openAt
+            ? `Opens ${formatDateTimeLabel(openAt)}`
+            : "Opens soon",
     };
   }
 
-  const timeToLock = !Number.isNaN(lockTs) ? Math.max(lockTs - nowMs, 0) : nextRace?.timeUntilLockMs;
+  const timeToLock = !Number.isNaN(lockTs)
+    ? Math.max(lockTs - nowMs, 0)
+    : nextRace?.timeUntilLockMs;
   return {
     status: "open",
     tone: "success",
@@ -286,116 +299,89 @@ function buildNextRaceWindowSummary(
     headline: lockAt
       ? `Predictions lock ${formatDateTimeLabel(lockAt)}`
       : "Prediction window is open",
-    detail: timeToLock && timeToLock > 0
-      ? `You still have ${formatDuration(timeToLock)} to save or edit your card.`
-      : "Save your card before the race locks.",
-    timestampLabel: timeToLock && timeToLock > 0
-      ? `${formatDuration(timeToLock)} left`
-      : (lockAt ? `Locks ${formatDateTimeLabel(lockAt)}` : "Open now"),
+    detail:
+      timeToLock && timeToLock > 0
+        ? `You still have ${formatDuration(timeToLock)} to save or edit your card.`
+        : "Save your card before the race locks.",
+    timestampLabel:
+      timeToLock && timeToLock > 0
+        ? `${formatDuration(timeToLock)} left`
+        : lockAt
+          ? `Locks ${formatDateTimeLabel(lockAt)}`
+          : "Open now",
   };
 }
 
 function LeaguePageSkeleton() {
   return (
     <>
-      <Card className="ff-hero-band overflow-hidden border-white/8">
-        <CardContent className="grid gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1.35fr)_300px] lg:px-8">
-          <div className="space-y-6">
-            <div className="flex flex-wrap gap-3">
-              <div className="skeleton-line h-9 w-32" />
-              <div className="skeleton-line h-9 w-28" />
-              <div className="skeleton-line h-9 w-32" />
-            </div>
-            <div className="space-y-4">
-              <div className="skeleton-line h-16 w-2/3" />
-              <div className="skeleton-line h-5 w-full max-w-3xl" />
-              <div className="skeleton-line h-5 w-5/6 max-w-2xl" />
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <div className="skeleton-line h-12 w-36" />
-              <div className="skeleton-line h-12 w-40" />
-            </div>
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-3">
+            <div className="skeleton-line h-9 w-32" />
+            <div className="skeleton-line h-9 w-28" />
+            <div className="skeleton-line h-9 w-32" />
           </div>
-          <div className="ff-field-shell bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-6">
-            <div className="skeleton-line h-4 w-24" />
-            <div className="mt-5 skeleton-line h-16 w-24" />
-            <div className="mt-6 grid gap-3">
-              {[1, 2, 3].map((value) => (
-                <div key={value} className="ff-stat bg-white/3">
-                  <div className="skeleton-line h-4 w-20" />
-                  <div className="mt-3 skeleton-line h-8 w-20" />
-                </div>
-              ))}
-            </div>
+          <div className="space-y-4">
+            <div className="skeleton-line h-16 w-2/3" />
+            <div className="skeleton-line h-5 w-full max-w-3xl" />
+            <div className="skeleton-line h-5 w-5/6 max-w-2xl" />
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex flex-wrap gap-3">
+            <div className="skeleton-line h-10 w-36" />
+            <div className="skeleton-line h-10 w-40" />
+            <div className="skeleton-line h-10 w-40" />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <div className="skeleton-line h-9 w-28" />
+          <div className="skeleton-line h-9 w-24" />
+          <div className="skeleton-line h-9 w-24" />
+        </div>
+      </div>
 
-      <div className="ff-grid-main" data-layout="rail">
-        <div className="space-y-6">
-          <Card className="ff-table-card overflow-hidden border-white/8">
-            <div className="ff-panel-strip">
+      <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
+        <CardContent className="space-y-5 px-6 py-6">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-2">
                 <div className="skeleton-line h-8 w-40" />
+                <div className="skeleton-line h-4 w-64" />
               </div>
               <div className="flex gap-2">
                 <div className="skeleton-line h-8 w-28" />
                 <div className="skeleton-line h-8 w-32" />
               </div>
             </div>
-            <CardContent className="space-y-5 px-0 py-0">
-              <div className="grid gap-4 border-b border-white/6 px-6 py-5 md:grid-cols-3">
-                {[1, 2, 3].map((value) => (
-                  <div key={value} className="ff-field-shell bg-white/2">
-                    <div className="skeleton-line h-4 w-24" />
-                    <div className="mt-3 skeleton-line h-8 w-24" />
-                    <div className="mt-2 skeleton-line h-4 w-20" />
-                  </div>
-                ))}
+            <div className="flex flex-wrap gap-3">
+              <div className="skeleton-line h-10 w-36" />
+              <div className="skeleton-line h-10 w-40" />
+              <div className="skeleton-line h-10 w-40" />
+            </div>
+          </div>
+        </CardContent>
+        <CardContent className="space-y-0 px-0 py-0">
+          <div className="space-y-px bg-[#e7ebf0]">
+            {[1, 2, 3, 4].map((value) => (
+              <div
+                key={value}
+                className="grid gap-4 bg-white px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px]"
+              >
+                <div className="skeleton-line h-10 w-16" />
+                <div className="space-y-2">
+                  <div className="skeleton-line h-5 w-44" />
+                  <div className="skeleton-line h-4 w-64" />
+                </div>
+                <div className="space-y-2">
+                  <div className="skeleton-line h-4 w-16" />
+                  <div className="skeleton-line h-5 w-14" />
+                </div>
+                <div className="skeleton-line h-10 w-20 md:justify-self-end" />
               </div>
-              <div className="space-y-px bg-white/4">
-                {[1, 2, 3, 4].map((value) => (
-                  <div
-                    key={value}
-                    className="grid gap-4 bg-[#15161b] px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px]"
-                  >
-                    <div className="skeleton-line h-10 w-16" />
-                    <div className="space-y-2">
-                      <div className="skeleton-line h-5 w-44" />
-                      <div className="skeleton-line h-4 w-64" />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="skeleton-line h-4 w-16" />
-                      <div className="skeleton-line h-5 w-14" />
-                    </div>
-                    <div className="skeleton-line h-10 w-20 md:justify-self-end" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          {[1, 2].map((value) => (
-            <Card key={value} className="ff-table-card border-white/8">
-              <div className="ff-panel-strip">
-                <div className="skeleton-line h-8 w-40" />
-              </div>
-              <CardContent className="space-y-4">
-                {[1, 2, 3].map((inner) => (
-                  <div key={inner} className="ff-field-shell bg-white/3">
-                    <div className="skeleton-line h-4 w-24" />
-                    <div className="skeleton-line h-8 w-32" />
-                    <div className="skeleton-line h-4 w-full" />
-                  </div>
-                ))}
-                {value === 1 ? <div className="skeleton-line h-12 w-full" /> : null}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </>
   );
 }
@@ -423,20 +409,12 @@ export function LeaguePage() {
         throw new Error("Missing league ID");
       }
 
-      const [
-        userData,
-        leagueData,
-        leaderboardData,
-        entryData,
-        nextRaceData,
-      ] =
+      const [userData, leagueData, leaderboardData, entryData, nextRaceData] =
         await Promise.all([
           apiClient.get<{ userId: string }>("/me"),
           apiClient.get<LeagueResponse>(`/leagues/${leagueId}`),
           apiClient
-            .get<LeaderboardResponse>(
-              `/leagues/${leagueId}/standings`,
-            )
+            .get<LeaderboardResponse>(`/leagues/${leagueId}/standings`)
             .catch(() => ({}) as LeaderboardResponse),
           apiClient
             .get<EntryResponse>(`/leagues/${leagueId}/races/next/entry/me`)
@@ -469,7 +447,8 @@ export function LeaguePage() {
       return {
         currentUserId: userData.userId ?? null,
         leagueName: leagueData.name ?? leagueData.league?.name ?? "League",
-        leagueVisibility: leagueData.visibility ?? leagueData.league?.visibility ?? "private",
+        leagueVisibility:
+          leagueData.visibility ?? leagueData.league?.visibility ?? "private",
         members: leagueData.members ?? leagueData.league?.members ?? [],
         leaderboard: leaderboardData,
         nextRace: nextRaceData,
@@ -481,11 +460,9 @@ export function LeaguePage() {
 
   const currentUserId = data?.currentUserId ?? null;
   const leagueName = data?.leagueName ?? "League";
-  const leagueVisibility = data?.leagueVisibility ?? "private";
   const members = data?.members ?? [];
   const leaderboard = data?.leaderboard ?? null;
   const nextRace = data?.nextRace ?? null;
-  const entrySubmitted = data?.entrySubmitted ?? false;
   const entryLocked = data?.entryLocked ?? false;
   const [nowMs, setNowMs] = useState(() => Date.now());
 
@@ -501,14 +478,11 @@ export function LeaguePage() {
     () => normalizeLeaderboardRows(leaderboard, currentUserId),
     [currentUserId, leaderboard],
   );
-  const topScorer = leaderboardRows[0];
-  const scoringAvailable = leaderboard?.scoringAvailable ?? leaderboard?.scoring?.available ?? false;
-  const currentUserRow = leaderboardRows.find((entry) => entry.isCurrentUser) ?? null;
+  const scoringAvailable =
+    leaderboard?.scoringAvailable ?? leaderboard?.scoring?.available ?? false;
   const leagueHasScoredRounds = leaderboardRows.some(
     (entry) =>
-      entry.racesScored > 0 ||
-      entry.points > 0 ||
-      entry.lastRacePoints > 0,
+      entry.racesScored > 0 || entry.points > 0 || entry.lastRacePoints > 0,
   );
   const latestLeagueRace = leagueHasScoredRounds
     ? leaderboard?.latestCompletedRace
@@ -522,21 +496,14 @@ export function LeaguePage() {
 
   const currentMember = useMemo(
     () =>
-      members.find((member) => member.userId === currentUserId || member.id === currentUserId) ??
-      null,
+      members.find(
+        (member) =>
+          member.userId === currentUserId || member.id === currentUserId,
+      ) ?? null,
     [currentUserId, members],
   );
 
   const isOwner = currentMember?.role === "owner";
-  const visibilityLabel = leagueVisibility === "public" ? "Public League" : "Private League";
-  const inviteDescription = leagueVisibility === "public"
-    ? "This league is listed publicly, and the owner can still share a direct invite link for faster access."
-    : "League membership is private for MVP. Share an invite link to bring in rivals.";
-  const inviteFootnote = isOwner
-    ? null
-    : leagueVisibility === "public"
-      ? "Anyone can join from the public leagues list, while the owner can also share a direct invite."
-      : "Only the league owner can generate invites.";
 
   const nextRaceWindow = useMemo(
     () => buildNextRaceWindowSummary(nextRace, nowMs),
@@ -545,11 +512,6 @@ export function LeaguePage() {
   const canEditPredictions = nextRaceWindow.status === "open";
   const canOpenPredictionRoute = entryLocked || canEditPredictions;
   const heroPredictionLabel = entryLocked ? "Review Entry" : "Edit Predictions";
-  const nextEventPredictionLabel = entryLocked
-    ? "Review Entry"
-    : entrySubmitted
-      ? "Edit Predictions"
-      : "Open Prediction Card";
   const totalPages = Math.max(
     1,
     Math.ceil(leaderboardRows.length / LEADERBOARD_PAGE_SIZE),
@@ -605,148 +567,111 @@ export function LeaguePage() {
 
   return (
     <section className="ff-page">
-      <div className="ff-shell space-y-8">
+      <div className="ff-shell space-y-6">
         {isInitialLoading ? (
           <LeaguePageSkeleton />
         ) : (
-          <>
-        <Card className="ff-hero-band overflow-hidden border-white/8">
-          <CardContent className="grid gap-8 px-6 py-8 lg:grid-cols-[minmax(0,1.35fr)_300px] lg:px-8">
-            <div className="space-y-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
-                  {visibilityLabel}
-                </span>
-                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
-                  {members.length} Members
-                </span>
-                {leaderboard?.seasonYear ? (
-                  <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
-                    Season {leaderboard.seasonYear}
-                  </span>
-                ) : null}
-              </div>
+          <div className="space-y-6">
+            <AppPageHeader
+              eyebrow="League Overview"
+              title={leagueName}
+              description="Championship standings for the full league. Track position, movement, total points, and jump into the next race card from one place."
+              meta={
+                <>
+                  <Badge variant="secondary">
+                    {data?.leagueVisibility ?? "private"}
+                  </Badge>
+                  <Badge tone="neutral">
+                    {members.length} members
+                  </Badge>
+                  {leaderboard?.seasonYear ? (
+                    <Badge tone="neutral">
+                      Season {leaderboard.seasonYear}
+                    </Badge>
+                  ) : null}
+                </>
+              }
+              utility={
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={nextRaceWindow.tone}>{nextRaceWindow.badgeLabel}</Badge>
+                    <span className="text-sm text-[#989aa2]">{nextRaceWindow.timestampLabel}</span>
+                  </div>
 
-              <div className="space-y-4">
-                <h1 className="ff-display text-5xl text-white md:text-7xl">
-                  {leagueName}
-                </h1>
-                <p className="max-w-3xl text-base leading-7 text-[#a3a6af] md:text-lg">
-                  Championship standings for the full league. Track position, movement,
-                  total points, and jump directly into your next race card.
-                </p>
-              </div>
+                  <div className="flex flex-wrap gap-3">
+                    {canOpenPredictionRoute ? (
+                      <Button asChild size="lg">
+                        <Link to={`/league/${leagueId}/predict`}>
+                          {heroPredictionLabel}
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button size="lg" disabled>
+                        {heroPredictionLabel}
+                      </Button>
+                    )}
+                    {isOwner ? (
+                      <Button
+                        variant="outline"
+                        onClick={handleCreateInvite}
+                        disabled={!isMember || createInviteMutation.isPending}
+                        size="lg"
+                      >
+                        {createInviteMutation.isPending
+                          ? "Generating Invite..."
+                          : "Invite Driver"}
+                      </Button>
+                    ) : null}
+                    {latestLeagueRace?.raceId ? (
+                      <Button asChild variant="secondary" size="lg">
+                        <Link
+                          to={`/league/${leagueId}/races/${latestLeagueRace.raceId}/review`}
+                        >
+                          Last Race Review
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                </>
+              }
+            />
 
-              <div className="flex flex-wrap gap-3">
-                {isOwner ? (
+            {error ? (
+              <Card className="border-[#7a0d0d] bg-[#350909]">
+                <CardContent className="py-4">
+                  <p className="text-[#ff8e8e]">
+                    {error instanceof Error
+                      ? error.message
+                      : "Failed to load league"}
+                  </p>
                   <Button
-                    onClick={handleCreateInvite}
-                    disabled={!isMember || createInviteMutation.isPending}
-                    size="lg"
+                    variant="secondary"
+                    size="sm"
+                    className="mt-3"
+                    onClick={() => void refetch()}
                   >
-                    {createInviteMutation.isPending ? "Generating Invite..." : "Invite Driver"}
+                    Retry
                   </Button>
-                ) : null}
-                {canOpenPredictionRoute ? (
-                  <Button asChild variant="outline" size="lg">
-                    <Link to={`/league/${leagueId}/predict`}>
-                      {heroPredictionLabel}
-                    </Link>
-                  </Button>
-                ) : (
-                  <Button variant="outline" size="lg" disabled>
-                    {heroPredictionLabel}
-                  </Button>
-                )}
-                {latestLeagueRace?.raceId ? (
-                  <Button asChild variant="secondary" size="lg">
-                    <Link
-                      to={`/league/${leagueId}/races/${latestLeagueRace.raceId}/review`}
-                    >
-                      Last Race Review
-                    </Link>
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="ff-field-shell border-l-2 border-[#cc0000] bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.01))] p-6">
-              <p className="ff-kicker">Your Standing</p>
-              <div className="mt-5 flex items-end gap-3">
-                <p className="ff-display text-6xl text-white">
-                  {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
-                </p>
-              </div>
-              <div className="mt-6 grid gap-3">
-                <div className="ff-stat bg-white/3">
-                  <p className="ff-kicker">League Rank</p>
-                  <p className="mt-2 text-3xl font-black text-white">
-                    {currentUserRow ? `#${currentUserRow.rank}` : "—"}
-                  </p>
-                </div>
-                <div className="ff-stat bg-white/3">
-                  <p className="ff-kicker">Total Points</p>
-                  <p className="mt-2 text-3xl font-black text-[#e9c400]">
-                    {currentUserRow?.points ?? 0}
-                  </p>
-                </div>
-                <div className="ff-stat bg-white/3">
-                  <p className="ff-kicker">Last Race Gain</p>
-                  <p className="mt-2 text-2xl font-black text-[#6ee7a8]">
-                    {currentUserRow ? `${currentUserRow.lastRacePoints} pts` : "—"}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {loading ? (
-          <div className="grid gap-6 md:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i} className="animate-pulse border-white/8 bg-[#15161b]">
-                <CardHeader>
-                  <div className="h-6 w-3/4 rounded bg-white/8" />
-                </CardHeader>
-                <CardContent>
-                  <div className="h-4 w-1/2 rounded bg-white/8" />
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        ) : null}
+            ) : null}
 
-        {error ? (
-          <Card className="border-[#7a0d0d] bg-[#350909]">
-            <CardContent className="py-4">
-              <p className="text-[#ff8e8e]">
-                {error instanceof Error ? error.message : "Failed to load league"}
-              </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="mt-3"
-                onClick={() => void refetch()}
-              >
-                Retry
-              </Button>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {!loading && !error ? (
-          <>
-            <div className="ff-grid-main" data-layout="rail">
-              <div className="space-y-6">
-                <Card className="ff-table-card overflow-hidden border-white/8">
-                  <div className="ff-panel-strip">
+            {!loading && !error ? (
+              <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
+                <CardContent className="space-y-5 px-6 py-6">
+                  <div className="flex flex-col gap-4 border-b border-[#e4e8ee] pb-5">
                     <div className="flex flex-wrap items-center justify-between gap-4">
-                      <div>
-                        <CardTitle className="text-3xl">Leaderboard</CardTitle>
+                      <div className="space-y-1">
+                        <CardTitle className="text-2xl text-[#111318]">Leaderboard</CardTitle>
+                        <p className="text-sm text-[#989aa2]">
+                          Championship standings for the full league.
+                        </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge tone={scoringAvailable ? "success" : "warning"}>
-                          {scoringAvailable ? "Season Live" : "Awaiting Scoring"}
+                          {scoringAvailable
+                            ? "Season Live"
+                            : "Awaiting Scoring"}
                         </Badge>
                         {latestLeagueRace ? (
                           <Badge tone="neutral">
@@ -755,217 +680,157 @@ export function LeaguePage() {
                         ) : null}
                       </div>
                     </div>
-                  </div>
-                  <CardContent className="space-y-5 px-0 py-0">
-                    <div className="grid gap-4 border-b border-white/6 px-6 py-5 md:grid-cols-3">
-                      <div className="ff-field-shell border-l-2 border-[#e9c400] bg-white/2">
-                        <p className="ff-kicker">League Leader</p>
-                        <p className="mt-3 text-xl font-black uppercase tracking-[0.08em] text-white">
-                          {topScorer?.displayName ?? "Waiting"}
-                        </p>
-                        <p className="mt-1 text-sm text-[#7f828b]">
-                          {topScorer ? `${topScorer.points} pts` : "No leader yet"}
-                        </p>
-                      </div>
-                      <div className="ff-field-shell border-l-2 border-white/10 bg-white/2">
-                        <p className="ff-kicker">Managers</p>
-                        <p className="mt-3 text-3xl font-black text-white">
-                          {members.length}
-                        </p>
-                      </div>
-                      <div className="ff-field-shell border-l-2 border-[#cc0000] bg-white/2">
-                        <p className="ff-kicker">Your Rank</p>
-                        <p className="mt-3 text-3xl font-black text-white">
-                          {currentUserRow ? `P${currentUserRow.rank}` : "P—"}
-                        </p>
-                      </div>
+
+                    <div className="text-sm leading-6 text-[#989aa2]">
+                      <span className="font-semibold text-[#111318]">
+                        {nextRaceWindow.headline}
+                      </span>{" "}
+                      {nextRaceWindow.detail}
                     </div>
+                  </div>
+                </CardContent>
+                <CardContent className="space-y-0 px-0 py-0">
+                  <div className="space-y-0">
+                    {pagedLeaderboardRows.map((entry) => {
+                      const isLeader = entry.rank === 1;
+                      const movement = entry.rankDelta;
+                      const movementClass =
+                        movement > 0
+                          ? "text-[#6ee7a8]"
+                          : movement < 0
+                            ? "text-[#ff7373]"
+                            : "text-[#7f828b]";
 
-                    <div className="space-y-0">
-                      {pagedLeaderboardRows.map((entry) => {
-                        const isLeader = entry.rank === 1;
-                        const movement = entry.rankDelta;
-                        const movementClass =
-                          movement > 0
-                            ? "text-[#6ee7a8]"
-                            : movement < 0
-                              ? "text-[#ff7373]"
-                              : "text-[#7f828b]";
-
-                        return (
+                      return (
                         <div
-                          key={entry.userId || `${entry.rank}-${entry.displayName}`}
-                          className={`ff-data-row border-b border-white/6 px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
-                            entry.isCurrentUser ? "bg-[#2a1414]" : "bg-transparent"
+                          key={
+                            entry.userId || `${entry.rank}-${entry.displayName}`
+                          }
+                          data-interactive="true"
+                          className={`ff-data-row border-b border-[#e4e8ee] px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
+                            entry.isCurrentUser
+                              ? "bg-[#fff0ee]"
+                              : "bg-transparent"
                           }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className={`ff-display text-4xl ${isLeader ? "text-[#e9c400]" : "text-[#7f828b]"}`}>
-                                {String(entry.rank).padStart(2, "0")}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`ff-display text-4xl ${isLeader ? "text-[#e9c400]" : "text-[#7f828b]"}`}
+                            >
+                              {String(entry.rank).padStart(2, "0")}
+                            </span>
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="truncate text-lg font-semibold uppercase tracking-[0.06em] text-[#111318]">
+                                {entry.displayName}
+                              </p>
+                              {entry.isCurrentUser ? (
+                                <Badge tone="info">You</Badge>
+                              ) : null}
+                              {isLeader ? (
+                                <Badge tone="warning">Leader</Badge>
+                              ) : null}
+                            </div>
+                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs uppercase tracking-[0.16em] text-[#7f828b]">
+                              <span>{entry.racesScored} rounds</span>
+                              <span>Last race {entry.lastRacePoints} pts</span>
+                              <span>
+                                {entry.rank === 1
+                                  ? "Front row"
+                                  : `Leader ${gapLabel(entry.gapToLeader)}`}
                               </span>
-                            </div>
-
-                            <div className="min-w-0">
-                              <div className="flex flex-wrap items-center gap-2">
-                                <p className="truncate text-lg font-semibold uppercase tracking-[0.06em] text-white">
-                                  {entry.displayName}
-                                </p>
-                                {entry.isCurrentUser ? <Badge tone="info">You</Badge> : null}
-                                {isLeader ? <Badge tone="warning">Leader</Badge> : null}
-                              </div>
-                              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs uppercase tracking-[0.16em] text-[#7f828b]">
-                                <span>{entry.racesScored} rounds</span>
-                                <span>Last race {entry.lastRacePoints} pts</span>
-                                <span>{entry.rank === 1 ? "Front row" : `Leader ${gapLabel(entry.gapToLeader)}`}</span>
-                                {entry.rank > 1 ? <span>Next {gapLabel(entry.gapToNext)}</span> : null}
-                              </div>
-                            </div>
-
-                            <div className="text-left md:text-center">
-                              <p className="ff-kicker">Trend</p>
-                              <div className={`mt-2 flex items-center gap-2 text-sm font-semibold ${movementClass}`}>
-                                {movement > 0 ? <ArrowUpRight className="h-4 w-4" /> : movement < 0 ? <ArrowDownRight className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
-                                <span>{movement > 0 ? `+${movement}` : movement < 0 ? `${movement}` : "Flat"}</span>
-                              </div>
-                            </div>
-
-                            <div className="text-left md:text-right">
-                              <p className="text-3xl font-black text-white">{entry.points}</p>
-                              <p className="ff-kicker mt-1">Total Pts</p>
+                              {entry.rank > 1 ? (
+                                <span>Next {gapLabel(entry.gapToNext)}</span>
+                              ) : null}
                             </div>
                           </div>
-                        );
-                      })}
 
-                      {pagedLeaderboardRows.length === 0 ? (
-                        <div className="px-6 py-10 text-center text-sm text-[#989aa2]">
-                          No cumulative standings yet. Score a round to light up the championship table.
-                        </div>
-                      ) : null}
-                    </div>
+                          <div className="text-left md:text-center">
+                            <p className="ff-kicker">Trend</p>
+                            <div
+                              className={`mt-2 flex items-center gap-2 text-sm font-semibold ${movementClass}`}
+                            >
+                              {movement > 0 ? (
+                                <ArrowUpRight className="h-4 w-4" />
+                              ) : movement < 0 ? (
+                                <ArrowDownRight className="h-4 w-4" />
+                              ) : (
+                                <Minus className="h-4 w-4" />
+                              )}
+                              <span>
+                                {movement > 0
+                                  ? `+${movement}`
+                                  : movement < 0
+                                    ? `${movement}`
+                                    : "Flat"}
+                              </span>
+                            </div>
+                          </div>
 
-                    {leaderboardRows.length > LEADERBOARD_PAGE_SIZE ? (
-                      <div className="flex flex-col gap-3 border-t border-white/6 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-sm text-[#989aa2]">
-                          Showing {(currentPage - 1) * LEADERBOARD_PAGE_SIZE + 1} to{" "}
-                          {Math.min(currentPage * LEADERBOARD_PAGE_SIZE, leaderboardRows.length)} of{" "}
-                          {leaderboardRows.length} managers
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                            disabled={currentPage === 1}
-                          >
-                            Previous
-                          </Button>
-                          <span className="min-w-24 text-center text-sm font-semibold text-[#d0d3d9]">
-                            Page {currentPage} / {totalPages}
-                          </span>
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                            disabled={currentPage === totalPages}
-                          >
-                            Next
-                          </Button>
+                          <div className="text-left md:text-right">
+                            <p className="text-3xl font-black text-[#111318]">
+                              {entry.points}
+                            </p>
+                            <p className="ff-kicker mt-1">Total Pts</p>
+                          </div>
                         </div>
+                      );
+                    })}
+
+                    {pagedLeaderboardRows.length === 0 ? (
+                      <div className="px-6 py-10 text-center text-sm text-[#989aa2]">
+                        No cumulative standings yet. Score a round to light up
+                        the championship table.
                       </div>
                     ) : null}
-                  </CardContent>
-                </Card>
-
-              </div>
-
-              <div className="space-y-6">
-                <Card className="ff-table-card border-white/8">
-                  <div className="ff-panel-strip">
-                    <CardTitle className="text-2xl">Next Event</CardTitle>
                   </div>
-                  <CardContent className="space-y-4">
-                    <div className="ff-field-shell border-l-2 border-[#cc0000] bg-white/3">
-                      <p className="ff-kicker">Window Status</p>
-                      <p className="ff-display mt-3 text-3xl text-white">
-                        {nextRaceWindow.badgeLabel}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                        {nextRaceWindow.headline}
-                      </p>
-                    </div>
-                    <div className="ff-field-shell bg-white/2">
-                      <p className="ff-kicker">Timer</p>
-                      <p className="mt-2 text-3xl font-black text-[#e9c400]">
-                        {nextRaceWindow.timestampLabel}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                        {nextRaceWindow.detail}
-                      </p>
-                    </div>
-                    {canOpenPredictionRoute ? (
-                      <Button asChild className="w-full" size="lg">
-                        <Link to={`/league/${leagueId}/predict`}>
-                          {nextEventPredictionLabel}
-                        </Link>
-                      </Button>
-                    ) : (
-                      <Button className="w-full" size="lg" disabled>
-                        {nextEventPredictionLabel}
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
 
-                <Card className="ff-table-card border-white/8">
-                  <div className="ff-panel-strip">
-                    <CardTitle className="text-2xl">League Details</CardTitle>
-                  </div>
-                  <CardContent className="space-y-4">
-                    <div className="ff-field-shell bg-white/3">
-                      <p className="ff-kicker">Status</p>
-                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
-                        {isOwner ? "You own this league" : "You are a league member"}
+                  {leaderboardRows.length > LEADERBOARD_PAGE_SIZE ? (
+                    <div className="flex flex-col gap-3 border-t border-[#e4e8ee] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-[#989aa2]">
+                        Showing {(currentPage - 1) * LEADERBOARD_PAGE_SIZE + 1}{" "}
+                        to{" "}
+                        {Math.min(
+                          currentPage * LEADERBOARD_PAGE_SIZE,
+                          leaderboardRows.length,
+                        )}{" "}
+                        of {leaderboardRows.length} managers
                       </p>
-                    </div>
-                    <div className="ff-field-shell bg-white/3">
-                      <p className="ff-kicker">Latest Scored Round</p>
-                      <p className="mt-2 text-sm font-semibold uppercase tracking-[0.12em] text-white">
-                        {latestLeagueRace?.raceName ?? "No scored rounds yet"}
-                      </p>
-                      <p className="mt-1 text-sm text-[#7f828b]">
-                        {latestLeagueRace?.round
-                          ? `Round ${latestLeagueRace.round}`
-                          : "Waiting for completed scoring"}
-                      </p>
-                    </div>
-                    <div className="ff-field-shell bg-white/3">
-                      <p className="ff-kicker">Invite Grid</p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
-                        {inviteDescription}
-                      </p>
-                      {isOwner ? (
+                      <div className="flex items-center gap-2">
                         <Button
-                          onClick={handleCreateInvite}
-                          disabled={!isMember || createInviteMutation.isPending}
-                          className="mt-4 w-full"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() =>
+                            setCurrentPage((page) => Math.max(1, page - 1))
+                          }
+                          disabled={currentPage === 1}
                         >
-                          {createInviteMutation.isPending ? "Generating Invite..." : "Create Invite Link"}
+                          Previous
                         </Button>
-                      ) : (
-                        <p className="mt-4 text-xs uppercase tracking-[0.18em] text-[#7f828b]">
-                          {inviteFootnote}
-                        </p>
-                      )}
+                        <span className="min-w-24 text-center text-sm font-semibold text-[#45515f]">
+                          Page {currentPage} / {totalPages}
+                        </span>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() =>
+                            setCurrentPage((page) =>
+                              Math.min(totalPages, page + 1),
+                            )
+                          }
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-
-              </div>
-            </div>
-          </>
-        ) : null}
-          </>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ) : null}
+          </div>
         )}
       </div>
 
@@ -980,8 +845,8 @@ export function LeaguePage() {
               Share League Invite
             </DialogTitle>
             <DialogDescription>
-              Send this invite link to one rival. They will be taken straight into
-              the join flow for {leagueName}.
+              Send this invite link to one rival. They will be taken straight
+              into the join flow for {leagueName}.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 space-y-4">

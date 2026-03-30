@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { ApiError, apiClient, getDebugUserId } from "@/api/apiClient";
 import { Badge } from "@/components/ui/Badge";
+import { AppPageHeader } from "@/components/layout/AppPageHeader";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
@@ -200,81 +201,58 @@ export function ProfilePage() {
 
   return (
     <section className="ff-page">
-      <div className="ff-shell">
-        <section className="ff-hero-band overflow-hidden border border-white/8">
-          <div className="grid gap-8 px-8 py-10 lg:grid-cols-[minmax(0,1.3fr)_300px] lg:px-10 lg:py-12">
-            <div className="space-y-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge tone="info">Driver Profile</Badge>
-                <Badge tone="neutral">Member since {memberSince}</Badge>
-              </div>
-
-              <div className="space-y-4">
-                <p className="ff-kicker">Account Telemetry</p>
-                <h1 className="ff-display text-5xl text-white md:text-7xl">
-                  {displayHandle}
-                </h1>
-                <p className="max-w-2xl text-base leading-7 text-[#c2c4cb]">
-                  Manage your paddock identity, avatar, and security settings without changing any gameplay data or league membership.
-                </p>
-              </div>
-
-              <div className="ff-stat-strip sm:grid-cols-3">
-                <div className="ff-stat bg-black/20">
-                  <p className="ff-kicker">Account email</p>
-                  <p className="mt-2 break-all text-sm font-semibold text-white">{email}</p>
+      <div className="ff-shell space-y-6">
+        <AppPageHeader
+          eyebrow="Account"
+          title="Profile"
+          description="Manage your display name, avatar, and password without affecting gameplay or league membership."
+          meta={
+            <>
+              <Badge variant="secondary">
+                Driver profile
+              </Badge>
+              <Badge tone="neutral">
+                Member since {memberSince}
+              </Badge>
+            </>
+          }
+          utility={
+            <>
+              <div className="flex min-w-0 items-center gap-4">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center border border-[#d9dee5] bg-[#eef1f4] text-lg font-black text-[#111318]">
+                  {avatarUrl.trim() ? (
+                    <img
+                      src={avatarUrl}
+                      alt={displayHandle}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    initialsFromName(displayHandle)
+                  )}
                 </div>
-                <div className="ff-stat bg-black/20">
-                  <p className="ff-kicker">Profile state</p>
-                  <p className="mt-2 text-3xl font-black text-[#e9c400]">Live</p>
-                </div>
-                <div className="ff-stat bg-black/20">
-                  <p className="ff-kicker">Security mode</p>
-                  <p className="mt-2 text-3xl font-black text-white">
-                    {revokeOtherSessions ? "Strict" : "Normal"}
-                  </p>
+                <div className="min-w-0">
+                  <p className="ff-kicker">Signed in as</p>
+                  <p className="truncate text-sm font-semibold text-[#111318]">{displayHandle}</p>
+                  <p className="truncate text-sm text-[#66707d]">{email}</p>
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-5">
-              <div className="flex h-36 w-36 items-center justify-center border border-white/10 bg-[linear-gradient(180deg,#1f2229_0%,#0f1014_100%)] text-4xl font-black text-white">
-                {avatarUrl.trim() ? (
-                  <img
-                    src={avatarUrl}
-                    alt={displayHandle}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  initialsFromName(displayHandle)
-                )}
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone="neutral">
+                  {avatarUrl.trim() ? "Avatar set" : "No avatar set"}
+                </Badge>
+                <Badge tone={revokeOtherSessions ? "warning" : "info"}>
+                  {revokeOtherSessions ? "Strict security" : "Normal security"}
+                </Badge>
               </div>
-
-              <Card className="border-white/8 bg-black/20">
-                <CardContent className="space-y-4 px-6 py-6">
-                  <p className="ff-kicker">Identity Snapshot</p>
-                  <div className="space-y-3">
-                    <div className="ff-field-shell bg-white/4">
-                      <p className="ff-kicker">Display name</p>
-                      <p className="mt-2 text-2xl font-black text-white">{displayHandle}</p>
-                    </div>
-                    <div className="ff-field-shell bg-white/4">
-                      <p className="ff-kicker">Avatar source</p>
-                      <p className="mt-2 text-sm leading-6 text-[#d0d3d9]">
-                        {avatarUrl.trim() || "No avatar URL set"}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
+            </>
+          }
+        />
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="ff-table-card overflow-hidden border-white/8">
+          <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
             <div className="ff-panel-strip">
-              <CardTitle>Profile Settings</CardTitle>
+              <CardTitle className="text-[#111318]">Profile Settings</CardTitle>
             </div>
             <CardContent className="space-y-4">
               <CardDescription>Update your account details and visual identity.</CardDescription>
@@ -335,9 +313,9 @@ export function ProfilePage() {
             </CardContent>
           </Card>
 
-          <Card className="ff-table-card overflow-hidden border-white/8">
+          <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
             <div className="ff-panel-strip">
-              <CardTitle>Security Controls</CardTitle>
+              <CardTitle className="text-[#111318]">Security Controls</CardTitle>
             </div>
             <CardContent className="space-y-4">
               <CardDescription>Set a new password and decide whether to revoke other sessions.</CardDescription>
@@ -378,7 +356,7 @@ export function ProfilePage() {
                   />
                 </div>
 
-                <label className="flex items-center gap-3 bg-white/3 px-4 py-4 text-sm text-[#d0d3d9]">
+                <label className="flex items-center gap-3 border border-[#e1e6ec] bg-[#f8f9fb] px-4 py-4 text-sm text-[#45515f]">
                   <input
                     type="checkbox"
                     checked={revokeOtherSessions}

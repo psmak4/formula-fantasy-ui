@@ -2,12 +2,12 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
 import { ApiError, apiClient } from "../api/apiClient";
+import { AppPageHeader, AppPageHeaderStat } from "../components/layout/AppPageHeader";
 import { Badge } from "../components/ui/Badge";
 import { Button } from "../components/ui/Button";
 import {
   Card,
   CardContent,
-  CardHeader,
   CardTitle,
 } from "../components/ui/Card";
 import {
@@ -562,112 +562,84 @@ export function LeaguePredictPage() {
 
   return (
     <section className="ff-page">
-      <div className="ff-shell space-y-8">
-        <div className="ff-grid-main" data-layout="rail">
-          <Card className="ff-hero-band overflow-hidden border-white/8 text-white">
-            <CardHeader className="space-y-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge className="bg-white/12 text-white" tone="info">
-                  Prediction Card
-                </Badge>
-                <Badge className="bg-white/12 text-white" tone="info">
-                  {pickProgress}
-                </Badge>
-                <Badge className="bg-white/12 text-white" tone="info">
-                  {safetyCarDeployed ? "Safety car: yes" : "Safety car: no"}
-                </Badge>
-              </div>
-              <div className="space-y-3">
-                <p className="ff-kicker text-white/60">
-                  {raceName}
+      <div className="ff-shell space-y-6">
+        <AppPageHeader
+          eyebrow="Prediction Card"
+          title="Race Weekend Calls"
+          description="Lock in your podium, fastest lap, biggest gainer, and safety car call, then forecast how many cars make the flag."
+          meta={
+            <>
+              <Badge variant="secondary">
+                {raceName}
+              </Badge>
+              <Badge tone="neutral">
+                {pickProgress}
+              </Badge>
+              <Badge tone="neutral">
+                {safetyCarDeployed ? "Safety car: yes" : "Safety car: no"}
+              </Badge>
+            </>
+          }
+          stats={
+            <>
+              <AppPageHeaderStat
+                label="Window"
+                value={
+                  windowStatus === "open"
+                    ? "Open"
+                    : windowStatus === "opening_soon"
+                      ? "Soon"
+                      : "Locked"
+                }
+                valueClassName="uppercase"
+              />
+              <AppPageHeaderStat
+                label="Countdown"
+                value={countdownLabel || "—"}
+                accentClassName="text-[#e9c400]"
+              />
+            </>
+          }
+          utility={
+            <>
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="ff-kicker text-[#989aa2]">Race status</p>
+                  <Badge tone={statusTone}>{windowMessage}</Badge>
+                  <Badge tone={saveState === "saved" ? "success" : "info"}>
+                    {saveState === "saved"
+                      ? "Card saved"
+                      : windowStatus === "locked"
+                        ? "Card closed"
+                        : "Card editable"}
+                  </Badge>
+                  <Badge tone="neutral">{raceStart ?? "Race start TBD"}</Badge>
+                </div>
+                <p className="text-sm text-[#989aa2]">
+                  {windowStatus === "locked"
+                    ? "The prediction window has closed for this race."
+                    : windowStatus === "opening_soon"
+                      ? "The race card is not open yet. Review likely picks now and come back at launch."
+                      : "You can edit repeatedly until lock. Save early so the card is already in if you miss final changes."}
                 </p>
-                <h2 className="ff-display text-4xl text-white md:text-6xl">
-                  Race Weekend Calls
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-white/72 md:text-base">
-                  Lock in your podium, fastest lap, biggest gainer, and safety car
-                  call, then forecast how many cars make the flag.
-                </p>
               </div>
-              <div className="ff-stat-strip sm:grid-cols-3">
-                <div className="ff-stat bg-white/6">
-                  <p className="ff-kicker text-white/58">
-                    Window
-                  </p>
-                  <p className="mt-2 text-xl font-black uppercase text-white">
-                    {windowStatus === "open"
-                      ? "Open"
-                      : windowStatus === "opening_soon"
-                        ? "Opens soon"
-                        : "Locked"}
-                  </p>
-                </div>
-                <div className="ff-stat bg-white/6">
-                  <p className="ff-kicker text-white/58">
-                    Countdown
-                  </p>
-                  <p className="mt-2 text-xl font-black uppercase text-white">
-                    {countdownLabel || "Awaiting schedule"}
-                  </p>
-                </div>
-                <div className="ff-stat bg-white/6">
-                  <p className="ff-kicker text-white/58">
-                    Race start
-                  </p>
-                  <p className="mt-2 text-sm font-medium text-white/82">
-                    {raceStart ?? "TBD"}
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
 
-          <Card className="ff-table-card border-white/8">
-            <div className="ff-panel-strip">
-              <div className="flex items-center justify-between gap-3">
-                <CardTitle className="text-2xl">
-                  Race Status
-                </CardTitle>
-                <Badge tone={statusTone}>{windowMessage}</Badge>
-              </div>
-            </div>
-            <CardContent className="space-y-4">
-              <div className="ff-field-shell bg-white/3">
-                <p className="ff-kicker">
-                  Card status
-                </p>
-                <p className="mt-2 text-2xl font-black uppercase text-white">
-                  {saveState === "saved"
-                    ? "Saved"
-                    : windowStatus === "locked"
-                      ? "Closed"
-                      : "Editable"}
-                </p>
-                <p className="mt-1 text-sm leading-6 text-[#989aa2]">
-                  {saveState === "saved"
-                    ? "Your latest calls are stored."
-                    : "Changes are local until you save the card."}
-                </p>
-              </div>
-              <div className="ff-field-shell bg-white/2 text-sm text-[#989aa2]">
-                {windowStatus === "locked"
-                  ? "The prediction window has closed for this race."
-                  : windowStatus === "opening_soon"
-                    ? "The race card is not open yet. Review your likely picks and come back at launch."
-                    : "You can edit repeatedly until lock. Save early so the card is already in if you miss final changes."}
-              </div>
-              <Button asChild variant="outline" className="w-full">
+              <Button
+                asChild
+                variant="outline"
+                className="h-10 px-4"
+              >
                 <Link to={`/league/${leagueId}`}>Back to league</Link>
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            </>
+          }
+        />
 
         {/* Loading State */}
         {loading && !pageReady ? (
-          <Card className="animate-pulse border-white/8 bg-[#15161b]">
+          <Card className="animate-pulse border-[#d9dee5] bg-white">
             <CardContent className="py-8">
-              <div className="h-6 w-1/3 rounded bg-white/8" />
+              <div className="h-6 w-1/3 rounded bg-[#eef1f4]" />
             </CardContent>
           </Card>
         ) : null}
@@ -691,12 +663,12 @@ export function LeaguePredictPage() {
             {loadIssues.map((issue) => (
               <Card
                 key={issue.title}
-                className={issue.tone === "danger" ? "border-[#7a0d0d] bg-[#350909]" : "border-[#594b11] bg-[#2b2508]"}
+                className={issue.tone === "danger" ? "border-[rgba(180,35,24,0.18)] bg-[#fdeceb]" : "border-[rgba(183,121,31,0.2)] bg-[#fff4db]"}
               >
                 <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-white">{issue.title}</p>
-                    <p className="text-sm text-[#989aa2]">{issue.message}</p>
+                    <p className="text-sm font-semibold text-[#111318]">{issue.title}</p>
+                    <p className="text-sm text-[#66707d]">{issue.message}</p>
                   </div>
                   <Button variant="outline" onClick={() => void refreshPredictionData()} disabled={!canRefresh}>
                     Retry
@@ -709,11 +681,10 @@ export function LeaguePredictPage() {
 
         {/* Prediction Form */}
         {pageReady && !criticalLoadError && (
-          <form onSubmit={handleSubmit} className="ff-grid-main" data-layout="rail">
-            <div className="space-y-6">
-            <Card className="ff-table-card border-white/8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <Card className="ff-table-card border-[#d9dee5]">
               <div className="ff-panel-strip">
-                <CardTitle className="text-2xl">
+                <CardTitle className="text-2xl text-[#111318]">
                   Podium Picks
                 </CardTitle>
               </div>
@@ -738,7 +709,7 @@ export function LeaguePredictPage() {
                   ].map((slot) => (
                     <div
                       key={slot.label}
-                      className="ff-field-shell bg-white/3"
+                      className="ff-field-shell"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <p className="ff-kicker">
@@ -746,7 +717,7 @@ export function LeaguePredictPage() {
                         </p>
                         <Badge tone={slot.tone}>{slot.value === "Pending" ? "Pending" : "Ready"}</Badge>
                       </div>
-                      <p className="mt-3 font-medium text-white">
+                      <p className="mt-3 font-medium text-[#111318]">
                         {slot.value}
                       </p>
                     </div>
@@ -799,43 +770,43 @@ export function LeaguePredictPage() {
             </Card>
 
             {/* Race Props */}
-            <Card className="ff-table-card border-white/8">
+            <Card className="ff-table-card border-[#d9dee5]">
               <div className="ff-panel-strip">
-                <CardTitle className="text-2xl">
+                <CardTitle className="text-2xl text-[#111318]">
                   Race Props
                 </CardTitle>
               </div>
               <CardContent className="space-y-4">
                 <div className="grid gap-3 md:grid-cols-3">
-                  <div className="ff-field-shell bg-white/3">
+                  <div className="ff-field-shell">
                     <p className="ff-kicker">
                       Fastest lap
                     </p>
-                    <p className="mt-2 font-medium text-white">
+                    <p className="mt-2 font-medium text-[#111318]">
                       {driverLabelById(drivers, fastestLapDriverId)}
                     </p>
                   </div>
-                  <div className="ff-field-shell bg-white/3">
+                  <div className="ff-field-shell">
                     <p className="ff-kicker">
                       Biggest gainer
                     </p>
-                    <p className="mt-2 font-medium text-white">
+                    <p className="mt-2 font-medium text-[#111318]">
                       {driverLabelById(drivers, biggestGainerDriverId)}
                     </p>
                   </div>
-                  <div className="ff-field-shell bg-white/3">
+                  <div className="ff-field-shell">
                     <p className="ff-kicker">
                       Safety car
                     </p>
-                    <p className="mt-2 font-medium text-white">
+                    <p className="mt-2 font-medium text-[#111318]">
                       {safetyCarDeployed ? "Deployed" : "No call"}
                     </p>
                   </div>
-                  <div className="ff-field-shell bg-white/3 md:col-span-3">
+                  <div className="ff-field-shell md:col-span-3">
                     <p className="ff-kicker">
                       Classified finishers
                     </p>
-                    <p className="mt-2 font-medium text-white">
+                    <p className="mt-2 font-medium text-[#111318]">
                       {classifiedFinishersLabel(classifiedFinishersBucket)}
                     </p>
                   </div>
@@ -886,7 +857,7 @@ export function LeaguePredictPage() {
                   </p>
                 </fieldset>
 
-                <label className="flex items-center gap-2 text-[#d0d3d9]">
+                <label className="flex items-center gap-2 text-[#45515f]">
                   <input
                     type="checkbox"
                     checked={safetyCarDeployed}
@@ -902,16 +873,11 @@ export function LeaguePredictPage() {
                 </label>
               </CardContent>
             </Card>
-            </div>
-            <div className="space-y-6">
-              <Card className="ff-table-card border-white/8">
-                <div className="ff-panel-strip">
-                  <CardTitle className="text-2xl">
-                    Submit Card
-                  </CardTitle>
-                </div>
-                <CardContent className="space-y-4">
-                  <div className="ff-field-shell bg-white/3">
+
+            <Card className="ff-table-card border-[#d9dee5]">
+              <CardContent className="space-y-4 px-6 py-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="ff-field-shell lg:min-w-[320px]">
                     <p className="ff-kicker">
                       Validation
                     </p>
@@ -922,54 +888,39 @@ export function LeaguePredictPage() {
                       <li>{hasBlockingDriversError ? "Driver pool needs to reload before you can save." : "Driver pool is ready."}</li>
                     </ul>
                   </div>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={
-                      hasBlockingDriversError ||
-                      !isOpen ||
-                      missingRequiredPick ||
-                      duplicatePodiumPick ||
-                      saveState === "saving"
-                    }
-                  >
-                    {saveState === "saving" ? "Saving Entry..." : "Save Entry"}
-                  </Button>
-                  {saveState === "saved" && (
-                    <Badge className="w-full justify-center" tone="success">
-                      Entry saved
-                    </Badge>
-                  )}
-                  {submitError && (
-                    <Badge className="w-full justify-center" tone="danger">
-                      {submitError}
-                    </Badge>
-                  )}
-                </CardContent>
-              </Card>
 
-              <Card className="ff-table-card border-white/8">
-                <div className="ff-panel-strip">
-                  <CardTitle className="text-2xl">
-                    Pick Notes
-                  </CardTitle>
+                  <div className="space-y-3 lg:min-w-[260px]">
+                    <Button
+                      type="submit"
+                      className="w-full"
+                      disabled={
+                        hasBlockingDriversError ||
+                        !isOpen ||
+                        missingRequiredPick ||
+                        duplicatePodiumPick ||
+                        saveState === "saving"
+                      }
+                    >
+                      {saveState === "saving" ? "Saving Entry..." : "Save Entry"}
+                    </Button>
+                    {saveState === "saved" && (
+                      <Badge className="w-full justify-center" tone="success">
+                        Entry saved
+                      </Badge>
+                    )}
+                    {submitError && (
+                      <Badge className="w-full justify-center" tone="danger">
+                        {submitError}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <CardContent className="space-y-3 text-sm leading-6 text-[#989aa2]">
-                  <p>
-                    Podium calls are exclusive. Once a driver is in P1, they cannot
-                    also appear in P2 or P3.
-                  </p>
-                  <p>
-                    Classified finishers are scored in buckets, so you are
-                    calling the race shape as much as the result.
-                  </p>
-                  <p>
-                    Save as early as possible. You can keep editing until the lock
-                    window closes.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+
+                <p className="text-sm leading-6 text-[#989aa2]">
+                  Podium calls are exclusive, finisher picks are bucketed, and you can keep editing until the lock window closes.
+                </p>
+              </CardContent>
+            </Card>
           </form>
         )}
 

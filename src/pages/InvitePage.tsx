@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { ApiError, apiClient } from "@/api/apiClient";
+import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 
@@ -200,36 +201,32 @@ export function InvitePage() {
       <div className="ff-shell">
         <div className="space-y-4 text-center">
           <p className="ff-kicker">Incoming Transmission</p>
-          <h1 className="ff-display mx-auto max-w-4xl text-5xl text-white md:text-7xl">
+          <h1 className="ff-display mx-auto max-w-4xl text-5xl text-[#111318] md:text-7xl">
             Enter The Paddock
           </h1>
-          <p className="mx-auto max-w-3xl text-base leading-8 text-[#b8bac2] md:text-2xl md:leading-10">
+          <p className="mx-auto max-w-3xl text-base leading-8 text-[#66707d] md:text-2xl md:leading-10">
             Review the invite details, sign in if needed, and join the league from
             one place.
           </p>
         </div>
 
         <div className="ff-grid-main mx-auto max-w-6xl" data-layout="rail">
-          <Card className="ff-table-card border-white/8">
+          <Card className="ff-table-card border-[#d9dee5]">
             <CardHeader className="space-y-3 pb-4">
               <div className="flex flex-wrap items-center gap-3">
-                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
+                <Badge variant="secondary">
                   Private League Invite
-                </span>
-                <span
-                  className={`ff-kicker px-3 py-2 ${
+                </Badge>
+                <Badge
+                  tone={
                     isLoading
-                      ? "bg-white/6 text-[#d0d3d9]"
+                      ? "neutral"
                       : previewErrorMessage || joinErrorMessage
-                        ? "bg-[#350909] text-[#ff8e8e]"
+                        ? "danger"
                         : result
-                          ? "bg-[#102317] text-[#6ee7a8]"
-                          : getInviteBadgeTone(inviteStatus) === "success"
-                            ? "bg-[#102317] text-[#6ee7a8]"
-                            : getInviteBadgeTone(inviteStatus) === "danger"
-                              ? "bg-[#350909] text-[#ff8e8e]"
-                              : "bg-white/6 text-[#d0d3d9]"
-                  }`}
+                          ? "success"
+                          : getInviteBadgeTone(inviteStatus)
+                  }
                 >
                   {isLoading
                     ? "Loading Invite"
@@ -238,7 +235,7 @@ export function InvitePage() {
                       : result
                         ? "Grid Access Confirmed"
                         : getInviteBadgeLabel(inviteStatus)}
-                </span>
+                </Badge>
               </div>
               <CardTitle className="text-4xl md:text-5xl">
                 {isLoading
@@ -256,7 +253,7 @@ export function InvitePage() {
               {isLoading ? (
                 <div className="space-y-3">
                   <p className="ff-kicker">Syncing Invite Details</p>
-                  <div className="h-2 overflow-hidden bg-white/8">
+                  <div className="h-2 overflow-hidden bg-[#eef1f4]">
                     <div className="h-full w-2/3 animate-pulse bg-[#cc0000]" />
                   </div>
                   <p className="text-[#989aa2]">
@@ -281,36 +278,36 @@ export function InvitePage() {
               {!isLoading && !previewErrorMessage && preview ? (
                 <>
                   <div className="grid gap-4 md:grid-cols-[minmax(0,1.45fr)_200px_200px]">
-                    <div className="border-l-2 border-[#cc0000] bg-white/3 p-5">
+                    <div className="border-l-2 border-[#cc0000] bg-[#f8f9fb] p-5">
                       <p className="ff-kicker">League</p>
-                      <p className="ff-display mt-3 text-3xl text-white">
+                      <p className="mt-3 text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
                         {leagueName}
                       </p>
                       <p className="mt-3 text-sm text-[#989aa2]">
                         {(preview.leagueVisibility ?? "private").toUpperCase()} league
                       </p>
                     </div>
-                    <div className="border-l-2 border-white/10 bg-white/3 p-5">
+                    <div className="border-l-2 border-[#d9dee5] bg-[#f8f9fb] p-5">
                       <p className="ff-kicker">Members</p>
-                      <p className="mt-3 text-4xl font-black text-white">
+                      <p className="mt-3 text-4xl font-black text-[#111318]">
                         {memberCount}
                       </p>
                       <p className="text-sm text-[#7f828b]">
                         manager{memberCount === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <div className="border-l-2 border-[#e9c400] bg-white/3 p-5">
+                    <div className="border-l-2 border-[#e9c400] bg-[#f8f9fb] p-5">
                       <p className="ff-kicker">Invite Expiry</p>
-                      <p className="mt-3 text-2xl font-black text-white">
+                      <p className="mt-3 text-2xl font-black text-[#111318]">
                         {formatDateLabel(preview.expiresAt)}
                       </p>
                     </div>
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div className="ff-field-shell bg-white/2">
+                    <div className="ff-field-shell">
                       <p className="ff-kicker">Invite Status</p>
-                      <p className="mt-3 text-lg font-semibold text-white">
+                      <p className="mt-3 text-lg font-semibold text-[#111318]">
                         {inviteStatus === "pending"
                           ? "Ready to join now"
                           : inviteStatus === "accepted"
@@ -320,9 +317,9 @@ export function InvitePage() {
                             : "Invite is no longer active"}
                       </p>
                     </div>
-                    <div className="ff-field-shell bg-white/2">
+                    <div className="ff-field-shell">
                       <p className="ff-kicker">Join Flow</p>
-                      <p className="mt-3 text-lg font-semibold text-white">
+                      <p className="mt-3 text-lg font-semibold text-[#111318]">
                         Sign in if needed, join the league, then open the league
                         hub from the confirmation state.
                       </p>
@@ -330,14 +327,14 @@ export function InvitePage() {
                   </div>
 
                   {result ? (
-                    <div className="border border-[#205038] bg-[#102317] p-5">
-                      <p className="ff-kicker text-[#6ee7a8]">Status</p>
-                      <p className="mt-2 text-lg font-semibold text-white">
+                    <div className="border border-[rgba(20,128,74,0.18)] bg-[#e9f7ef] p-5">
+                      <p className="ff-kicker text-[#14804a]">Status</p>
+                      <p className="mt-2 text-lg font-semibold text-[#111318]">
                         {joinedExisting
                           ? "You were already in this league."
                           : "You are now in the league."}
                       </p>
-                      <p className="mt-2 text-sm text-[#a7cbb5]">
+                      <p className="mt-2 text-sm text-[#4d745d]">
                         Head to the league page to check the next race, lock a
                         card, and track the leaderboard.
                       </p>
@@ -369,7 +366,7 @@ export function InvitePage() {
           </Card>
 
           <div className="ff-side-stack">
-            <Card className="ff-table-card border-white/8">
+            <Card className="ff-table-card border-[#d9dee5]">
               <CardContent className="space-y-4 py-6">
                 <p className="ff-kicker">This Screen Uses Real Data Only</p>
                 <p className="text-sm leading-6 text-[#989aa2]">
@@ -379,7 +376,7 @@ export function InvitePage() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="ff-table-card border-white/8">
+            <Card className="ff-table-card border-[#d9dee5]">
               <CardContent className="space-y-4 py-6">
                 <p className="ff-kicker">Authentication</p>
                 <p className="text-sm leading-6 text-[#989aa2]">
@@ -388,7 +385,7 @@ export function InvitePage() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="ff-table-card border-white/8">
+            <Card className="ff-table-card border-[#d9dee5]">
               <CardContent className="space-y-4 py-6">
                 <p className="ff-kicker">After Acceptance</p>
                 <p className="text-sm leading-6 text-[#989aa2]">
