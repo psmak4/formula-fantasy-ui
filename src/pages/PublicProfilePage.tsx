@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { authClient } from "@/auth/authClient";
+import { authClient } from "../auth/authClient";
 import { apiClient } from "../api/apiClient";
 import { AppPageHeader } from "../components/layout/AppPageHeader";
 import { Badge } from "../components/ui/Badge";
@@ -57,10 +57,12 @@ export function PublicProfilePage() {
     <section className="ff-page">
       <div className="ff-shell space-y-6">
         {profileQuery.isLoading ? (
-          <div className="space-y-4">
-            <div className="skeleton-line h-10 w-48" />
-            <div className="skeleton-line h-16 w-72" />
-          </div>
+          <Card>
+            <CardContent className="space-y-4 py-6">
+              <div className="skeleton-line h-8 w-48" />
+              <div className="skeleton-line h-16 w-72" />
+            </CardContent>
+          </Card>
         ) : profileQuery.error ? (
           <Card className="border-[#7a0d0d] bg-[#350909]">
             <CardContent className="py-4">
@@ -96,7 +98,7 @@ export function PublicProfilePage() {
                       Shared Leagues
                     </p>
                     <p className="mt-1 text-sm text-[#66707d]">
-                      Leagues you both compete in.
+                      Leagues in common.
                     </p>
                   </div>
                 </div>
@@ -112,6 +114,7 @@ export function PublicProfilePage() {
                         key={sharedLeague.leagueId}
                         to={`/league/${sharedLeague.leagueId}`}
                         className="ff-data-row hover:no-underline md:grid-cols-[minmax(0,1fr)_120px]"
+                        data-interactive="true"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-lg font-semibold uppercase tracking-[0.04em] text-[#111318]">
