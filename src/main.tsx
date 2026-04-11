@@ -129,6 +129,11 @@ const AdminHeroPreviewPage = lazy(() =>
     default: module.AdminHeroPreviewPage,
   })),
 );
+const PublicProfilePage = lazy(() =>
+  import("./pages/PublicProfilePage").then((module) => ({
+    default: module.PublicProfilePage,
+  })),
+);
 
 function RouteLoadingFallback() {
   return (
@@ -244,6 +249,14 @@ function App() {
                 <Route path="users" element={<AdminUsersOperationsPage />} />
                 <Route path="users/:userId" element={<AdminUserOperationsDetailPage />} />
               </Route>
+              <Route
+                path="/players/:userId"
+                element={
+                  <RequireAuth>
+                    <PublicProfilePage />
+                  </RequireAuth>
+                }
+              />
               <Route path="*" element={<HomePage />} />
             </Route>
           </Routes>
