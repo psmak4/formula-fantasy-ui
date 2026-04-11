@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { authClient } from "@/auth/authClient";
 import { ApiError, apiClient } from "@/api/apiClient";
+import { invalidateLeagueQueries } from "@/lib/leagueJoin";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -17,6 +18,8 @@ type InvitePreviewResponse = {
   status?: "pending" | "accepted" | "revoked" | "expired";
   expiresAt?: string;
   createdAt?: string;
+  invitedByUserId?: string;
+  invitedByName?: string;
 };
 
 type JoinInviteResponse = {
@@ -144,11 +147,7 @@ export function InvitePage() {
     onSuccess: async (data) => {
       setResult(data);
       setJoinErrorMessage(null);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["leagues-page"] }),
-        queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] }),
-        queryClient.invalidateQueries({ queryKey: ["invite-preview", token] }),
-      ]);
+      await invalidateLeagueQueries(queryClient, { inviteToken: token });
     },
     onError: (err: unknown) => {
       setJoinErrorMessage(getJoinInviteError(err));
@@ -303,6 +302,15 @@ export function InvitePage() {
                       </p>
                     </div>
                   </div>
+
+                  {preview.invitedByName ? (
+                    <div className="border-l-2 border-[#d9dee5] bg-[#f8f9fb] p-5">
+                      <p className="ff-kicker">Invited By</p>
+                      <p className="mt-3 text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                        {preview.invitedByName}
+                      </p>
+                    </div>
+                  ) : null}
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="ff-field-shell">
