@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { Input } from "../components/ui/input";
+import { initialsFromName } from "../lib/nameUtils";
 
 type Member = {
   id?: string;
@@ -133,24 +133,7 @@ type NextRaceWindowSummary = {
   timestampLabel: string;
 };
 
-type InviteResponse = {
-  inviteUrl?: string;
-  inviteLink?: string;
-  url?: string;
-  link?: string;
-  token?: string;
-};
-
 const LEADERBOARD_PAGE_SIZE = 25;
-
-function resolveInviteLink(data: InviteResponse): string | null {
-  const link = data.inviteUrl ?? data.inviteLink ?? data.url ?? data.link;
-  if (link) return link;
-
-  const token = data.token;
-  if (!token || typeof window === "undefined") return null;
-  return `${window.location.origin}/invite/${token}`;
-}
 
 function normalizeLeaderboardRows(
   data: LeaderboardResponse | null,
@@ -388,9 +371,7 @@ function LeaguePageSkeleton() {
 
 export function LeaguePage() {
   const { leagueId } = useParams<{ leagueId: string }>();
-  const [inviteLink, setInviteLink] = useState("");
-  const [inviteToken, setInviteToken] = useState("");
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">(
     "idle",
   );
@@ -531,38 +512,50 @@ export function LeaguePage() {
     }
   }, [currentPage, totalPages]);
 
-  const createInviteMutation = useMutation({
+  const copyInviteLinkMutation = useMutation({
     mutationFn: async () => {
-      if (!leagueId) {
-        throw new Error("Missing league ID");
-      }
-      return apiClient.post<InviteResponse>(`/leagues/${leagueId}/invites`);
+      if (!leagueId) throw new Error("Missing league ID");
+      return apiClient.get<{ token: string; inviteLink: string }>(`/leagues/${leagueId}/invite-link`);
     },
-    onSuccess: (data) => {
-      const link = resolveInviteLink(data);
-      if (!link) {
-        return;
+    onSuccess: async (data) => {
+      const link = data.inviteLink ?? `${window.location.origin}/invite/${data.token}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        setCopyState("copied");
+        setTimeout(() => setCopyState("idle"), 2500);
+      } catch {
+        setCopyState("error");
+        setTimeout(() => setCopyState("idle"), 2500);
       }
-      setInviteLink(link);
-      setInviteToken(data.token ?? "");
-      setCopyState("idle");
-      setIsInviteModalOpen(true);
     },
+    onError: () => {
+      setCopyState("error");
+      setTimeout(() => setCopyState("idle"), 2500);
+    }
   });
 
-  function handleCreateInvite() {
-    void createInviteMutation.mutateAsync();
-  }
-
-  async function handleCopyInvite() {
-    if (!inviteLink) return;
-    try {
-      await navigator.clipboard.writeText(inviteLink);
-      setCopyState("copied");
-    } catch {
-      setCopyState("error");
+  const resetInviteLinkMutation = useMutation({
+    mutationFn: async () => {
+      if (!leagueId) throw new Error("Missing league ID");
+      return apiClient.post<{ token: string; inviteLink: string }>(`/leagues/${leagueId}/invite-link/reset`);
+    },
+    onSuccess: async (data) => {
+      setResetConfirmOpen(false);
+      const link = data.inviteLink ?? `${window.location.origin}/invite/${data.token}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        setCopyState("copied");
+        setTimeout(() => setCopyState("idle"), 2500);
+      } catch {
+        setCopyState("error");
+        setTimeout(() => setCopyState("idle"), 2500);
+      }
+    },
+    onError: () => {
+      setResetConfirmOpen(false);
+      // Optionally surface an error — for now just close the dialog silently
     }
-  }
+  });
   const isInitialLoading = loading && !data;
 
   return (
@@ -610,17 +603,31 @@ export function LeaguePage() {
                         {heroPredictionLabel}
                       </Button>
                     )}
-                    {isOwner ? (
-                      <Button
-                        variant="outline"
-                        onClick={handleCreateInvite}
-                        disabled={!isMember || createInviteMutation.isPending}
-                        size="lg"
-                      >
-                        {createInviteMutation.isPending
-                          ? "Generating Invite..."
-                          : "Invite Driver"}
-                      </Button>
+                    {isOwner && data?.leagueVisibility !== "public" ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          onClick={() => copyInviteLinkMutation.mutate()}
+                          disabled={!isMember || copyInviteLinkMutation.isPending}
+                          size="lg"
+                        >
+                          {copyInviteLinkMutation.isPending
+                            ? "Fetching link..."
+                            : copyState === "copied"
+                              ? "Link Copied!"
+                              : copyState === "error"
+                                ? "Copy Failed"
+                                : "Copy Invite Link"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setResetConfirmOpen(true)}
+                          disabled={!isMember || copyInviteLinkMutation.isPending}
+                          size="lg"
+                        >
+                          Reset Link
+                        </Button>
+                      </>
                     ) : null}
                     {latestLeagueRace?.raceId ? (
                       <Button asChild variant="secondary" size="lg">
@@ -702,12 +709,13 @@ export function LeaguePage() {
                             : "text-[#7f828b]";
 
                       return (
-                        <div
+                        <Link
                           key={
                             entry.userId || `${entry.rank}-${entry.displayName}`
                           }
+                          to={`/players/${entry.userId}`}
                           data-interactive="true"
-                          className={`ff-data-row border-b border-[#e4e8ee] px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
+                          className={`ff-data-row hover:no-underline border-b border-[#e4e8ee] px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
                             entry.isCurrentUser
                               ? "bg-[#fff0ee]"
                               : "bg-transparent"
@@ -719,6 +727,19 @@ export function LeaguePage() {
                             >
                               {String(entry.rank).padStart(2, "0")}
                             </span>
+                            <div className="h-9 w-9 shrink-0 overflow-hidden border border-[#e4e8ee] bg-[#f0f2f5]">
+                              {entry.avatarUrl ? (
+                                <img
+                                  src={entry.avatarUrl}
+                                  alt={entry.displayName}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="flex h-full w-full items-center justify-center text-xs font-black text-[#45515f]">
+                                  {initialsFromName(entry.displayName)}
+                                </span>
+                              )}
+                            </div>
                           </div>
 
                           <div className="min-w-0">
@@ -775,7 +796,7 @@ export function LeaguePage() {
                             </p>
                             <p className="ff-kicker mt-1">Total Pts</p>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
 
@@ -834,58 +855,27 @@ export function LeaguePage() {
         )}
       </div>
 
-      <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+      <Dialog open={resetConfirmOpen} onOpenChange={setResetConfirmOpen}>
         <DialogContent>
-          <DialogHeader className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone="info">Private league</Badge>
-              <Badge tone="success">Invite ready</Badge>
-            </div>
+          <DialogHeader>
             <DialogTitle className="font-['Orbitron'] uppercase tracking-[0.16em]">
-              Share League Invite
+              Reset Invite Link?
             </DialogTitle>
             <DialogDescription>
-              Send this invite link to one rival. They will be taken straight
-              into the join flow for {leagueName}.
+              This will invalidate the current invite link. Anyone who has it will no
+              longer be able to join {leagueName}.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 space-y-4">
-            <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Invite link
-              </p>
-              <Input
-                value={inviteLink}
-                readOnly
-                aria-label="Invite link"
-                className="mt-3 text-sm"
-              />
-            </div>
-            {inviteToken ? (
-              <div className="rounded-3xl border border-neutral-200 bg-neutral-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  Invite token
-                </p>
-                <p className="mt-2 font-mono text-sm text-slate-700">
-                  {inviteToken}
-                </p>
-              </div>
-            ) : null}
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={handleCopyInvite}>
-                {copyState === "copied" ? "Copied" : "Copy Invite"}
-              </Button>
-              <Button asChild variant="outline">
-                <a href={inviteLink} target="_blank" rel="noreferrer">
-                  Open Invite
-                </a>
-              </Button>
-            </div>
-            {copyState === "error" ? (
-              <p className="text-sm text-red-600">
-                Copy failed. You can still open the invite link directly.
-              </p>
-            ) : null}
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Button
+              onClick={() => resetInviteLinkMutation.mutate()}
+              disabled={resetInviteLinkMutation.isPending}
+            >
+              {resetInviteLinkMutation.isPending ? "Resetting..." : "Reset Link"}
+            </Button>
+            <Button variant="outline" onClick={() => setResetConfirmOpen(false)}>
+              Cancel
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
