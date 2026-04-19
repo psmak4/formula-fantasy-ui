@@ -191,7 +191,7 @@ export function AdminHeroPreviewPage() {
         <div className="space-y-4">
           <p className="ff-kicker">Hero Preview</p>
           <h2 className="ff-display text-4xl text-white md:text-5xl">Race Hero Lab</h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Select a race and inspect the exact Home hero treatment, including the race palette and centered circuit overlay.
           </p>
         </div>
@@ -201,7 +201,7 @@ export function AdminHeroPreviewPage() {
             Preview race
           </label>
           <Select value={selectedRaceKey} onValueChange={setSelectedRaceKey}>
-            <SelectTrigger id="adminHeroRace" className="bg-white text-[#111318]">
+            <SelectTrigger id="adminHeroRace" className="bg-surface-container-lowest text-on-surface">
               <SelectValue placeholder="Select race" />
             </SelectTrigger>
             <SelectContent>
@@ -215,7 +215,7 @@ export function AdminHeroPreviewPage() {
         </div>
       </div>
 
-      <Card className="border-white/8 bg-[#15161b]">
+      <Card className="bg-inverse-surface">
         <CardContent className="space-y-5 px-6 py-6">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
             <div className="grid gap-4 md:grid-cols-3">
@@ -243,7 +243,7 @@ export function AdminHeroPreviewPage() {
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="ff-kicker">Theme patch</p>
-                  <p className="mt-2 text-sm text-[#989aa2]">
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     Live values for this race. Apply them directly to the local theme file or copy them into the map manually.
                   </p>
                 </div>
@@ -256,10 +256,10 @@ export function AdminHeroPreviewPage() {
                   </Button>
                 </div>
               </div>
-              <pre className="mt-4 max-w-none border-white/8 bg-white/3 text-[#f5f7fa]">
+              <pre className="mt-4 max-w-none border-white/8 bg-white/3 text-inverse-on-surface">
 {formatThemeSnippet(overlayDraft)}
               </pre>
-              <p className="mt-3 text-xs leading-5 text-[#989aa2]">
+              <p className="mt-3 text-xs leading-5 text-on-surface-variant">
                 Local only: this uses browser file-system access and only works against your local
                 checkout of <span className="font-semibold text-white">src/lib/raceHeroThemes.ts</span>.
               </p>
@@ -313,7 +313,7 @@ export function AdminHeroPreviewPage() {
               onChange={(value) => updateDraft("offsetY", value)}
             />
           </div>
-          <p className="text-sm text-[#989aa2]">
+          <p className="text-sm text-on-surface-variant">
             This preview reuses the live race-theme variables and the same circuit asset source as the signed-in Home hero. The controls here only affect the admin preview until you copy the values into the theme file.
           </p>
         </CardContent>
@@ -387,9 +387,9 @@ function SliderField(props: {
         step={props.step}
         value={props.value}
         onChange={(event) => props.onChange(Number(event.target.value))}
-        className="mt-4 h-2 w-full cursor-pointer appearance-none bg-transparent accent-[#e10600]"
+        className="mt-4 h-2 w-full cursor-pointer appearance-none bg-transparent accent-primary"
       />
-      <div className="mt-2 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-[#7f828b]">
+      <div className="mt-2 flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-on-surface-variant">
         <span>
           {props.min}
           {props.unit}

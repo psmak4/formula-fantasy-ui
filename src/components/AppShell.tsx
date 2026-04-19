@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/Button";
 import { authClient } from "@/auth/authClient";
 import { setAuthToken } from "@/auth/tokenStore";
 import { getDebugUserId } from "@/api/apiClient";
+import { cn } from "@/lib/utils";
 
 function initials(name?: string | null): string {
   if (!name) return "FF";
@@ -24,6 +25,7 @@ function initials(name?: string | null): string {
 }
 
 export function AppShell() {
+  const location = useLocation();
   const { data: session, isPending } = authClient.useSession();
   const user = session?.user;
   const debugUserId = getDebugUserId();
@@ -39,20 +41,24 @@ export function AppShell() {
     [hasDebugAuth, user],
   );
   const currentYear = new Date().getFullYear();
+  const mainBackdropClass = useMemo(() => {
+    if (location.pathname.startsWith("/admin")) return "";
+    return "ff-page-backdrop";
+  }, [location.pathname]);
 
-  const navLinkClass = (isActive: boolean) => {
-    if (isActive) {
-      return "relative ff-display text-xs tracking-[0.16em] text-[#111318] after:absolute after:-bottom-[1.2rem] after:left-0 after:h-[2px] after:w-full after:bg-[#e10600]";
-    }
-    return "relative ff-display text-xs tracking-[0.16em] text-[#45515f] transition-colors hover:text-[#111318]";
-  };
+  const navLinkClass = (isActive: boolean) =>
+    cn(
+      "font-headline text-sm font-bold uppercase tracking-[0.2em] transition-colors",
+      isActive
+        ? "relative text-primary after:absolute after:-bottom-[1.4rem] after:left-0 after:h-[2px] after:w-full after:bg-primary"
+        : "text-on-surface-variant hover:text-on-surface",
+    );
 
-  const mobileNavLinkClass = (isActive: boolean) => {
-    if (isActive) {
-      return "ff-display border-b-2 border-[#e10600] px-1 pb-2 text-[11px] tracking-[0.16em] text-[#111318]";
-    }
-    return "ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#45515f] transition-colors hover:text-[#111318]";
-  };
+  const mobileNavLinkClass = (isActive: boolean) =>
+    cn(
+      "font-headline border-b-2 px-1 pb-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors",
+      isActive ? "border-primary text-primary" : "border-transparent text-on-surface-variant hover:text-on-surface",
+    );
 
   const stopImpersonating = () => {
     void apiClient
@@ -66,13 +72,13 @@ export function AppShell() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f4f6] text-[#111318]">
-      <header className="sticky top-0 z-50 w-full border-b border-[#d9dee5] bg-[rgba(255,255,255,0.94)] backdrop-blur-md">
+    <div className="min-h-screen bg-surface text-on-surface">
+      <header className="sticky top-0 z-50 w-full bg-surface-container-low/95 backdrop-blur-md">
         <div className="mx-auto flex min-h-[4.5rem] w-full max-w-7xl items-center justify-between px-6">
           <div className="flex flex-1 items-center">
             <Link
               to="/"
-              className="ff-display flex items-center text-2xl text-[#111318] md:text-3xl"
+              className="font-headline flex items-center text-2xl font-black italic uppercase tracking-tight text-primary md:text-3xl"
             >
               Formula Fantasy
             </Link>
@@ -82,25 +88,15 @@ export function AppShell() {
             className="hidden flex-1 items-center justify-center gap-8 md:flex"
             aria-label="Primary"
           >
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => navLinkClass(isActive)}
-            >
+            <NavLink to="/" end className={({ isActive }) => navLinkClass(isActive)}>
               Home
             </NavLink>
             {hasUserShell ? (
               <>
-                <NavLink
-                  to="/results"
-                  className={({ isActive }) => navLinkClass(isActive)}
-                >
+                <NavLink to="/results" className={({ isActive }) => navLinkClass(isActive)}>
                   My Results
                 </NavLink>
-                <NavLink
-                  to="/leagues"
-                  className={({ isActive }) => navLinkClass(isActive)}
-                >
+                <NavLink to="/leagues" className={({ isActive }) => navLinkClass(isActive)}>
                   Leagues
                 </NavLink>
               </>
@@ -113,14 +109,11 @@ export function AppShell() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="h-10 w-10 border border-[#d9dee5] bg-white p-0 text-[#111318] hover:border-[#c8cfd8] hover:bg-[#f8f9fb]"
+                    className="h-10 w-10 rounded-full bg-surface-container-lowest p-0 text-on-surface"
                     aria-label="Open user menu"
                   >
                     <Avatar className="h-9 w-9">
-                      <AvatarImage
-                        src={user?.image ?? undefined}
-                        alt={displayName}
-                      />
+                      <AvatarImage src={user?.image ?? undefined} alt={displayName} />
                       <AvatarFallback>{initials(displayName)}</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -130,7 +123,7 @@ export function AppShell() {
                   {hasDebugAuth ? (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-[#ff8e8e] focus:text-[#ff8e8e]">
+                      <DropdownMenuItem className="text-primary focus:text-primary">
                         Debug Auth Active
                       </DropdownMenuItem>
                     </>
@@ -178,18 +171,10 @@ export function AppShell() {
               </DropdownMenu>
             ) : (
               <>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="sm"
-                  className="hidden md:inline-flex"
-                >
+                <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
                   <Link to="/sign-in">Sign in</Link>
                 </Button>
-                <Button
-                  asChild
-                  size="sm"
-                >
+                <Button asChild size="sm">
                   <Link to="/sign-up">Sign up</Link>
                 </Button>
               </>
@@ -197,7 +182,7 @@ export function AppShell() {
           </div>
         </div>
 
-        <div className="border-t border-[#e4e8ee] md:hidden">
+        <div className="md:hidden">
           <nav
             className="mx-auto flex w-full max-w-7xl items-center gap-5 overflow-x-auto px-6 pt-3"
             aria-label="Mobile primary"
@@ -207,28 +192,19 @@ export function AppShell() {
             </NavLink>
             {hasUserShell ? (
               <>
-                <NavLink
-                  to="/results"
-                  className={({ isActive }) => mobileNavLinkClass(isActive)}
-                >
+                <NavLink to="/results" className={({ isActive }) => mobileNavLinkClass(isActive)}>
                   Results
                 </NavLink>
-                <NavLink
-                  to="/leagues"
-                  className={({ isActive }) => mobileNavLinkClass(isActive)}
-                >
+                <NavLink to="/leagues" className={({ isActive }) => mobileNavLinkClass(isActive)}>
                   Leagues
                 </NavLink>
-                <NavLink
-                  to="/profile"
-                  className={({ isActive }) => mobileNavLinkClass(isActive)}
-                >
+                <NavLink to="/profile" className={({ isActive }) => mobileNavLinkClass(isActive)}>
                   Profile
                 </NavLink>
                 {hasDebugAuth ? (
                   <button
                     type="button"
-                    className="ff-display border-b-2 border-transparent px-1 pb-2 text-[11px] tracking-[0.16em] text-[#45515f] transition-colors hover:text-[#111318]"
+                    className="font-headline border-b-2 border-transparent px-1 pb-2 text-xs font-bold uppercase tracking-[0.2em] text-on-surface-variant transition-colors hover:text-on-surface"
                     onClick={() => {
                       if (typeof window !== "undefined") {
                         window.localStorage.removeItem("ff_debug_user_id");
@@ -242,16 +218,10 @@ export function AppShell() {
               </>
             ) : (
               <>
-                <NavLink
-                  to="/sign-in"
-                  className={({ isActive }) => mobileNavLinkClass(isActive)}
-                >
+                <NavLink to="/sign-in" className={({ isActive }) => mobileNavLinkClass(isActive)}>
                   Sign in
                 </NavLink>
-                <NavLink
-                  to="/sign-up"
-                  className={({ isActive }) => mobileNavLinkClass(isActive)}
-                >
+                <NavLink to="/sign-up" className={({ isActive }) => mobileNavLinkClass(isActive)}>
                   Sign up
                 </NavLink>
               </>
@@ -261,13 +231,14 @@ export function AppShell() {
       </header>
 
       {isImpersonating ? (
-        <div className="border-b border-[#594b11] bg-[#2b2508]">
-          <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-2 text-sm text-[#f3db53]">
-            <span>You are impersonating another user.</span>
+        <div className="bg-[color-mix(in_srgb,var(--color-warning)_16%,var(--color-inverse-surface))]">
+          <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-6 py-2 text-sm text-[color:var(--color-warning)]">
+            <span className="font-headline uppercase tracking-[0.16em] text-xs font-bold">
+              You are impersonating another user.
+            </span>
             <Button
               size="sm"
               variant="outline"
-              className="border-[#79661a] bg-transparent text-[#f3db53] hover:bg-[#3a310b]"
               onClick={stopImpersonating}
             >
               Stop impersonating
@@ -276,21 +247,25 @@ export function AppShell() {
         </div>
       ) : null}
 
-      <main
-        className="w-full min-h-[calc(100svh-141px)]"
-        style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(255,255,255,0.015), transparent 22%), repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0, rgba(255,255,255,0.015) 1px, transparent 0, transparent 18px)",
-          backgroundSize: "auto, 18px 18px",
-        }}
-      >
+      <main className={cn("w-full min-h-[calc(100svh-141px)]", mainBackdropClass)}>
         <Outlet />
       </main>
 
-      <footer className="w-full border-t border-white/6 bg-[#0b0b0e]">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-3 px-6 py-8 text-sm text-[#6f727b] md:flex-row md:items-center md:justify-between">
-          <span className="ff-display text-base text-[#45474e]">Formula Fantasy</span>
-          <span>© {currentYear} Formula Fantasy. Kinetic precision engineered.</span>
+      <footer className="w-full ff-dark-section">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-6 py-10 text-sm md:flex-row md:items-center md:justify-between">
+          <div>
+            <span className="font-headline text-lg font-black italic uppercase tracking-tight text-surface">
+              Formula Fantasy
+            </span>
+            <p className="font-headline mt-1 text-[0.65rem] font-bold uppercase tracking-[0.2em] text-inverse-on-surface">
+              © {currentYear} Formula Fantasy · Kinetic Editorial System
+            </p>
+          </div>
+          <div className="flex gap-8 font-headline text-xs font-bold uppercase tracking-[0.18em] text-inverse-on-surface">
+            <Link to="/profile" className="transition-colors hover:text-primary">Profile</Link>
+            <Link to="/leagues" className="transition-colors hover:text-primary">Leagues</Link>
+            <Link to="/results" className="transition-colors hover:text-primary">Results</Link>
+          </div>
         </div>
       </footer>
     </div>

@@ -6,9 +6,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="light"
       toastOptions={{
         classNames: {
-          toast: 'border border-slate-200 bg-white text-slate-900',
-          title: 'font-semibold',
-          description: 'text-slate-600'
+          toast: 'bg-surface-container-lowest text-on-surface ambient-shadow',
+          title: 'font-headline font-extrabold uppercase tracking-[0.12em]',
+          description: 'text-on-surface-variant'
         }
       }}
       {...props}

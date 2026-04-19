@@ -185,16 +185,16 @@ export function AdminSeasonAssignmentsPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-4">
           <p className="ff-kicker">Season Entry Registry</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">
             Season Assignments
           </h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Manage driver-to-constructor season assignments with audit reasons. These changes affect future pools and ingestion resolution, but do not directly rescore completed rounds.
           </p>
         </div>
 
-        <div className="border border-[#594b11] bg-[#2b2508] px-5 py-4 text-sm text-[#f3db53] xl:max-w-sm">
-          <p className="ff-kicker text-[#d4c68b]">Data Safety</p>
+        <div className="bg-tertiary-container px-5 py-4 text-sm text-on-tertiary-container xl:max-w-sm">
+          <p className="ff-kicker text-on-tertiary-container">Data Safety</p>
           <p className="mt-2 leading-6">
             Referenced entries should be corrected, not repurposed or deleted, so stored qualifying and race rows retain valid season-entry linkage.
           </p>
@@ -228,14 +228,14 @@ export function AdminSeasonAssignmentsPage() {
           {[1, 2, 3, 4].map((value) => (
             <div
               key={value}
-              className="h-32 animate-pulse border border-white/8 bg-[#15161b]"
+              className="h-32 rounded-lg animate-pulse bg-surface-container-low"
             />
           ))}
         </div>
       ) : null}
 
       {assignmentsQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(assignmentsQuery.error)}
         </div>
       ) : null}
@@ -262,25 +262,25 @@ export function AdminSeasonAssignmentsPage() {
         </div>
       ) : null}
 
-      <Card className="border-white/8 bg-[#15161b]">
+      <Card className="bg-surface-container-low">
         <CardContent className="space-y-5 px-0 py-0">
-          <div className="flex flex-col gap-3 border-b border-white/6 px-6 py-5 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-3 px-6 py-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="ff-display text-3xl text-white">
+              <p className="ff-display text-3xl text-on-surface">
                 {selectedSeason ? `${selectedSeason.year} Assignments` : "Assignments"}
               </p>
-              <p className="mt-2 text-sm text-[#989aa2]">
+              <p className="mt-2 text-sm text-on-surface-variant">
                 Control panel for season-entry linkage, constructor mapping, and role assignment.
               </p>
             </div>
             {selectedSeason ? (
-              <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
+              <span className="ff-kicker bg-surface-container-high px-3 py-2 text-on-surface-variant">
                 {selectedSeason.raceCount} races · {selectedSeason.entryCount} entries
               </span>
             ) : null}
           </div>
 
-          <div className="mx-6 border border-[#594b11] bg-[#2b2508] p-4 text-sm text-[#f3db53]">
+          <div className="mx-6 bg-tertiary-container p-4 text-sm text-on-tertiary-container">
             Referenced entries should not be hard-deleted. Update them with a reason so historical race rows keep valid season-entry linkage and the change stays auditable.
           </div>
 
@@ -302,14 +302,14 @@ export function AdminSeasonAssignmentsPage() {
                     <TableRow key={entry.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-semibold text-white">{entry.driverName}</div>
-                          <div className="text-xs text-[#7f828b]">{entry.driverId}</div>
+                          <div className="font-semibold text-on-surface">{entry.driverName}</div>
+                          <div className="text-xs text-on-surface-variant">{entry.driverId}</div>
                         </div>
                       </TableCell>
                       <TableCell>{entry.constructorName}</TableCell>
                       <TableCell>{entry.carNumber ?? "Not set"}</TableCell>
                       <TableCell>{formatRole(entry.role)}</TableCell>
-                      <TableCell className="text-xs text-[#989aa2]">
+                      <TableCell className="text-xs text-on-surface-variant">
                         {entry.usage.total > 0
                           ? `${entry.usage.raceResults} race / ${entry.usage.qualifyingResults} qualifying`
                           : "Unused"}
@@ -327,7 +327,7 @@ export function AdminSeasonAssignmentsPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-[#989aa2]">
+                    <TableCell colSpan={6} className="text-on-surface-variant">
                       No season assignments found.
                     </TableCell>
                   </TableRow>
@@ -441,7 +441,7 @@ export function AdminSeasonAssignmentsPage() {
               />
             </div>
             {createMutation.isError ? (
-              <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+              <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                 {getErrorMessage(createMutation.error)}
               </div>
             ) : null}
@@ -455,7 +455,7 @@ export function AdminSeasonAssignmentsPage() {
                 type="submit"
                 disabled={createMutation.isPending || createState.reason.trim().length < 8}
               >
-                {createMutation.isPending ? "Creating..." : "Create"}
+                {createMutation.isPending ? "Creating…" : "Create"}
               </Button>
             </DialogFooter>
           </form>
@@ -481,7 +481,7 @@ export function AdminSeasonAssignmentsPage() {
                 void updateMutation.mutateAsync();
               }}
             >
-              <div className="border border-white/8 bg-white/3 p-4 text-sm text-[#d0d3d9]">
+              <div className="bg-surface-container-lowest p-4 text-sm text-on-surface-variant">
                 {editingEntry.driverName} ·{" "}
                 {editingEntry.usage.total > 0
                   ? `${editingEntry.usage.raceResults} race / ${editingEntry.usage.qualifyingResults} qualifying references`
@@ -547,7 +547,7 @@ export function AdminSeasonAssignmentsPage() {
                 />
               </div>
               {updateMutation.isError ? (
-                <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                   {getErrorMessage(updateMutation.error)}
                 </div>
               ) : null}
@@ -561,7 +561,7 @@ export function AdminSeasonAssignmentsPage() {
                   type="submit"
                   disabled={updateMutation.isPending || editState.reason.trim().length < 8}
                 >
-                  {updateMutation.isPending ? "Saving..." : "Save"}
+                  {updateMutation.isPending ? "Saving…" : "Save"}
                 </Button>
               </DialogFooter>
             </form>
@@ -585,17 +585,17 @@ function MetricCard(props: {
   accent?: "neutral" | "warning";
 }) {
   return (
-    <Card className="border-white/8 bg-[#15161b]">
+    <Card className="bg-surface-container-low">
       <CardContent className="space-y-2 px-6 py-6">
         <p className="ff-kicker">{props.title}</p>
         <p
           className={`text-5xl font-black ${
-            props.accent === "warning" ? "text-[#f3db53]" : "text-white"
+            props.accent === "warning" ? "text-warning" : "text-on-surface"
           }`}
         >
           {props.value}
         </p>
-        <p className="text-sm leading-6 text-[#989aa2]">{props.subtitle}</p>
+        <p className="text-sm leading-6 text-on-surface-variant">{props.subtitle}</p>
       </CardContent>
     </Card>
   );

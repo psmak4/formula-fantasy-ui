@@ -1,0 +1,255 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink:#0e0d0b; --ink-muted:#3f3f46; --ink-soft:#71717a;
+    --paper:#f6f3ec; --surface:#fff; --divider:#e7e7eb;
+    --ferrari:#a30a00; --ferrari-400:#ff5544; --ferrari-50:#fbf1ea;
+    --indigo:#3b2fb0; --indigo-50:#eeecff;
+    --signal:#15803d; --warning:#b45309; --carbon:#0d0e14;
+  }
+  body { background:#d9d6ce; }
+  .pg *, .pg *:hover { transition:none !important; transform:none !important; }
+
+  .pg { background:var(--paper); max-width:1200px; margin:0 auto 50px; padding:20px 28px 48px; font-family:'Inter',sans-serif; color:var(--ink); border-radius:12px; }
+  .pg-tag { font-family:'Racing Sans One',sans-serif; font-size:14px; letter-spacing:0.04em; text-transform:uppercase; color:#fff; background:var(--ferrari); padding:6px 14px; border-radius:6px; display:inline-block; }
+  .pg-label { text-align:center; margin-bottom:14px; }
+
+  .btn { font-family:'Inter',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 22px 14px 25px; border-radius:8px; border:0; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .btn-sm { font-size:13px; padding:10px 16px 10px 18px; }
+  .btn-primary { background:var(--ink); color:var(--paper); }
+  .btn-accent { background:var(--ferrari); color:#fff; }
+  .btn-outline { background:transparent; color:var(--ink); box-shadow:inset 0 0 0 2px var(--ink); }
+  .btn-ghost { background:transparent; color:var(--ink); }
+
+  /* NAV */
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; background:var(--paper); box-shadow:inset 0 -3px 0 var(--ink); margin-bottom:28px; }
+  .nav .brand { font-family:'Racing Sans One',sans-serif; font-size:26px; color:var(--ink); letter-spacing:0.02em; text-transform:uppercase; }
+  .nav .links { display:flex; gap:4px; }
+  .nav .link { font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-muted); padding:10px 14px; border-radius:6px; padding-left:calc(14px + 0.14em); }
+  .nav .link.active { color:var(--ink); box-shadow:0 2px 0 var(--ferrari); }
+  .nav .avatar { width:40px; height:40px; border-radius:8px; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; padding-left:0.04em; }
+
+  /* PAGE HEADER (not hero — for inner pages) */
+  .phead { display:flex; justify-content:space-between; align-items:flex-end; gap:32px; padding:12px 0 28px; border-bottom:1px solid var(--divider); margin-bottom:32px; }
+  .phead .back { font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em; }
+  .phead .kicker { font-size:12px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--ferrari); padding-left:0.18em; margin-top:8px; }
+  .phead h1 { font-family:'Racing Sans One',sans-serif; font-size:72px; line-height:0.94; letter-spacing:0.005em; text-transform:uppercase; margin:8px 0 0; }
+  .phead .tagline { font-size:16px; color:var(--ink-muted); margin-top:12px; max-width:560px; line-height:1.5; }
+  .phead .actions { display:flex; gap:10px; padding-bottom:6px; }
+
+  /* Data rows */
+  .data-row { display:grid; grid-template-columns:64px 1fr 120px 100px 40px; gap:18px; align-items:center; padding:18px 20px; background:var(--surface); border:1px solid var(--divider); border-radius:12px; cursor:pointer; }
+  .data-row + .data-row { margin-top:8px; }
+  .data-row:hover { background:#fdfcf8; }
+  .data-row .pos { font-family:'Racing Sans One',sans-serif; font-size:38px; color:var(--ferrari); line-height:1; }
+  .data-row .title { font-family:'Inter',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.02em; text-transform:uppercase; color:var(--ink); padding-left:0.02em; }
+  .data-row .meta { font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-top:4px; padding-left:0.12em; display:flex; gap:14px; }
+  .data-row .vlabel { font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em; }
+  .data-row .val { font-weight:800; font-size:24px; font-variant-numeric:tabular-nums; color:var(--ink); margin-top:4px; }
+  .data-row .val.indigo { color:var(--indigo); }
+  .data-row .val.red { color:var(--ferrari); }
+  .data-row .arr { color:var(--ink-soft); font-size:20px; text-align:right; }
+
+  /* Chip */
+  .chip { font-size:10px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase; padding:3px 8px 3px 10px; border-radius:4px; display:inline-block; }
+  .chip-neutral { background:var(--paper); color:var(--ink-muted); border:1px solid var(--divider); }
+  .chip-ferrari { background:var(--ferrari-50); color:var(--ferrari); }
+  .chip-indigo { background:var(--indigo-50); color:var(--indigo); }
+
+  /* SECTION */
+  .sect { margin-top:40px; }
+  .sect-hd { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px; gap:16px; }
+  .sect-hd h2 { font-family:'Racing Sans One',sans-serif; font-size:36px; color:var(--ink); letter-spacing:0.005em; text-transform:uppercase; margin:0; line-height:1; }
+  .sect-hd .sub { font-size:14px; color:var(--ink-muted); margin-top:6px; line-height:1.5; }
+
+  /* CTA pair (leagues page footer) */
+  .cta-pair { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:40px; }
+  .cta-card { padding:32px; border-radius:12px; display:flex; flex-direction:column; justify-content:space-between; min-height:220px; }
+  .cta-dark { background:var(--ink); color:var(--paper); }
+  .cta-red { background:var(--ferrari); color:#fff; }
+  .cta-card .k { font-size:12px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; opacity:0.75; padding-left:0.18em; }
+  .cta-card h3 { font-family:'Racing Sans One',sans-serif; font-size:40px; line-height:1; letter-spacing:0.005em; text-transform:uppercase; margin:10px 0 12px; }
+  .cta-card p { font-size:14px; line-height:1.55; opacity:0.85; margin:0 0 24px; max-width:340px; }
+  .cta-card .btn { background:var(--paper); color:var(--ink); align-self:flex-start; }
+
+  /* LEAGUE DETAIL specific */
+  .summary-grid { display:grid; grid-template-columns:1.4fr 1fr; gap:20px; margin-top:20px; }
+  .tile { background:var(--surface); border:1px solid var(--divider); border-radius:12px; padding:22px; }
+  .tile .k { font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em; }
+  .tile .big { font-family:'Racing Sans One',sans-serif; font-size:52px; color:var(--ink); line-height:1; margin-top:10px; }
+  .tile .sub { font-size:14px; color:var(--ink-muted); margin-top:10px; line-height:1.5; }
+
+  .podium { display:grid; grid-template-columns:1fr 1.2fr 1fr; gap:12px; align-items:end; }
+  .podium .step { background:var(--surface); border:1px solid var(--divider); border-radius:10px; padding:16px; text-align:center; }
+  .podium .step .pos { font-family:'Racing Sans One',sans-serif; font-size:40px; line-height:1; color:var(--ferrari); }
+  .podium .step .nm { font-weight:800; font-size:13px; letter-spacing:0.06em; text-transform:uppercase; margin-top:10px; padding-left:0.06em; }
+  .podium .step .pt { font-weight:800; font-size:16px; font-variant-numeric:tabular-nums; color:var(--ink-muted); margin-top:4px; }
+  .podium .step.gold { background:var(--ink); color:var(--paper); padding:28px 16px 22px; transform:none; }
+  .podium .step.gold .pos { color:var(--ferrari-400); font-size:52px; }
+  .podium .step.gold .pt { color:#c4c5cc; }
+
+  /* Leaderboard row compact */
+  .lb-head { display:grid; grid-template-columns:48px 40px 1fr 110px 110px 80px; gap:12px; padding:10px 20px; font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); border-bottom:1px solid var(--divider); padding-left:calc(20px + 0.14em); }
+  .lb-row { display:grid; grid-template-columns:48px 40px 1fr 110px 110px 80px; gap:12px; align-items:center; padding:14px 20px; background:var(--surface); border:1px solid var(--divider); border-radius:10px; margin-top:6px; }
+  .lb-row.me { background:var(--indigo-50); border-color:#c6c1ff; }
+  .lb-row .r { font-family:'Racing Sans One',sans-serif; font-size:24px; color:var(--ferrari); }
+  .lb-row .av { width:32px; height:32px; border-radius:6px; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; padding-left:0.04em; }
+  .lb-row .nm { font-weight:700; font-size:15px; letter-spacing:0.02em; text-transform:uppercase; padding-left:0.02em; }
+  .lb-row .nm .me-tag { font-size:10px; color:var(--indigo); margin-left:8px; font-weight:800; letter-spacing:0.14em; padding-left:0.14em; }
+  .lb-row .cell { font-variant-numeric:tabular-nums; font-weight:700; font-size:15px; }
+  .lb-row .cell.up { color:var(--signal); }
+  .lb-row .cell.dn { color:var(--ferrari); }
+</style>
+
+<h2 style="font-family:'Racing Sans One',sans-serif; font-size:40px; color:#0e0d0b; letter-spacing:0.005em; text-transform:uppercase;">Inner pages</h2>
+<p class="subtitle" style="font-size:15px; line-height:1.55; margin:8px 0 24px;">No hero for inner pages — page header uses a large Racing Sans One title, eyebrow, back-link, and right-aligned primary action.</p>
+
+<!-- LEAGUES LIST -->
+<div class="pg-label"><div class="pg-tag">Leagues list</div></div>
+<div class="pg">
+  <div class="nav">
+    <div class="brand">Formula Fantasy</div>
+    <div class="links">
+      <div class="link">Home</div>
+      <div class="link active">Leagues</div>
+      <div class="link">My Results</div>
+      <div class="link">Calendar</div>
+    </div>
+    <div class="avatar">TD</div>
+  </div>
+
+  <div class="phead">
+    <div>
+      <div class="back">← Back</div>
+      <div class="kicker">Paddock management</div>
+      <h1>Leagues</h1>
+      <div class="tagline">Open a league table, join a competition, or start one of your own. You are racing in four active championships this season.</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline">+ Create</button>
+      <button class="btn btn-accent">Join league</button>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>My leagues</h2>
+        <div class="sub">Jump straight into your current competitions.</div>
+      </div>
+    </div>
+
+    <div class="data-row">
+      <div class="pos">01</div>
+      <div><div class="title">Grand Prix Masters <span class="chip chip-ferrari" style="margin-left:10px;">Owner</span></div><div class="meta"><span>Private</span><span>128 members</span><span>Round 4 of 24</span></div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,284</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#1</div></div>
+      <div class="arr">→</div>
+    </div>
+    <div class="data-row">
+      <div class="pos">02</div>
+      <div><div class="title">Apex Hunters</div><div class="meta"><span>Public</span><span>96 members</span><span>Round 4 of 24</span></div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,201</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#3</div></div>
+      <div class="arr">→</div>
+    </div>
+    <div class="data-row">
+      <div class="pos">03</div>
+      <div><div class="title">Box Box Club</div><div class="meta"><span>Public</span><span>240 members</span><span>Round 4 of 24</span></div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,157</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#12</div></div>
+      <div class="arr">→</div>
+    </div>
+    <div class="data-row">
+      <div class="pos">04</div>
+      <div><div class="title">Pit Lane Politics</div><div class="meta"><span>Private</span><span>8 members</span><span>Round 4 of 24</span></div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,098</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#2</div></div>
+      <div class="arr">→</div>
+    </div>
+  </div>
+
+  <div class="cta-pair">
+    <div class="cta-card cta-dark">
+      <div>
+        <div class="k">Run the show</div>
+        <h3>Start your own league</h3>
+        <p>Challenge your friends or grow a community. Set house rules, pick the calendar, hand out the trophy.</p>
+      </div>
+      <button class="btn">+ Create a league</button>
+    </div>
+    <div class="cta-card cta-red">
+      <div>
+        <div class="k">Find a grid</div>
+        <h3>Discover new leagues</h3>
+        <p>Drop in with an invite link or browse the public competitions already racing this season.</p>
+      </div>
+      <button class="btn">Browse public leagues</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- LEAGUE DETAIL -->
+<div class="pg-label"><div class="pg-tag">League detail · Grand Prix Masters</div></div>
+<div class="pg">
+  <div class="nav">
+    <div class="brand">Formula Fantasy</div>
+    <div class="links">
+      <div class="link">Home</div>
+      <div class="link active">Leagues</div>
+      <div class="link">My Results</div>
+      <div class="link">Calendar</div>
+    </div>
+    <div class="avatar">TD</div>
+  </div>
+
+  <div class="phead">
+    <div>
+      <div class="back">← Back to leagues</div>
+      <div class="kicker">Private · 128 members · Round 4 of 24</div>
+      <h1>Grand Prix<br>Masters</h1>
+      <div class="tagline">Six-month, full-calendar championship. Season crown decided in Abu Dhabi. You are currently on pole for the overall.</div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-outline">Invite</button>
+      <button class="btn btn-accent">Submit picks</button>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>Standings · Top 3</h2>
+        <div class="sub">Podium steps after four rounds.</div>
+      </div>
+    </div>
+    <div class="podium">
+      <div class="step"><div class="pos">02</div><div class="nm">Apex Racer</div><div class="pt">1,218 pts</div></div>
+      <div class="step gold"><div class="pos">01</div><div class="nm" style="color:var(--paper);">You</div><div class="pt">1,284 pts</div></div>
+      <div class="step"><div class="pos">03</div><div class="nm">Grid Girl</div><div class="pt">1,197 pts</div></div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>Full standings</h2>
+        <div class="sub">All 128 racers · sorted by season points.</div>
+      </div>
+      <button class="btn btn-sm btn-outline">Export CSV</button>
+    </div>
+
+    <div style="background:var(--surface); border:1px solid var(--divider); border-radius:12px; padding:10px 0;">
+      <div class="lb-head"><div>Pos</div><div></div><div>Racer</div><div>Round 4</div><div>Season</div><div>Δ</div></div>
+      <div class="lb-row me"><div class="r">01</div><div class="av">TD</div><div class="nm">Thomas Donaldson <span class="me-tag">You</span></div><div class="cell">+84</div><div class="cell">1,284</div><div class="cell up">▲ 2</div></div>
+      <div class="lb-row"><div class="r">02</div><div class="av">AR</div><div class="nm">Apex Racer</div><div class="cell">+72</div><div class="cell">1,218</div><div class="cell dn">▼ 1</div></div>
+      <div class="lb-row"><div class="r">03</div><div class="av">GG</div><div class="nm">Grid Girl</div><div class="cell">+48</div><div class="cell">1,197</div><div class="cell up">▲ 1</div></div>
+      <div class="lb-row"><div class="r">04</div><div class="av">MS</div><div class="nm">Michael Schumi</div><div class="cell">+56</div><div class="cell">1,174</div><div class="cell dn">▼ 2</div></div>
+      <div class="lb-row"><div class="r">05</div><div class="av">SV</div><div class="nm">Seb Vettel</div><div class="cell">+64</div><div class="cell">1,148</div><div class="cell">—</div></div>
+    </div>
+  </div>
+</div>

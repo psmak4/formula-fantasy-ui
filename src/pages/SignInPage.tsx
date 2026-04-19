@@ -6,19 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  if (typeof error === "object" && error !== null && "message" in error) {
-    const message = (error as { message?: unknown }).message;
-    if (typeof message === "string" && message.length > 0) {
-      return message;
-    }
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return fallback;
-}
+import { getApiErrorMessage } from "@/lib/api-error";
 
 export function SignInPage() {
   const navigate = useNavigate();
@@ -62,7 +50,7 @@ export function SignInPage() {
 
       navigate(redirectTarget, { replace: true });
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Unable to sign in. Please try again."));
+      setError(getApiErrorMessage(err, "Unable to sign in. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -74,18 +62,19 @@ export function SignInPage() {
         <div className="ff-auth-grid min-h-[calc(100svh-18rem)]">
           <div className="max-w-xl space-y-4">
             <p className="ff-kicker">Account Access</p>
-            <h1 className="ff-display text-5xl text-[#111318] md:text-6xl">Sign in</h1>
-            <p className="max-w-lg text-base leading-7 text-[#66707d] md:text-lg">
+            <h1 className="ff-display text-5xl text-on-surface md:text-6xl">Sign in</h1>
+            <div className="h-[2px] w-12 bg-primary" />
+            <p className="max-w-lg text-base leading-7 text-on-surface-variant md:text-lg">
               Use your email and password to manage leagues, edit race cards, and review results.
             </p>
           </div>
 
           <div className="mx-auto w-full max-w-xl">
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="space-y-6 px-8 py-8">
                 <div className="space-y-2">
-                  <p className="text-base font-medium text-[#111318]">Welcome back.</p>
-                  <p className="text-sm leading-6 text-[#66707d]">
+                  <p className="text-base font-medium text-on-surface">Welcome back.</p>
+                  <p className="text-sm leading-6 text-on-surface-variant">
                     Sign in to continue to your leagues and predictions.
                   </p>
                 </div>
@@ -98,6 +87,7 @@ export function SignInPage() {
                       type="email"
                       autoComplete="email"
                       placeholder="you@example.com"
+                      spellCheck={false}
                       value={email}
                       onChange={(event) => setEmail(event.target.value)}
                       required
@@ -110,7 +100,7 @@ export function SignInPage() {
                       id="signInPassword"
                       type="password"
                       autoComplete="current-password"
-                      placeholder="Enter your password"
+                      placeholder="Enter your password…"
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                       required
@@ -118,18 +108,18 @@ export function SignInPage() {
                   </div>
 
                   {error ? (
-                    <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                    <p className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                       {error}
                     </p>
                   ) : null}
 
                   <Button type="submit" className="w-full" size="lg" disabled={isPending || isSubmitting}>
-                    {isSubmitting ? "Signing in..." : "Sign in"}
+                    {isSubmitting ? "Signing in…" : "Sign in"}
                   </Button>
                 </form>
 
-                <div className="border-t border-[#e4e8ee] pt-6 text-center">
-                  <p className="text-sm text-[#66707d]">
+                <div className=" pt-6 text-center">
+                  <p className="text-sm text-on-surface-variant">
                     New to Formula Fantasy?
                   </p>
                   <Button asChild variant="outline" className="mt-4 w-full">

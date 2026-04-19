@@ -42,11 +42,11 @@ export function PublicProfilePage() {
   const isOwnProfile = session?.user?.id === userId;
 
   const avatarNode = profile ? (
-    <div className="h-10 w-10 shrink-0 overflow-hidden border border-[#d9dee5] bg-[#f0f2f5]">
+    <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container-high">
       {profile.avatarUrl ? (
         <img src={profile.avatarUrl} alt={profile.displayName} className="h-full w-full object-cover" />
       ) : (
-        <span className="flex h-full w-full items-center justify-center text-sm font-black text-[#45515f]">
+        <span className="flex h-full w-full items-center justify-center text-sm font-black text-on-surface-variant">
           {initialsFromName(profile.displayName)}
         </span>
       )}
@@ -64,9 +64,9 @@ export function PublicProfilePage() {
             </CardContent>
           </Card>
         ) : profileQuery.error ? (
-          <Card className="border-[#7a0d0d] bg-[#350909]">
+          <Card className="bg-error-container">
             <CardContent className="py-4">
-              <p className="text-[#ff8e8e]">Failed to load profile.</p>
+              <p className="text-on-error-container">Failed to load profile.</p>
             </CardContent>
           </Card>
         ) : profile ? (
@@ -90,21 +90,21 @@ export function PublicProfilePage() {
               }
             />
 
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="px-0 py-0">
                 <div className="ff-panel-strip">
                   <div>
-                    <p className="text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                    <p className="text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">
                       Shared Leagues
                     </p>
-                    <p className="mt-1 text-sm text-[#66707d]">
+                    <p className="mt-1 text-sm text-on-surface-variant">
                       Leagues in common.
                     </p>
                   </div>
                 </div>
 
                 {profile.sharedLeagues.length === 0 ? (
-                  <div className="px-6 py-10 text-center text-sm text-[#989aa2]">
+                  <div className="px-6 py-10 text-center text-sm text-on-surface-variant">
                     You don't share any leagues with this driver yet.
                   </div>
                 ) : (
@@ -117,13 +117,13 @@ export function PublicProfilePage() {
                         data-interactive="true"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-lg font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                          <p className="truncate text-lg font-semibold uppercase tracking-[0.04em] text-on-surface">
                             {sharedLeague.leagueName}
                           </p>
                         </div>
                         <div className="text-left md:text-right">
                           <p className="ff-kicker">Total Pts</p>
-                          <p className="mt-1 text-2xl font-black text-[#111318]">
+                          <p className="mt-1 text-2xl font-black text-on-surface">
                             {sharedLeague.totalPoints}
                           </p>
                         </div>

@@ -7,33 +7,54 @@ type TableProps = React.HTMLAttributes<HTMLTableElement> & {
 
 const Table = React.forwardRef<HTMLTableElement, TableProps>(({ className, ariaLabel, ...props }, ref) => (
   <div className="relative w-full overflow-auto">
-    <table ref={ref} aria-label={ariaLabel} className={cn('w-full caption-bottom text-sm text-[#e5e7eb]', className)} {...props} />
+    <table
+      ref={ref}
+      aria-label={ariaLabel}
+      className={cn('w-full caption-bottom text-sm text-on-surface', className)}
+      {...props}
+    />
   </div>
 ))
 Table.displayName = 'Table'
 
 const TableHeader = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
-  ({ className, ...props }, ref) => <thead ref={ref} className={cn('[&_tr]:border-b [&_tr]:border-white/6', className)} {...props} />
+  ({ className, ...props }, ref) => (
+    <thead ref={ref} className={cn('bg-surface-container-low', className)} {...props} />
+  )
 )
 TableHeader.displayName = 'TableHeader'
 
 const TableBody = React.forwardRef<HTMLTableSectionElement, React.HTMLAttributes<HTMLTableSectionElement>>(
   ({ className, ...props }, ref) => (
-    <tbody ref={ref} className={cn('[&_tr:last-child]:border-0', className)} {...props} />
+    <tbody ref={ref} className={cn('bg-surface-container-lowest', className)} {...props} />
   )
 )
 TableBody.displayName = 'TableBody'
 
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => (
-    <tr ref={ref} className={cn('border-b border-white/6 transition-colors hover:bg-white/4 data-[state=selected]:bg-white/5', className)} {...props} />
+    <tr
+      ref={ref}
+      className={cn(
+        'transition-colors hover:bg-surface-container-low data-[state=selected]:bg-surface-container-high',
+        className,
+      )}
+      {...props}
+    />
   )
 )
 TableRow.displayName = 'TableRow'
 
 const TableHead = React.forwardRef<HTMLTableCellElement, React.ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className, ...props }, ref) => (
-    <th ref={ref} className={cn('ff-kicker h-12 px-4 text-left align-middle text-[#7b7e87]', className)} {...props} />
+    <th
+      ref={ref}
+      className={cn(
+        'font-headline h-12 px-4 text-left align-middle text-[0.7rem] font-bold uppercase tracking-[0.2em] text-outline',
+        className,
+      )}
+      {...props}
+    />
   )
 )
 TableHead.displayName = 'TableHead'

@@ -163,10 +163,10 @@ function RaceLeaderboardSkeleton() {
         </div>
       </div>
 
-      <Card className="ff-table-card border-[#d9dee5]">
+      <Card className="ff-table-card ">
         <CardContent className="space-y-4 px-6 py-6">
           <div className="flex flex-col gap-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e4e8ee] pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2  pb-3">
               <div className="skeleton-line h-4 w-28" />
               <div className="flex flex-wrap gap-2">
                 <div className="skeleton-line h-9 w-40" />
@@ -178,11 +178,11 @@ function RaceLeaderboardSkeleton() {
               <div className="skeleton-line h-4 w-64" />
             </div>
           </div>
-          <div className="space-y-px bg-[#e7ebf0]">
+          <div className="space-y-px bg-surface-container-high">
             {[1, 2, 3, 4].map((value) => (
               <div
                 key={value}
-                className="grid gap-4 bg-[#15161b] px-6 py-5 md:grid-cols-[96px_minmax(0,1.4fr)_minmax(220px,1fr)_110px]"
+                className="grid gap-4 bg-inverse-surface px-6 py-5 md:grid-cols-[96px_minmax(0,1.4fr)_minmax(220px,1fr)_110px]"
               >
                 <div className="skeleton-line h-10 w-16" />
                 <div className="space-y-2">
@@ -262,9 +262,9 @@ export function LeagueLeaderboardPage() {
         )}
 
         {error ? (
-          <Card className="border-[#7a0d0d] bg-[#350909]">
+          <Card className="bg-error-container">
             <CardContent className="space-y-4 py-4">
-              <p className="text-[#ff8e8e]">
+              <p className="text-on-error-container">
                 {error instanceof Error ? error.message : "Failed to load leaderboard"}
               </p>
               <Button variant="secondary" onClick={() => void refetch()}>
@@ -275,11 +275,11 @@ export function LeagueLeaderboardPage() {
         ) : null}
 
         {!loading && !error && (
-          <Card className="ff-table-card border-[#d9dee5]">
+          <Card className="ff-table-card ">
               <CardContent className="space-y-4 px-6 py-6">
                 <div className="flex flex-col gap-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e4e8ee] pb-3">
-                  <p className="ff-kicker text-[#989aa2]">Race actions</p>
+                <div className="flex flex-wrap items-center justify-between gap-2  pb-3">
+                  <p className="ff-kicker text-on-surface-variant">Race actions</p>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
                       asChild
@@ -299,8 +299,8 @@ export function LeagueLeaderboardPage() {
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
-                    <CardTitle className="text-3xl text-[#111318]">Classification</CardTitle>
-                    <p className="text-sm text-[#989aa2]">
+                    <CardTitle className="text-3xl text-on-surface">Classification</CardTitle>
+                    <p className="text-sm text-on-surface-variant">
                       Ranked league finishers for this race.
                     </p>
                   </div>
@@ -312,7 +312,7 @@ export function LeagueLeaderboardPage() {
             </CardContent>
             <CardContent className="px-0 py-0">
               <div className="ff-data-list">
-                <div className="ff-data-row bg-[#eef1f4] text-xs uppercase tracking-[0.18em] text-[#7b8592] md:grid-cols-[96px_minmax(0,1.4fr)_minmax(220px,1fr)_110px]">
+                <div className="ff-data-row bg-surface-container-high text-xs uppercase tracking-[0.18em] text-on-surface-variant md:grid-cols-[96px_minmax(0,1.4fr)_minmax(220px,1fr)_110px]">
                   <span>Rank</span>
                   <span>Manager</span>
                   <span>Scoring Mix</span>
@@ -330,7 +330,7 @@ export function LeagueLeaderboardPage() {
                     >
                       <div className="rank-cell">
                         <span
-                          className={`ff-display text-3xl ${row.rank === 1 ? "text-[#e9c400]" : "text-[#66707d]"}`}
+                          className={`ff-display text-3xl ${row.rank === 1 ? "text-tertiary" : "text-on-surface-variant"}`}
                         >
                           {String(row.rank).padStart(2, "0")}
                         </span>
@@ -343,10 +343,10 @@ export function LeagueLeaderboardPage() {
                         ) : null}
                       </div>
                       <div className="min-w-0">
-                        <p className="font-semibold uppercase tracking-[0.08em] text-[#111318]">
+                        <p className="font-semibold uppercase tracking-[0.08em] text-on-surface">
                           {row.displayName}
                         </p>
-                        <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#7f828b]">
+                        <p className="mt-1 text-xs uppercase tracking-[0.12em] text-on-surface-variant">
                           {delta === null
                             ? "No movement data"
                             : delta > 0
@@ -362,30 +362,30 @@ export function LeagueLeaderboardPage() {
                             {topScoringItems.map(([key, value]) => (
                               <span
                                 key={key}
-                                className="inline-flex items-center gap-2 border border-[#d9dee5] bg-[#f8f9fb] px-3 py-2 text-xs font-medium text-[#45515f]"
+                                className="inline-flex items-center gap-2 rounded-md border bg-surface-container-low px-3 py-2 text-xs font-medium text-on-surface-variant"
                               >
                                 <span>{scoreBreakdownLabel(key)}</span>
-                                <span className="font-semibold text-[#111318]">+{value}</span>
+                                <span className="font-semibold text-on-surface">+{value}</span>
                               </span>
                             ))}
                             {scoringItems.length > topScoringItems.length ? (
-                              <span className="inline-flex items-center border border-[#d9dee5] bg-[#f8f9fb] px-3 py-2 text-xs text-[#66707d]">
+                              <span className="inline-flex items-center rounded-md border bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant">
                                 +{scoringItems.length - topScoringItems.length} more
                               </span>
                             ) : null}
                           </div>
                         ) : (
-                          <span className="text-sm text-[#7f828b]">No scoring detail</span>
+                          <span className="text-sm text-on-surface-variant">No scoring detail</span>
                         )}
                       </div>
                       <div className="text-left md:text-right">
-                        <p className="text-2xl font-black text-[#111318]">{row.points}</p>
+                        <p className="text-2xl font-black text-on-surface">{row.points}</p>
                       </div>
                     </div>
                   );
                 })}
                 {rows.length === 0 && (
-                  <div className="ff-data-row text-center text-[#989aa2]">
+                  <div className="ff-data-row text-center text-on-surface-variant">
                     No leaderboard entries yet
                   </div>
                 )}

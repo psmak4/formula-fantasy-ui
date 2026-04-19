@@ -1,0 +1,13 @@
+{"type":"server-started","port":64139,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:64139","screen_dir":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content","state_dir":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/state"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/direction.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/intensity.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/foundations.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/foundations-v2.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/components.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/components-v2.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/pages-home.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/pages-home-v2.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/pages-home-v3.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/pages-home-v4.html"}
+{"type":"screen-added","file":"/Users/preston/Projects/Formula Fantasy/formula-fantasy-ui/.superpowers/brainstorm/58005-1776491791/content/pages-leagues.html"}
+{"type":"server-stopped","reason":"idle timeout"}

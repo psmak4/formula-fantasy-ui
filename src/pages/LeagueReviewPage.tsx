@@ -95,21 +95,21 @@ export function LeagueReviewPage() {
                 label="Round total"
                 value={typeof data?.scoring?.totalPoints === "number" ? data.scoring.totalPoints : "—"}
               />
-              <AppPageHeaderStat label="Hits" value={hits} accentClassName="text-[#e9c400]" />
+              <AppPageHeaderStat label="Hits" value={hits} accentClassName="text-tertiary" />
             </>
           }
         />
 
         {isLoading ? (
-          <Card className="animate-pulse border-[#d9dee5] bg-white">
+          <Card className="animate-pulse bg-surface-container-lowest">
             <CardContent className="py-20">
-              <div className="h-8 w-1/3 rounded bg-[#eef1f4]" />
+              <div className="h-8 w-1/3 rounded bg-surface-container-high" />
             </CardContent>
           </Card>
         ) : null}
 
         {error ? (
-          <Card className="border-[#7a0d0d] bg-[#350909]">
+          <Card className="bg-error-container">
             <CardContent className="space-y-4 py-5">
               <Badge tone="danger">
                 {error instanceof Error ? error.message : "Failed to load race review"}
@@ -123,11 +123,11 @@ export function LeagueReviewPage() {
 
         {!isLoading && !error ? (
           <>
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="space-y-4 px-6 py-6">
                 <div className="flex flex-col gap-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#e4e8ee] pb-3">
-                    <p className="ff-kicker text-[#989aa2]">Round actions</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2  pb-3">
+                    <p className="ff-kicker text-on-surface-variant">Round actions</p>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
                         asChild
@@ -150,10 +150,10 @@ export function LeagueReviewPage() {
 
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <p className="text-lg font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                    <p className="text-lg font-semibold uppercase tracking-[0.04em] text-on-surface">
                       Score breakdown
                     </p>
-                    <p className="text-sm text-[#989aa2]">
+                    <p className="text-sm text-on-surface-variant">
                       Every category, your pick, the final result, and why the points landed the way they did.
                     </p>
                   </div>

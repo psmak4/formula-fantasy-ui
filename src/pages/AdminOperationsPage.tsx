@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Clock3, ShieldAlert } from "lucide-react";
 import { Link } from "react-router-dom";
-import { apiClient, ApiError } from "@/api/apiClient";
+import { apiClient } from "@/api/apiClient";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
+import { formatAdminDateTime, getAdminPageErrorMessage } from "@/lib/adminPage";
 
 type RaceHealthStatus = "healthy" | "warning" | "incident";
 
@@ -38,16 +39,9 @@ type AdminOperationsResponse = {
   }>;
 };
 
-function formatDateTime(value: string | null): string {
-  if (!value) return "Not yet scored";
-
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
+const getErrorMessage = (error: unknown) =>
+  getAdminPageErrorMessage(error, "Unable to load admin race operations.");
+const formatDateTime = (value: string | null) => formatAdminDateTime(value, "Not yet scored");
 
 function getStatusBadgeTone(status: RaceHealthStatus): "success" | "warning" | "danger" {
   if (status === "incident") return "danger";
@@ -57,22 +51,12 @@ function getStatusBadgeTone(status: RaceHealthStatus): "success" | "warning" | "
 
 function getStatusIcon(status: RaceHealthStatus) {
   if (status === "incident") {
-    return <ShieldAlert className="h-4 w-4 text-[#ff7373]" />;
+    return <ShieldAlert className="h-4 w-4 text-primary" />;
   }
   if (status === "warning") {
-    return <AlertTriangle className="h-4 w-4 text-[#f3db53]" />;
+    return <AlertTriangle className="h-4 w-4 text-warning" />;
   }
-  return <CheckCircle2 className="h-4 w-4 text-[#6ee7a8]" />;
-}
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) {
-    return error.message;
-  }
-  if (error instanceof Error) {
-    return error.message;
-  }
-  return "Unable to load admin race operations.";
+  return <CheckCircle2 className="h-4 w-4 text-success" />;
 }
 
 export function AdminOperationsPage() {
@@ -89,14 +73,14 @@ export function AdminOperationsPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-4">
           <p className="ff-kicker">Operational Queue</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">Race Operations</h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">Race Operations</h2>
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Monitor ingestion coverage, scoring health, and round readiness. Open a race detail to repair data, review scoring history, and apply audited corrections.
           </p>
         </div>
 
-        <div className="border border-[#594b11] bg-[#2b2508] px-5 py-4 text-sm text-[#f3db53] xl:max-w-sm">
-          <p className="ff-kicker text-[#d4c68b]">Control Note</p>
+        <div className="bg-tertiary-container px-5 py-4 text-sm text-on-tertiary-container xl:max-w-sm">
+          <p className="ff-kicker text-on-tertiary-container">Control Note</p>
           <p className="mt-2 leading-6">
             Use this queue as the first stop before manual overrides. Warning and incident rounds should be triaged here before downstream corrections.
           </p>
@@ -108,15 +92,15 @@ export function AdminOperationsPage() {
           {[1, 2, 3, 4].map((value) => (
             <div
               key={value}
-              className="h-36 animate-pulse border border-white/8 bg-[#15161b]"
+              className="h-36 rounded-lg animate-pulse bg-surface-container-low"
             />
           ))}
         </div>
       ) : null}
 
       {operationsQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
-          {getErrorMessage(operationsQuery.error)}
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
+              {getErrorMessage(operationsQuery.error)}
         </div>
       ) : null}
 
@@ -148,23 +132,23 @@ export function AdminOperationsPage() {
         </div>
       ) : null}
 
-      <Card className="border-white/8 bg-[#15161b]">
+      <Card className=" bg-surface-container-low">
         <CardContent className="px-0 py-0">
-          <div className="flex flex-col gap-3 border-b border-white/6 px-6 py-5 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-3 px-6 py-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="ff-display text-3xl text-white">Round Health Queue</p>
-              <p className="mt-2 text-sm text-[#989aa2]">
+              <p className="ff-display text-3xl text-on-surface">Round Health Queue</p>
+              <p className="mt-2 text-sm text-on-surface-variant">
                 Prioritized races with scoring coverage, ingestion state, and latest run timing.
               </p>
             </div>
-            <span className="ff-kicker text-[#7f828b]">Mission Control Feed</span>
+            <span className="ff-kicker text-on-surface-variant">Mission Control Feed</span>
           </div>
 
           <div className="space-y-0">
             {races.map((race) => (
               <div
                 key={race.raceId}
-                className="border-b border-white/6 bg-white/2 px-6 py-6 last:border-b-0"
+                className="bg-surface-container-lowest px-6 py-6 last:border-b-0"
               >
                 <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_280px]">
                   <div className="space-y-4">
@@ -178,26 +162,26 @@ export function AdminOperationsPage() {
                     </div>
 
                     <div>
-                      <p className="ff-display text-3xl text-white">{race.name}</p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">{race.healthSummary}</p>
+                      <p className="ff-display text-3xl text-on-surface">{race.name}</p>
+                      <p className="mt-2 text-sm leading-6 text-on-surface-variant">{race.healthSummary}</p>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-3">
-                      <div className="border border-white/8 bg-white/3 px-4 py-4">
+                      <div className="bg-surface-container-lowest px-4 py-4">
                         <p className="ff-kicker">Source coverage</p>
-                        <p className="mt-2 text-sm text-white">
+                        <p className="mt-2 text-sm text-on-surface">
                           Qualifying {race.counts.qualifyingResults} · Race {race.counts.raceResults}
                         </p>
                       </div>
-                      <div className="border border-white/8 bg-white/3 px-4 py-4">
+                      <div className="bg-surface-container-lowest px-4 py-4">
                         <p className="ff-kicker">Result integrity</p>
-                        <p className="mt-2 text-sm text-white">
+                        <p className="mt-2 text-sm text-on-surface">
                           Podium {race.counts.podiumConfirmed} · Classified {race.counts.classifiedFinishers}
                         </p>
                       </div>
-                      <div className="border border-white/8 bg-white/3 px-4 py-4">
+                      <div className="bg-surface-container-lowest px-4 py-4">
                         <p className="ff-kicker">League scoring</p>
-                        <p className="mt-2 text-sm text-white">
+                        <p className="mt-2 text-sm text-on-surface">
                           Success {race.counts.successfulLeagueScores}
                           {race.counts.pendingLeagueScores > 0
                             ? ` · Pending ${race.counts.pendingLeagueScores}`
@@ -210,22 +194,22 @@ export function AdminOperationsPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-4 border border-white/8 bg-black/20 px-5 py-5">
-                    <div className="flex items-center gap-2 text-sm text-[#d0d3d9]">
+                  <div className="space-y-4 bg-surface-container-lowest px-5 py-5">
+                    <div className="flex items-center gap-2 text-sm text-on-surface-variant">
                       <Clock3 className="h-4 w-4" />
                       <span>Race start: {formatDateTime(race.raceStartAt)}</span>
                     </div>
 
                     <div className="space-y-3">
-                      <div className="border border-white/8 bg-white/4 p-4">
+                      <div className="bg-surface-container-lowest p-4">
                         <p className="ff-kicker">Latest scored</p>
-                        <p className="mt-2 text-sm font-semibold text-white">
+                        <p className="mt-2 text-sm font-semibold text-on-surface">
                           {formatDateTime(race.latestScoredAt)}
                         </p>
                       </div>
-                      <div className="border border-white/8 bg-white/4 p-4">
+                      <div className="bg-surface-container-lowest p-4">
                         <p className="ff-kicker">Active leagues</p>
-                        <p className="mt-2 text-3xl font-black text-[#e9c400]">
+                        <p className="mt-2 text-3xl font-black text-warning">
                           {race.counts.leaguesWithEntries}
                         </p>
                       </div>
@@ -240,7 +224,7 @@ export function AdminOperationsPage() {
             ))}
 
             {!operationsQuery.isLoading && races.length === 0 ? (
-              <div className="px-6 py-10 text-center text-[#989aa2]">
+              <div className="px-6 py-10 text-center text-on-surface-variant">
                 No races available in the operational queue.
               </div>
             ) : null}
@@ -259,19 +243,19 @@ function MetricCard(props: {
 }) {
   const accentClass =
     props.accent === "danger"
-      ? "text-[#ff7373]"
+      ? "text-primary"
       : props.accent === "warning"
-        ? "text-[#f3db53]"
+        ? "text-warning"
         : props.accent === "success"
-          ? "text-[#6ee7a8]"
-          : "text-white";
+          ? "text-success"
+          : "text-on-surface";
 
   return (
-    <Card className="border-white/8 bg-[#15161b]">
+    <Card className=" bg-surface-container-low">
       <CardContent className="space-y-2 px-6 py-6">
         <p className="ff-kicker">{props.title}</p>
         <p className={`text-5xl font-black ${accentClass}`}>{props.value}</p>
-        <p className="text-sm leading-6 text-[#989aa2]">{props.subtitle}</p>
+        <p className="text-sm leading-6 text-on-surface-variant">{props.subtitle}</p>
       </CardContent>
     </Card>
   );

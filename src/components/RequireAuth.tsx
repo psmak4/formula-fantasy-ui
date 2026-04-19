@@ -21,7 +21,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
         aria-live="polite"
         aria-busy="true"
       >
-        <p className="text-sm text-[#989aa2]">Checking session…</p>
+        <p className="text-sm text-on-surface-variant">Checking session…</p>
       </div>
     );
   }

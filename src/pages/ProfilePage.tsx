@@ -189,7 +189,7 @@ export function ProfilePage() {
     return (
       <section className="px-6 py-14 md:py-20">
         <div className="mx-auto max-w-7xl">
-          <p className="text-sm text-[#989aa2]">Loading profile...</p>
+          <p className="text-sm text-on-surface-variant">Loading profile…</p>
         </div>
       </section>
     );
@@ -219,7 +219,7 @@ export function ProfilePage() {
           utility={
             <>
               <div className="flex min-w-0 items-center gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center border border-[#d9dee5] bg-[#eef1f4] text-lg font-black text-[#111318]">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border bg-surface-container-high text-lg font-black text-on-surface">
                   {avatarUrl.trim() ? (
                     <img
                       src={avatarUrl}
@@ -232,8 +232,8 @@ export function ProfilePage() {
                 </div>
                 <div className="min-w-0">
                   <p className="ff-kicker">Signed in as</p>
-                  <p className="truncate text-sm font-semibold text-[#111318]">{displayHandle}</p>
-                  <p className="truncate text-sm text-[#66707d]">{email}</p>
+                  <p className="truncate text-sm font-semibold text-on-surface">{displayHandle}</p>
+                  <p className="truncate text-sm text-on-surface-variant">{email}</p>
                 </div>
               </div>
 
@@ -250,20 +250,22 @@ export function ProfilePage() {
         />
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
+          <Card className="ff-table-card overflow-hidden ">
             <div className="ff-panel-strip">
-              <CardTitle className="text-[#111318]">Profile Settings</CardTitle>
+              <CardTitle className="text-on-surface">Profile Settings</CardTitle>
             </div>
             <CardContent className="space-y-4">
               <CardDescription>Update your account details and visual identity.</CardDescription>
               {meQuery.isLoading ? (
-                <p className="text-sm text-[#989aa2]">Loading profile...</p>
+                <p className="text-sm text-on-surface-variant">Loading profile…</p>
               ) : (
                 <form className="space-y-4" onSubmit={handleSaveProfile}>
                   <div className="ff-field-shell">
                     <Label htmlFor="profileDisplayName">Display name</Label>
                     <Input
                       id="profileDisplayName"
+                      autoComplete="name"
+                      spellCheck={false}
                       value={displayName}
                       onChange={(event) => setDisplayName(event.target.value)}
                       required
@@ -291,12 +293,12 @@ export function ProfilePage() {
                   </div>
 
                   {profileError ? (
-                    <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                    <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                       {profileError}
                     </div>
                   ) : null}
                   {profileSuccess ? (
-                    <div className="border border-[#205038] bg-[#102317] px-4 py-3 text-sm text-[#6ee7a8]">
+                    <div className="bg-surface-container-low px-4 py-3 text-sm text-success">
                       {profileSuccess}
                     </div>
                   ) : null}
@@ -306,16 +308,16 @@ export function ProfilePage() {
                     className="w-full"
                     disabled={isSavingProfile || !canSaveProfile}
                   >
-                    {isSavingProfile ? "Saving..." : "Save profile"}
+                    {isSavingProfile ? "Saving…" : "Save profile"}
                   </Button>
                 </form>
               )}
             </CardContent>
           </Card>
 
-          <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
+          <Card className="ff-table-card overflow-hidden ">
             <div className="ff-panel-strip">
-              <CardTitle className="text-[#111318]">Security Controls</CardTitle>
+              <CardTitle className="text-on-surface">Security Controls</CardTitle>
             </div>
             <CardContent className="space-y-4">
               <CardDescription>Set a new password and decide whether to revoke other sessions.</CardDescription>
@@ -356,7 +358,7 @@ export function ProfilePage() {
                   />
                 </div>
 
-                <label className="flex items-center gap-3 border border-[#e1e6ec] bg-[#f8f9fb] px-4 py-4 text-sm text-[#45515f]">
+                <label className="flex items-center gap-3 rounded-md bg-surface-container-low px-4 py-4 text-sm text-on-surface-variant">
                   <input
                     type="checkbox"
                     checked={revokeOtherSessions}
@@ -366,18 +368,18 @@ export function ProfilePage() {
                 </label>
 
                 {passwordError ? (
-                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {passwordError}
                   </div>
                 ) : null}
                 {passwordSuccess ? (
-                  <div className="border border-[#205038] bg-[#102317] px-4 py-3 text-sm text-[#6ee7a8]">
+                  <div className="bg-surface-container-low px-4 py-3 text-sm text-success">
                     {passwordSuccess}
                   </div>
                 ) : null}
 
                 <Button type="submit" className="w-full" disabled={isSavingPassword}>
-                  {isSavingPassword ? "Updating..." : "Update password"}
+                  {isSavingPassword ? "Updating…" : "Update password"}
                 </Button>
               </form>
             </CardContent>

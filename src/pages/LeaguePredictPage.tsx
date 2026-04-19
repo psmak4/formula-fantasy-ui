@@ -349,7 +349,7 @@ export function LeaguePredictPage() {
   const [windowStatus, setWindowStatus] =
     useState<PredictionWindowStatus>("opening_soon");
   const [windowMessage, setWindowMessage] = useState(
-    "Checking prediction window...",
+    "Checking prediction window…",
   );
   const [opensAt, setOpensAt] = useState<number | null>(null);
   const [closesAt, setClosesAt] = useState<number | null>(null);
@@ -596,7 +596,7 @@ export function LeaguePredictPage() {
               <AppPageHeaderStat
                 label="Countdown"
                 value={countdownLabel || "—"}
-                accentClassName="text-[#e9c400]"
+                accentClassName="text-tertiary"
               />
             </>
           }
@@ -604,7 +604,7 @@ export function LeaguePredictPage() {
             <>
               <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="ff-kicker text-[#989aa2]">Race status</p>
+                  <p className="ff-kicker text-on-surface-variant">Race status</p>
                   <Badge tone={statusTone}>{windowMessage}</Badge>
                   <Badge tone={saveState === "saved" ? "success" : "info"}>
                     {saveState === "saved"
@@ -615,7 +615,7 @@ export function LeaguePredictPage() {
                   </Badge>
                   <Badge tone="neutral">{raceStart ?? "Race start TBD"}</Badge>
                 </div>
-                <p className="text-sm text-[#989aa2]">
+                <p className="text-sm text-on-surface-variant">
                   {windowStatus === "locked"
                     ? "The prediction window has closed for this race."
                     : windowStatus === "opening_soon"
@@ -637,16 +637,16 @@ export function LeaguePredictPage() {
 
         {/* Loading State */}
         {loading && !pageReady ? (
-          <Card className="animate-pulse border-[#d9dee5] bg-white">
+          <Card className="animate-pulse bg-surface-container-lowest">
             <CardContent className="py-8">
-              <div className="h-6 w-1/3 rounded bg-[#eef1f4]" />
+              <div className="h-6 w-1/3 rounded bg-surface-container-high" />
             </CardContent>
           </Card>
         ) : null}
 
         {/* Error State */}
         {criticalLoadError ? (
-          <Card className="border-[#7a0d0d] bg-[#350909]">
+          <Card className="bg-error-container">
             <CardContent className="flex flex-col gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
               <Badge tone="danger">
                 {formatServerError(criticalLoadError, "Failed to load prediction page")}
@@ -663,12 +663,12 @@ export function LeaguePredictPage() {
             {loadIssues.map((issue) => (
               <Card
                 key={issue.title}
-                className={issue.tone === "danger" ? "border-[rgba(180,35,24,0.18)] bg-[#fdeceb]" : "border-[rgba(183,121,31,0.2)] bg-[#fff4db]"}
+                className={issue.tone === "danger" ? "bg-error-container" : "bg-tertiary-container"}
               >
                 <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-[#111318]">{issue.title}</p>
-                    <p className="text-sm text-[#66707d]">{issue.message}</p>
+                    <p className="text-sm font-semibold text-on-surface">{issue.title}</p>
+                    <p className="text-sm text-on-surface-variant">{issue.message}</p>
                   </div>
                   <Button variant="outline" onClick={() => void refreshPredictionData()} disabled={!canRefresh}>
                     Retry
@@ -682,9 +682,9 @@ export function LeaguePredictPage() {
         {/* Prediction Form */}
         {pageReady && !criticalLoadError && (
           <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <div className="ff-panel-strip">
-                <CardTitle className="text-2xl text-[#111318]">
+                <CardTitle className="text-2xl text-on-surface">
                   Podium Picks
                 </CardTitle>
               </div>
@@ -717,7 +717,7 @@ export function LeaguePredictPage() {
                         </p>
                         <Badge tone={slot.tone}>{slot.value === "Pending" ? "Pending" : "Ready"}</Badge>
                       </div>
-                      <p className="mt-3 font-medium text-[#111318]">
+                      <p className="mt-3 font-medium text-on-surface">
                         {slot.value}
                       </p>
                     </div>
@@ -757,12 +757,12 @@ export function LeaguePredictPage() {
                 </div>
 
                 {missingRequiredPick && (
-                  <p className="text-sm text-[#f3db53]">
+                  <p className="text-sm text-warning">
                     Select every required slot.
                   </p>
                 )}
                 {duplicatePodiumPick && (
-                  <p className="text-sm text-[#ff8e8e]">
+                  <p className="text-sm text-error">
                     P1, P2, and P3 must be unique.
                   </p>
                 )}
@@ -770,9 +770,9 @@ export function LeaguePredictPage() {
             </Card>
 
             {/* Race Props */}
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <div className="ff-panel-strip">
-                <CardTitle className="text-2xl text-[#111318]">
+                <CardTitle className="text-2xl text-on-surface">
                   Race Props
                 </CardTitle>
               </div>
@@ -782,7 +782,7 @@ export function LeaguePredictPage() {
                     <p className="ff-kicker">
                       Fastest lap
                     </p>
-                    <p className="mt-2 font-medium text-[#111318]">
+                    <p className="mt-2 font-medium text-on-surface">
                       {driverLabelById(drivers, fastestLapDriverId)}
                     </p>
                   </div>
@@ -790,7 +790,7 @@ export function LeaguePredictPage() {
                     <p className="ff-kicker">
                       Biggest gainer
                     </p>
-                    <p className="mt-2 font-medium text-[#111318]">
+                    <p className="mt-2 font-medium text-on-surface">
                       {driverLabelById(drivers, biggestGainerDriverId)}
                     </p>
                   </div>
@@ -798,7 +798,7 @@ export function LeaguePredictPage() {
                     <p className="ff-kicker">
                       Safety car
                     </p>
-                    <p className="mt-2 font-medium text-[#111318]">
+                    <p className="mt-2 font-medium text-on-surface">
                       {safetyCarDeployed ? "Deployed" : "No call"}
                     </p>
                   </div>
@@ -806,7 +806,7 @@ export function LeaguePredictPage() {
                     <p className="ff-kicker">
                       Classified finishers
                     </p>
-                    <p className="mt-2 font-medium text-[#111318]">
+                    <p className="mt-2 font-medium text-on-surface">
                       {classifiedFinishersLabel(classifiedFinishersBucket)}
                     </p>
                   </div>
@@ -852,12 +852,12 @@ export function LeaguePredictPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-[#989aa2]">
+                  <p className="text-sm text-on-surface-variant">
                     Predict how many cars will be classified at the finish.
                   </p>
                 </fieldset>
 
-                <label className="flex items-center gap-2 text-[#45515f]">
+                <label className="flex items-center gap-2 text-on-surface-variant">
                   <input
                     type="checkbox"
                     checked={safetyCarDeployed}
@@ -865,7 +865,7 @@ export function LeaguePredictPage() {
                     onChange={(event) =>
                       setSafetyCarDeployed(event.target.checked)
                     }
-                    className="h-4 w-4 border-white/20 bg-[#0d0e12] text-red-600 focus:ring-red-500"
+                    className="h-4 w-4 bg-inverse-surface text-primary focus:ring-primary"
                   />
                   <span className="text-sm">
                     Safety car deployed
@@ -874,14 +874,14 @@ export function LeaguePredictPage() {
               </CardContent>
             </Card>
 
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="space-y-4 px-6 py-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="ff-field-shell lg:min-w-[320px]">
                     <p className="ff-kicker">
                       Validation
                     </p>
-                    <ul className="mt-3 space-y-2 text-sm text-[#989aa2]">
+                    <ul className="mt-3 space-y-2 text-sm text-on-surface-variant">
                       <li>{missingRequiredPick ? "Complete every required slot." : "All required slots filled."}</li>
                       <li>{duplicatePodiumPick ? "Podium picks must be unique." : "Podium picks are unique."}</li>
                       <li>{isOpen ? "Prediction window is open." : "Prediction window is not open."}</li>
@@ -901,7 +901,7 @@ export function LeaguePredictPage() {
                         saveState === "saving"
                       }
                     >
-                      {saveState === "saving" ? "Saving Entry..." : "Save Entry"}
+                      {saveState === "saving" ? "Saving Entry…" : "Save Entry"}
                     </Button>
                     {saveState === "saved" && (
                       <Badge className="w-full justify-center" tone="success">
@@ -916,7 +916,7 @@ export function LeaguePredictPage() {
                   </div>
                 </div>
 
-                <p className="text-sm leading-6 text-[#989aa2]">
+                <p className="text-sm leading-6 text-on-surface-variant">
                   Podium calls are exclusive, finisher picks are bucketed, and you can keep editing until the lock window closes.
                 </p>
               </CardContent>

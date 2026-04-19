@@ -171,7 +171,7 @@ export function InvitePage() {
   const primaryButtonLabel = !session?.user
     ? "Sign In To Join"
     : isJoining
-      ? "Joining League..."
+      ? "Joining League…"
       : isInviteJoinable
         ? "Join League"
         : "Open My Leagues";
@@ -200,17 +200,17 @@ export function InvitePage() {
       <div className="ff-shell">
         <div className="space-y-4 text-center">
           <p className="ff-kicker">Incoming Transmission</p>
-          <h1 className="ff-display mx-auto max-w-4xl text-5xl text-[#111318] md:text-7xl">
+          <h1 className="ff-display mx-auto max-w-4xl text-5xl text-on-surface md:text-7xl">
             Enter The Paddock
           </h1>
-          <p className="mx-auto max-w-3xl text-base leading-8 text-[#66707d] md:text-2xl md:leading-10">
+          <p className="mx-auto max-w-3xl text-base leading-8 text-on-surface-variant md:text-2xl md:leading-10">
             Review the invite details, sign in if needed, and join the league from
             one place.
           </p>
         </div>
 
         <div className="ff-grid-main mx-auto max-w-6xl" data-layout="rail">
-          <Card className="ff-table-card border-[#d9dee5]">
+          <Card className="ff-table-card ">
             <CardHeader className="space-y-3 pb-4">
               <div className="flex flex-wrap items-center gap-3">
                 <Badge variant="secondary">
@@ -252,10 +252,10 @@ export function InvitePage() {
               {isLoading ? (
                 <div className="space-y-3">
                   <p className="ff-kicker">Syncing Invite Details</p>
-                  <div className="h-2 overflow-hidden bg-[#eef1f4]">
-                    <div className="h-full w-2/3 animate-pulse bg-[#cc0000]" />
+                  <div className="h-2 overflow-hidden bg-surface-container-high">
+                    <div className="h-full w-2/3 animate-pulse bg-primary" />
                   </div>
-                  <p className="text-[#989aa2]">
+                  <p className="text-on-surface-variant">
                     Pulling the league details and invite status.
                   </p>
                 </div>
@@ -263,7 +263,7 @@ export function InvitePage() {
 
               {previewErrorMessage || joinErrorMessage ? (
                 <>
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {previewErrorMessage ?? joinErrorMessage}
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -277,36 +277,36 @@ export function InvitePage() {
               {!isLoading && !previewErrorMessage && preview ? (
                 <>
                   <div className="grid gap-4 md:grid-cols-[minmax(0,1.45fr)_200px_200px]">
-                    <div className="border-l-2 border-[#cc0000] bg-[#f8f9fb] p-5">
+                    <div className="rounded-md border-l-2 border-primary bg-surface-container-low p-5">
                       <p className="ff-kicker">League</p>
-                      <p className="mt-3 text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                      <p className="mt-3 text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">
                         {leagueName}
                       </p>
-                      <p className="mt-3 text-sm text-[#989aa2]">
+                      <p className="mt-3 text-sm text-on-surface-variant">
                         {(preview.leagueVisibility ?? "private").toUpperCase()} league
                       </p>
                     </div>
-                    <div className="border-l-2 border-[#d9dee5] bg-[#f8f9fb] p-5">
+                    <div className="rounded-md bg-surface-container-low p-5">
                       <p className="ff-kicker">Members</p>
-                      <p className="mt-3 text-4xl font-black text-[#111318]">
+                      <p className="mt-3 text-4xl font-black text-on-surface">
                         {memberCount}
                       </p>
-                      <p className="text-sm text-[#7f828b]">
+                      <p className="text-sm text-on-surface-variant">
                         manager{memberCount === 1 ? "" : "s"}
                       </p>
                     </div>
-                    <div className="border-l-2 border-[#e9c400] bg-[#f8f9fb] p-5">
+                    <div className="rounded-md border-l-2 border-tertiary bg-surface-container-low p-5">
                       <p className="ff-kicker">Invite Expiry</p>
-                      <p className="mt-3 text-2xl font-black text-[#111318]">
+                      <p className="mt-3 text-2xl font-black text-on-surface">
                         {formatDateLabel(preview.expiresAt)}
                       </p>
                     </div>
                   </div>
 
                   {preview.invitedByName ? (
-                    <div className="border-l-2 border-[#d9dee5] bg-[#f8f9fb] p-5">
+                    <div className="rounded-md bg-surface-container-low p-5">
                       <p className="ff-kicker">Invited By</p>
-                      <p className="mt-3 text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                      <p className="mt-3 text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">
                         {preview.invitedByName}
                       </p>
                     </div>
@@ -315,7 +315,7 @@ export function InvitePage() {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="ff-field-shell">
                       <p className="ff-kicker">Invite Status</p>
-                      <p className="mt-3 text-lg font-semibold text-[#111318]">
+                      <p className="mt-3 text-lg font-semibold text-on-surface">
                         {inviteStatus === "pending"
                           ? "Ready to join now"
                           : inviteStatus === "accepted"
@@ -327,7 +327,7 @@ export function InvitePage() {
                     </div>
                     <div className="ff-field-shell">
                       <p className="ff-kicker">Join Flow</p>
-                      <p className="mt-3 text-lg font-semibold text-[#111318]">
+                      <p className="mt-3 text-lg font-semibold text-on-surface">
                         Sign in if needed, join the league, then open the league
                         hub from the confirmation state.
                       </p>
@@ -335,14 +335,14 @@ export function InvitePage() {
                   </div>
 
                   {result ? (
-                    <div className="border border-[rgba(20,128,74,0.18)] bg-[#e9f7ef] p-5">
-                      <p className="ff-kicker text-[#14804a]">Status</p>
-                      <p className="mt-2 text-lg font-semibold text-[#111318]">
+                    <div className="bg-surface-container-low p-5">
+                      <p className="ff-kicker text-success">Status</p>
+                      <p className="mt-2 text-lg font-semibold text-on-surface">
                         {joinedExisting
                           ? "You were already in this league."
                           : "You are now in the league."}
                       </p>
-                      <p className="mt-2 text-sm text-[#4d745d]">
+                      <p className="mt-2 text-sm text-on-surface-variant">
                         Head to the league page to check the next race, lock a
                         card, and track the leaderboard.
                       </p>
@@ -374,29 +374,29 @@ export function InvitePage() {
           </Card>
 
           <div className="ff-side-stack">
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="space-y-4 py-6">
                 <p className="ff-kicker">This Screen Uses Real Data Only</p>
-                <p className="text-sm leading-6 text-[#989aa2]">
+                <p className="text-sm leading-6 text-on-surface-variant">
                   League name, visibility, member count, invite status, and expiry
                   come from the invite preview. Nothing here depends on race or
                   scoring data.
                 </p>
               </CardContent>
             </Card>
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="space-y-4 py-6">
                 <p className="ff-kicker">Authentication</p>
-                <p className="text-sm leading-6 text-[#989aa2]">
+                <p className="text-sm leading-6 text-on-surface-variant">
                   Signed-out users are sent to sign in first, then returned to this
                   invite flow before joining.
                 </p>
               </CardContent>
             </Card>
-            <Card className="ff-table-card border-[#d9dee5]">
+            <Card className="ff-table-card ">
               <CardContent className="space-y-4 py-6">
                 <p className="ff-kicker">After Acceptance</p>
-                <p className="text-sm leading-6 text-[#989aa2]">
+                <p className="text-sm leading-6 text-on-surface-variant">
                   Once the invite is accepted, the primary next step is opening the
                   league itself.
                 </p>

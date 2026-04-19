@@ -1,6 +1,6 @@
-import { ApiError } from "@/api/apiClient";
 import { Button } from "@/components/ui/Button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAdminPageErrorMessage, formatAdminDateTime } from "@/lib/adminPage";
 
 export type DetailResponse = {
   race: {
@@ -139,21 +139,11 @@ export type SourceRepairPreviewResponse = {
   };
 };
 
-export function formatDateTime(value: string | null): string {
-  if (!value) return "Not available";
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
+export function getErrorMessage(error: unknown): string {
+  return getAdminPageErrorMessage(error, "Unable to load race operations details.");
 }
 
-export function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
-  if (error instanceof Error) return error.message;
-  return "Unable to load race operations details.";
-}
+export const formatDateTime = formatAdminDateTime;
 
 export function formatSafetyCarValue(value: boolean | null): string {
   if (value === null) return "Unknown";
@@ -366,7 +356,7 @@ export function DriverSelect(props: {
 }) {
   return (
     <div className="space-y-2">
-      <p className="ff-kicker text-[#d0d3d9]">{props.label}</p>
+      <p className="ff-kicker text-on-surface-variant">{props.label}</p>
       <Select value={props.value} onValueChange={props.onChange}>
         <SelectTrigger>
           <SelectValue placeholder={`Select ${props.label}`} />
@@ -400,45 +390,45 @@ export function FieldComparison(props: {
   onReset: () => void;
 }) {
   return (
-    <div className="border border-white/8 bg-white/3 p-3 text-xs text-[#d0d3d9]">
+    <div className="bg-surface-container-lowest p-3 text-xs text-on-surface-variant">
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
           <p>
-            Ingested: <span className="font-medium text-white">{props.rawLabel}</span>
+            Ingested: <span className="font-medium text-on-surface">{props.rawLabel}</span>
           </p>
           <p>
-            Effective: <span className="font-medium text-white">{props.effectiveLabel}</span>
+            Effective: <span className="font-medium text-on-surface">{props.effectiveLabel}</span>
           </p>
           {props.override ? (
-            <p className="text-[#f3db53]">
+            <p className="text-warning">
               Override active. {props.override.reason} • {formatDateTime(props.override.createdAt)}
             </p>
           ) : (
-            <p className="text-[#6ee7a8]">No active override.</p>
+            <p className="text-success">No active override.</p>
           )}
         </div>
-        <Button variant="ghost" className="h-auto px-2 py-1 text-xs text-[#d0d3d9]" onClick={props.onReset}>
+        <Button variant="ghost" className="h-auto px-2 py-1 text-xs text-on-surface-variant" onClick={props.onReset}>
           Use ingested
         </Button>
       </div>
       {props.history && props.history.length > 0 ? (
-        <div className="mt-3 border-t border-white/8 pt-3">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7f828b]">Recent field history</p>
+        <div className="mt-3 pt-3">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-on-surface-variant">Recent field history</p>
           <div className="space-y-2">
             {props.history.slice(0, 3).map((item) => (
-              <div key={item.id} className="border border-white/8 bg-black/20 px-3 py-2">
-                <p className="font-medium text-white">{item.valueLabel}</p>
-                <p className="text-[#989aa2]">
+              <div key={item.id} className="bg-surface-container-lowest px-3 py-2">
+                <p className="font-medium text-on-surface">{item.valueLabel}</p>
+                <p className="text-on-surface-variant">
                   {item.createdByDisplayName} • {formatDateTime(item.createdAt)}
                 </p>
-                <p className="text-[#d0d3d9]">{item.reason}</p>
+                <p className="text-on-surface-variant">{item.reason}</p>
                 {item.revokedAt ? (
-                  <p className="text-[#f3db53]">
+                  <p className="text-warning">
                     Revoked by {item.revokedByDisplayName ?? "Unknown admin"} on {formatDateTime(item.revokedAt)}
                     {item.revokedReason ? ` • ${item.revokedReason}` : ""}
                   </p>
                 ) : (
-                  <p className="text-[#6ee7a8]">Still active until replaced or reset.</p>
+                  <p className="text-success">Still active until replaced or reset.</p>
                 )}
               </div>
             ))}

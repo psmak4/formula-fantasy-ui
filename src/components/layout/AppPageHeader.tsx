@@ -37,7 +37,7 @@ export function AppPageHeader({
       {backHref ? (
         <Link
           to={backHref}
-          className="ff-kicker inline-flex items-center text-[#7b8592] transition-colors hover:text-[#111318]"
+          className="ff-kicker inline-flex items-center text-on-surface-variant transition-colors hover:text-on-surface"
         >
           ← {backLabel}
         </Link>
@@ -51,10 +51,10 @@ export function AppPageHeader({
       >
         <div className="space-y-3">
           <p className="ff-kicker">{eyebrow}</p>
-          <h1 className="ff-display text-5xl text-[#111318] md:text-6xl">{title}</h1>
+          <h1 className="ff-display text-5xl text-on-surface md:text-6xl">{title}</h1>
           {meta ? <div className="flex flex-wrap items-center gap-2">{meta}</div> : null}
           {description ? (
-            <p className="max-w-3xl text-base leading-7 text-[#66707d]">
+            <p className="max-w-3xl text-base leading-7 text-on-surface-variant">
               {description}
             </p>
           ) : null}
@@ -64,7 +64,7 @@ export function AppPageHeader({
       </div>
 
       {utility ? (
-        <div className="flex flex-col gap-3 border border-[#d9dee5] bg-[#ffffff] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-3 bg-surface-container-lowest px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
           {utility}
         </div>
       ) : null}
@@ -79,9 +79,9 @@ export function AppPageHeaderStat({
   valueClassName,
 }: AppPageHeaderStatProps) {
   return (
-    <div className="border border-[#d9dee5] bg-[#ffffff] px-4 py-3">
+    <div className="bg-surface-container-lowest px-4 py-3">
       <p className="ff-kicker">{label}</p>
-      <p className={cn("mt-2 text-3xl font-black text-[#111318]", accentClassName, valueClassName)}>
+      <p className={cn("mt-2 text-3xl font-black text-on-surface", accentClassName, valueClassName)}>
         {value}
       </p>
     </div>

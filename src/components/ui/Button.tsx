@@ -4,27 +4,30 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  "ff-display inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-none border border-transparent text-xs tracking-[0.16em] transition-[color,background-color,border-color,box-shadow,transform] disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f3f4f6] active:translate-y-px",
+  "font-headline inline-flex items-center justify-center gap-2 whitespace-nowrap font-extrabold uppercase tracking-[0.12em] transition-all disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface active:translate-y-px",
   {
     variants: {
       variant: {
         default:
-          "bg-[linear-gradient(180deg,#e10600_0%,#c80500_100%)] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)_inset,0_12px_24px_rgba(225,6,0,0.2)] hover:brightness-105 hover:shadow-[0_10px_22px_rgba(225,6,0,0.24)]",
+          "bg-primary text-on-primary hover:bg-primary-dim",
         destructive:
-          "bg-[linear-gradient(180deg,#e10600_0%,#c80500_100%)] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.08)_inset,0_12px_24px_rgba(225,6,0,0.2)] hover:brightness-105 hover:shadow-[0_10px_22px_rgba(225,6,0,0.24)]",
+          "bg-error text-on-error hover:bg-error-dim",
         outline:
-          "border-[#d9dee5] bg-white text-[#111318] shadow-[0_1px_0_rgba(255,255,255,0.8)_inset] hover:border-[#c8cfd8] hover:bg-[#f8f9fb] hover:shadow-[0_8px_20px_rgba(17,19,24,0.08)]",
+          "bg-surface-container-lowest text-on-surface hover:bg-surface-container-low",
         secondary:
-          "border-[#d9dee5] bg-[#f8f9fb] text-[#111318] shadow-[0_1px_0_rgba(255,255,255,0.72)_inset] hover:border-[#c8cfd8] hover:bg-[#eef1f4]",
+          "bg-surface-container-highest text-on-surface hover:bg-surface-container-high",
         ghost:
-          "border-transparent bg-transparent text-[#66707d] hover:bg-[#eef1f4] hover:text-[#111318]",
+          "bg-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface",
         link:
-          "border-transparent bg-transparent px-0 text-[#e10600] hover:text-[#111318]"
+          "bg-transparent px-0 text-primary underline-offset-4 hover:underline",
+        tertiary:
+          "bg-tertiary text-on-tertiary hover:bg-tertiary-dim",
       },
       size: {
-        default: "h-11 px-5 py-2",
-        sm: "h-9 px-3",
-        lg: "h-12 px-8",
+        default: "h-11 px-6 text-sm",
+        sm: "h-9 px-4 text-xs",
+        lg: "h-14 px-8 text-base",
+        xl: "h-16 px-10 text-lg",
         icon: "h-10 w-10 px-0"
       }
     },

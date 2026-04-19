@@ -323,7 +323,7 @@ function LeaguePageSkeleton() {
         </div>
       </div>
 
-      <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
+      <Card className="ff-table-card overflow-hidden ">
         <CardContent className="space-y-5 px-6 py-6">
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -344,7 +344,7 @@ function LeaguePageSkeleton() {
           </div>
         </CardContent>
         <CardContent className="space-y-0 px-0 py-0">
-          <div className="space-y-px bg-[#e7ebf0]">
+          <div className="space-y-px bg-surface-container-high">
             {[1, 2, 3, 4].map((value) => (
               <div
                 key={value}
@@ -588,7 +588,7 @@ export function LeaguePage() {
                 <>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={nextRaceWindow.tone}>{nextRaceWindow.badgeLabel}</Badge>
-                    <span className="text-sm text-[#989aa2]">{nextRaceWindow.timestampLabel}</span>
+                    <span className="text-sm text-on-surface-variant">{nextRaceWindow.timestampLabel}</span>
                   </div>
 
                   <div className="flex flex-wrap gap-3">
@@ -612,7 +612,7 @@ export function LeaguePage() {
                           size="lg"
                         >
                           {copyInviteLinkMutation.isPending
-                            ? "Fetching link..."
+                            ? "Fetching link…"
                             : copyState === "copied"
                               ? "Link Copied!"
                               : copyState === "error"
@@ -644,9 +644,9 @@ export function LeaguePage() {
             />
 
             {error ? (
-              <Card className="border-[#7a0d0d] bg-[#350909]">
+              <Card className="bg-error-container">
                 <CardContent className="py-4">
-                  <p className="text-[#ff8e8e]">
+                  <p className="text-on-error-container">
                     {error instanceof Error
                       ? error.message
                       : "Failed to load league"}
@@ -664,13 +664,13 @@ export function LeaguePage() {
             ) : null}
 
             {!loading && !error ? (
-              <Card className="ff-table-card overflow-hidden border-[#d9dee5]">
+              <Card className="ff-table-card overflow-hidden ">
                 <CardContent className="space-y-5 px-6 py-6">
-                  <div className="flex flex-col gap-4 border-b border-[#e4e8ee] pb-5">
+                  <div className="flex flex-col gap-4 pb-5">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="space-y-1">
-                        <CardTitle className="text-2xl text-[#111318]">Leaderboard</CardTitle>
-                        <p className="text-sm text-[#989aa2]">
+                        <CardTitle className="text-2xl text-on-surface">Leaderboard</CardTitle>
+                        <p className="text-sm text-on-surface-variant">
                           Championship standings for the full league.
                         </p>
                       </div>
@@ -688,8 +688,8 @@ export function LeaguePage() {
                       </div>
                     </div>
 
-                    <div className="text-sm leading-6 text-[#989aa2]">
-                      <span className="font-semibold text-[#111318]">
+                    <div className="text-sm leading-6 text-on-surface-variant">
+                      <span className="font-semibold text-on-surface">
                         {nextRaceWindow.headline}
                       </span>{" "}
                       {nextRaceWindow.detail}
@@ -703,10 +703,10 @@ export function LeaguePage() {
                       const movement = entry.rankDelta;
                       const movementClass =
                         movement > 0
-                          ? "text-[#6ee7a8]"
+                          ? "text-success"
                           : movement < 0
-                            ? "text-[#ff7373]"
-                            : "text-[#7f828b]";
+                            ? "text-error"
+                            : "text-on-surface-variant";
 
                       return (
                         <Link
@@ -715,19 +715,19 @@ export function LeaguePage() {
                           }
                           to={`/players/${entry.userId}`}
                           data-interactive="true"
-                          className={`ff-data-row hover:no-underline border-b border-[#e4e8ee] px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
+                          className={`ff-data-row hover:no-underline border-b  px-6 py-5 md:grid-cols-[80px_minmax(0,1fr)_120px_130px] md:items-center ${
                             entry.isCurrentUser
-                              ? "bg-[#fff0ee]"
+                              ? "bg-primary-container"
                               : "bg-transparent"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <span
-                              className={`ff-display text-4xl ${isLeader ? "text-[#e9c400]" : "text-[#7f828b]"}`}
+                              className={`ff-display text-4xl ${isLeader ? "text-tertiary" : "text-on-surface-variant"}`}
                             >
                               {String(entry.rank).padStart(2, "0")}
                             </span>
-                            <div className="h-9 w-9 shrink-0 overflow-hidden border border-[#e4e8ee] bg-[#f0f2f5]">
+                            <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full border  bg-surface-container-high">
                               {entry.avatarUrl ? (
                                 <img
                                   src={entry.avatarUrl}
@@ -735,7 +735,7 @@ export function LeaguePage() {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <span className="flex h-full w-full items-center justify-center text-xs font-black text-[#45515f]">
+                                <span className="flex h-full w-full items-center justify-center text-xs font-black text-on-surface-variant">
                                   {initialsFromName(entry.displayName)}
                                 </span>
                               )}
@@ -744,7 +744,7 @@ export function LeaguePage() {
 
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <p className="truncate text-lg font-semibold uppercase tracking-[0.06em] text-[#111318]">
+                              <p className="truncate text-lg font-semibold uppercase tracking-[0.06em] text-on-surface">
                                 {entry.displayName}
                               </p>
                               {entry.isCurrentUser ? (
@@ -754,7 +754,7 @@ export function LeaguePage() {
                                 <Badge tone="warning">Leader</Badge>
                               ) : null}
                             </div>
-                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs uppercase tracking-[0.16em] text-[#7f828b]">
+                            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs uppercase tracking-[0.16em] text-on-surface-variant">
                               <span>{entry.racesScored} rounds</span>
                               <span>Last race {entry.lastRacePoints} pts</span>
                               <span>
@@ -791,7 +791,7 @@ export function LeaguePage() {
                           </div>
 
                           <div className="text-left md:text-right">
-                            <p className="text-3xl font-black text-[#111318]">
+                            <p className="text-3xl font-black text-on-surface">
                               {entry.points}
                             </p>
                             <p className="ff-kicker mt-1">Total Pts</p>
@@ -801,7 +801,7 @@ export function LeaguePage() {
                     })}
 
                     {pagedLeaderboardRows.length === 0 ? (
-                      <div className="px-6 py-10 text-center text-sm text-[#989aa2]">
+                      <div className="px-6 py-10 text-center text-sm text-on-surface-variant">
                         No cumulative standings yet. Score a round to light up
                         the championship table.
                       </div>
@@ -809,8 +809,8 @@ export function LeaguePage() {
                   </div>
 
                   {leaderboardRows.length > LEADERBOARD_PAGE_SIZE ? (
-                    <div className="flex flex-col gap-3 border-t border-[#e4e8ee] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm text-[#989aa2]">
+                    <div className="flex flex-col gap-3 border-t  px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm text-on-surface-variant">
                         Showing {(currentPage - 1) * LEADERBOARD_PAGE_SIZE + 1}{" "}
                         to{" "}
                         {Math.min(
@@ -830,7 +830,7 @@ export function LeaguePage() {
                         >
                           Previous
                         </Button>
-                        <span className="min-w-24 text-center text-sm font-semibold text-[#45515f]">
+                        <span className="min-w-24 text-center text-sm font-semibold text-on-surface-variant">
                           Page {currentPage} / {totalPages}
                         </span>
                         <Button
@@ -871,7 +871,7 @@ export function LeaguePage() {
               onClick={() => resetInviteLinkMutation.mutate()}
               disabled={resetInviteLinkMutation.isPending}
             >
-              {resetInviteLinkMutation.isPending ? "Resetting..." : "Reset Link"}
+              {resetInviteLinkMutation.isPending ? "Resetting…" : "Reset Link"}
             </Button>
             <Button variant="outline" onClick={() => setResetConfirmOpen(false)}>
               Cancel

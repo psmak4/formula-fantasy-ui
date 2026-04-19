@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiClient, ApiError } from "@/api/apiClient";
+import { apiClient } from "@/api/apiClient";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
+import { formatAdminDateTime, getAdminPageErrorMessage, invalidateQueryKeys } from "@/lib/adminPage";
 
 type IncidentResponse = {
   providerHealth: {
@@ -40,20 +41,8 @@ type IncidentResponse = {
   }>;
 };
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
-  if (error instanceof Error) return error.message;
-  return "Unable to load incidents.";
-}
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
+const getErrorMessage = (error: unknown) => getAdminPageErrorMessage(error, "Unable to load incidents.");
+const formatDateTime = (value: string | null) => formatAdminDateTime(value);
 
 export function AdminIncidentsPage() {
   const queryClient = useQueryClient();
@@ -67,16 +56,14 @@ export function AdminIncidentsPage() {
     mutationFn: async (raceId: string) =>
       apiClient.post(`/admin/incidents/races/${raceId}/sync-weekend`),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admin-incidents"] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateQueryKeys(queryClient, [["admin-incidents"], ["admin-operations-races"]]);
     },
   });
 
   const finalizeMutation = useMutation({
     mutationFn: async (raceId: string) => apiClient.post(`/admin/incidents/races/${raceId}/finalize`),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["admin-incidents"] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateQueryKeys(queryClient, [["admin-incidents"], ["admin-operations-races"]]);
     },
   });
 
@@ -90,8 +77,7 @@ export function AdminIncidentsPage() {
       if (!variables.dryRun) {
         setReasonByRace((current) => ({ ...current, [variables.raceId]: "" }));
       }
-      await queryClient.invalidateQueries({ queryKey: ["admin-incidents"] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateQueryKeys(queryClient, [["admin-incidents"], ["admin-operations-races"]]);
     },
   });
 
@@ -103,14 +89,14 @@ export function AdminIncidentsPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-4">
           <p className="ff-kicker">Escalation Queue</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">Incidents</h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">Incidents</h2>
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Monitor ingestion and scoring failures, then run targeted sync, finalize, or rescore actions. Live rescore remains append-only and requires an audit reason.
           </p>
         </div>
 
-        <div className="border border-[#5a1010] bg-[#2a0c0c] px-5 py-4 text-sm text-[#ffb1b1] xl:max-w-sm">
-          <p className="ff-kicker text-[#ff7373]">Ops Guardrail</p>
+        <div className="bg-error-container px-5 py-4 text-sm text-on-error-container xl:max-w-sm">
+          <p className="ff-kicker text-primary">Ops Guardrail</p>
           <p className="mt-2 leading-6">
             Preview rescore before applying it live. Use live rescore only after source state and failed run context have been reviewed.
           </p>
@@ -119,49 +105,49 @@ export function AdminIncidentsPage() {
 
       {incidentsQuery.isLoading ? (
         <div className="grid gap-4 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <div className="h-40 animate-pulse border border-white/8 bg-[#15161b]" />
-          <div className="h-96 animate-pulse border border-white/8 bg-[#15161b]" />
+          <div className="h-40 rounded-lg animate-pulse bg-surface-container-low" />
+          <div className="h-96 rounded-lg animate-pulse bg-surface-container-low" />
         </div>
       ) : null}
 
       {incidentsQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(incidentsQuery.error)}
         </div>
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[340px_minmax(0,1fr)]">
-        <Card className="border-white/8 bg-[#15161b]">
+        <Card className="bg-surface-container-low">
           <CardContent className="space-y-5 px-6 py-6">
-            <p className="ff-display text-3xl text-white">Provider Health</p>
+            <p className="ff-display text-3xl text-on-surface">Provider Health</p>
             {providerHealth ? (
               <div className="space-y-4">
-                <div className="border border-white/8 bg-white/3 p-4">
+                <div className="bg-surface-container-lowest p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="ff-kicker">Jolpica</p>
                     <Badge tone={providerHealth.jolpica.ok ? "success" : "danger"}>
                       {providerHealth.jolpica.ok ? "Healthy" : "Failing"}
                     </Badge>
                   </div>
-                  <p className="mt-3 text-sm leading-6 text-[#d0d3d9]">
+                  <p className="mt-3 text-sm leading-6 text-on-surface-variant">
                     {providerHealth.jolpica.message ?? "No provider issues reported."}
                   </p>
                 </div>
 
-                <div className="border border-white/8 bg-white/3 p-4">
+                <div className="bg-surface-container-lowest p-4">
                   <p className="ff-kicker">Open incidents</p>
-                  <p className="mt-2 text-4xl font-black text-[#ff7373]">{incidents.length}</p>
+                  <p className="mt-2 text-4xl font-black text-primary">{incidents.length}</p>
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-[#989aa2]">Provider telemetry unavailable.</p>
+              <p className="text-sm text-on-surface-variant">Provider telemetry unavailable.</p>
             )}
           </CardContent>
         </Card>
 
         <div className="space-y-4">
           {incidents.map((incident) => (
-            <Card key={incident.raceId} className="border-white/8 bg-[#15161b]">
+            <Card key={incident.raceId} className="bg-surface-container-low">
               <CardContent className="space-y-5 px-6 py-6">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                   <div className="space-y-4">
@@ -180,55 +166,55 @@ export function AdminIncidentsPage() {
                     </div>
 
                     <div>
-                      <p className="ff-display text-3xl text-white">{incident.name}</p>
-                      <p className="mt-2 text-sm leading-6 text-[#989aa2]">
+                      <p className="ff-display text-3xl text-on-surface">{incident.name}</p>
+                      <p className="mt-2 text-sm leading-6 text-on-surface-variant">
                         {incident.healthSummary}
                       </p>
                     </div>
                   </div>
 
-                  <div className="border border-white/8 bg-black/20 px-4 py-4 text-sm text-[#d0d3d9]">
+                  <div className="bg-surface-container-lowest px-4 py-4 text-sm text-on-surface-variant">
                     <p className="ff-kicker">Race start</p>
-                    <p className="mt-2 font-semibold text-white">
+                    <p className="mt-2 font-semibold text-on-surface">
                       {formatDateTime(incident.raceStartAt)}
                     </p>
                   </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-4">
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Qualifying</p>
-                    <p className="mt-2 text-3xl font-black text-white">
+                    <p className="mt-2 text-3xl font-black text-on-surface">
                       {incident.counts.qualifyingResults}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Race Results</p>
-                    <p className="mt-2 text-3xl font-black text-white">
+                    <p className="mt-2 text-3xl font-black text-on-surface">
                       {incident.counts.raceResults}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Podium Rows</p>
-                    <p className="mt-2 text-3xl font-black text-white">
+                    <p className="mt-2 text-3xl font-black text-on-surface">
                       {incident.counts.podiumConfirmed}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/3 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Failed Runs</p>
-                    <p className="mt-2 text-3xl font-black text-[#ff7373]">
+                    <p className="mt-2 text-3xl font-black text-primary">
                       {incident.counts.failedLeagueScores}
                     </p>
                   </div>
                 </div>
 
                 {incident.failedRuns.length > 0 ? (
-                  <div className="border border-[#5a1010] bg-[#2a0c0c] p-4 text-sm text-[#ffb1b1]">
-                    <p className="ff-kicker text-[#ff7373]">Failed scoring runs</p>
+                  <div className="bg-error-container p-4 text-sm text-on-error-container">
+                    <p className="ff-kicker text-primary">Failed scoring runs</p>
                     <div className="mt-3 space-y-3">
                       {incident.failedRuns.map((run) => (
                         <div key={`${incident.raceId}-${run.leagueId}-${run.createdAt}`}>
-                          <p className="font-semibold text-white">
+                          <p className="font-semibold text-on-surface">
                             League {run.leagueId.slice(0, 8)}
                           </p>
                           <p className="mt-1 leading-6">
@@ -249,14 +235,14 @@ export function AdminIncidentsPage() {
                         disabled={syncMutation.isPending}
                         onClick={() => void syncMutation.mutateAsync(incident.raceId)}
                       >
-                        {syncMutation.isPending ? "Syncing..." : "Sync Weekend"}
+                        {syncMutation.isPending ? "Syncing…" : "Sync Weekend"}
                       </Button>
                       <Button
                         variant="secondary"
                         disabled={finalizeMutation.isPending}
                         onClick={() => void finalizeMutation.mutateAsync(incident.raceId)}
                       >
-                        {finalizeMutation.isPending ? "Finalizing..." : "Finalize"}
+                        {finalizeMutation.isPending ? "Finalizing…" : "Finalize"}
                       </Button>
                       <Button
                         variant="outline"
@@ -268,12 +254,12 @@ export function AdminIncidentsPage() {
                           })
                         }
                       >
-                        {rescoreMutation.isPending ? "Running..." : "Preview Rescore"}
+                        {rescoreMutation.isPending ? "Running…" : "Preview Rescore"}
                       </Button>
                     </div>
                   </div>
 
-                  <div className="space-y-3 border border-white/8 bg-black/20 p-4">
+                  <div className="space-y-3 bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Live Rescore</p>
                     <Input
                       value={reasonByRace[incident.raceId] ?? ""}
@@ -299,7 +285,7 @@ export function AdminIncidentsPage() {
                         })
                       }
                     >
-                      {rescoreMutation.isPending ? "Rescoring..." : "Apply Rescore"}
+                      {rescoreMutation.isPending ? "Rescoring…" : "Apply Rescore"}
                     </Button>
                   </div>
                 </div>
@@ -308,8 +294,8 @@ export function AdminIncidentsPage() {
           ))}
 
           {!incidentsQuery.isLoading && !incidentsQuery.isError && incidents.length === 0 ? (
-            <Card className="border-white/8 bg-[#15161b]">
-              <CardContent className="py-10 text-center text-[#989aa2]">
+            <Card className="bg-surface-container-low">
+              <CardContent className="py-10 text-center text-on-surface-variant">
                 No current incidents detected.
               </CardContent>
             </Card>
@@ -318,7 +304,7 @@ export function AdminIncidentsPage() {
       </div>
 
       {syncMutation.isError || finalizeMutation.isError || rescoreMutation.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(
             syncMutation.error ?? finalizeMutation.error ?? rescoreMutation.error,
           )}

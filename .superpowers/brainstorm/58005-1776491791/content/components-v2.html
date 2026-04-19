@@ -1,0 +1,56 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink:#0e0d0b; --ink-muted:#3f3f46; --ink-soft:#71717a;
+    --paper:#f6f3ec; --surface:#fff; --divider:#e7e7eb;
+    --ferrari:#a30a00; --ferrari-400:#ff5544; --ferrari-50:#fbf1ea;
+    --indigo:#3b2fb0; --indigo-300:#8c83ff; --indigo-50:#eeecff;
+    --signal:#15803d; --warning:#b45309;
+    --carbon:#0d0e14; --carbon-2:#1a1c25;
+  }
+  body, .cm-section, .cm-section * { font-family:'Inter',sans-serif; }
+  .display-font { font-family:'Racing Sans One',sans-serif !important; letter-spacing:0.01em; text-transform:uppercase; }
+
+  .cm-section { margin-top: 26px; }
+  .cm-section > .hdr { display:flex; align-items:baseline; gap:12px; border-bottom:1px solid var(--divider); padding-bottom:10px; margin-bottom:16px; }
+  .cm-section > .hdr h3 { font-family:'Racing Sans One',sans-serif; font-size:22px; color:var(--ferrari); margin:0; letter-spacing:0.02em; text-transform:uppercase; }
+  .cm-section > .hdr span { font-size:12px; color:var(--ink-soft); font-weight:600; letter-spacing:0.12em; text-transform:uppercase; }
+
+  .data-row { display:grid; grid-template-columns:64px 1fr 140px 100px; gap:18px; align-items:center; padding:18px 20px; background:var(--surface); border:1px solid var(--divider); border-radius:12px; cursor:pointer; }
+  .data-row + .data-row { margin-top:8px; }
+  .data-row .pos { font-family:'Racing Sans One',sans-serif; font-size:38px; color:var(--ferrari); text-transform:uppercase; letter-spacing:0.01em; line-height:1; }
+  .data-row .title { font-family:'Inter',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.02em; text-transform:uppercase; color:var(--ink); }
+  .data-row .meta { font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-top:4px; }
+  .data-row .val { font-family:'Inter',sans-serif; font-weight:800; font-size:26px; font-variant-numeric:tabular-nums; color:var(--ink); }
+  .data-row .vlabel { font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); }
+  .data-row:hover { background: #fbfaf6; }
+</style>
+
+<h2 class="display-font" style="font-size:44px; color:#0e0d0b;">Components — v2</h2>
+<p class="subtitle" style="font-size:16px; line-height:1.55; font-family:'Inter',sans-serif;">One change — data rows no longer slide/shadow on hover. They get a subtle tint only.</p>
+
+<div class="cm-section">
+  <div class="hdr"><h3>Data row (updated)</h3><span>Hover = paper-tint bg. No transform, no shadow.</span></div>
+  <div class="data-row">
+    <div class="pos">01</div>
+    <div><div class="title">Grand Prix Masters</div><div class="meta">Private · 128 members</div></div>
+    <div><div class="vlabel">Members</div><div class="val" style="margin-top:4px;">128</div></div>
+    <div><div class="vlabel">My rank</div><div class="val" style="color:var(--indigo); margin-top:4px;">#1</div></div>
+  </div>
+  <div class="data-row">
+    <div class="pos">02</div>
+    <div><div class="title">Apex Hunters</div><div class="meta">Public · 96 members</div></div>
+    <div><div class="vlabel">Members</div><div class="val" style="margin-top:4px;">96</div></div>
+    <div><div class="vlabel">My rank</div><div class="val" style="color:var(--indigo); margin-top:4px;">#3</div></div>
+  </div>
+  <div class="data-row">
+    <div class="pos">03</div>
+    <div><div class="title">Box Box Club</div><div class="meta">Public · 240 members</div></div>
+    <div><div class="vlabel">Members</div><div class="val" style="margin-top:4px;">240</div></div>
+    <div><div class="vlabel">My rank</div><div class="val" style="color:var(--indigo); margin-top:4px;">#12</div></div>
+  </div>
+  <p style="font-size:13px; color:var(--ink-soft); margin-top:14px;">Hover a row above to see: no movement, only a subtle paper tint.</p>
+</div>

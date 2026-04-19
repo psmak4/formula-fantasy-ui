@@ -102,16 +102,16 @@ function formatRank(value?: number | null): string {
 }
 
 
-function LeagueListRow({ league, index, dark = false }: { league: League; index: number; dark?: boolean }) {
+function LeagueListRow({ league, index }: { league: League; index: number }) {
   return (
     <Link
       to={`/league/${league.id}`}
       data-interactive="true"
-      className={`hover:no-underline md:grid-cols-[minmax(0,1.4fr)_130px_120px] ${dark ? "ff-dark-row" : "ff-data-row"}`}
+      className="ff-data-row hover:no-underline md:grid-cols-[minmax(0,1.4fr)_130px_120px]"
     >
       <div className="flex min-w-0 items-center gap-4">
         <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 ${
+          className={`flex h-12 w-12 shrink-0 items-center justify-center ${
             league.color ? "" : leagueIconBackgrounds[index % leagueIconBackgrounds.length]
           }`}
           style={league.color ? { backgroundColor: league.color } : undefined}
@@ -125,10 +125,10 @@ function LeagueListRow({ league, index, dark = false }: { league: League; index:
           )}
         </div>
         <div className="min-w-0">
-          <p className={`truncate text-2xl font-semibold uppercase tracking-[0.04em] ${dark ? "text-white" : "text-[#111318]"}`}>
+          <p className="truncate text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">
             {league.name}
           </p>
-          <div className={`mt-2 flex flex-wrap gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] ${dark ? "text-white/40" : "text-[#66707d]"}`}>
+          <div className="mt-2 flex flex-wrap gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
             <span>{league.visibility ?? "private"}</span>
             <span>{league.memberCount ?? 0} members</span>
           </div>
@@ -137,12 +137,12 @@ function LeagueListRow({ league, index, dark = false }: { league: League; index:
 
       <div>
         <p className="ff-kicker">Players</p>
-        <p className={`mt-2 text-3xl font-black ${dark ? "text-white" : "text-[#111318]"}`}>{league.memberCount ?? 0}</p>
+        <p className="mt-2 text-3xl font-black text-on-surface">{league.memberCount ?? 0}</p>
       </div>
 
       <div className="text-left md:text-right">
         <p className="ff-kicker">Rank</p>
-        <p className="mt-2 text-3xl font-black text-[#e9c400]">{formatRank(league.rank)}</p>
+        <p className="mt-2 text-3xl font-black text-tertiary">{formatRank(league.rank)}</p>
       </div>
     </Link>
   );
@@ -158,16 +158,16 @@ function HowToPlayCard({
   accent: ReactNode;
 }) {
   return (
-    <Card className="ff-table-card overflow-hidden border-white/8">
+    <Card className="ff-table-card overflow-hidden">
       <CardContent className="grid gap-6 px-6 py-6 md:grid-cols-[0.9fr_1.1fr] md:items-center">
         <div className="space-y-4">
           <p className="ff-kicker">How It Works</p>
-          <h3 className="text-3xl font-semibold uppercase tracking-[0.04em] text-[#111318] md:text-4xl">
+          <h3 className="text-3xl font-semibold uppercase tracking-[0.04em] text-on-surface md:text-4xl">
             {title}
           </h3>
-          <p className="max-w-xl text-sm leading-6 text-[#66707d] md:text-base">{body}</p>
+          <p className="max-w-xl text-sm leading-6 text-on-surface-variant md:text-base">{body}</p>
         </div>
-        <div className="ff-field-shell bg-[#f8f9fb]">{accent}</div>
+        <div className="ff-field-shell bg-surface-container-low">{accent}</div>
       </CardContent>
     </Card>
   );
@@ -380,13 +380,13 @@ export function HomePage() {
           </div>
         ) : error ? (
           <div className="relative z-10 flex min-h-[100svh] flex-col items-center justify-center gap-6 px-8 py-16 text-center">
-            <p className="text-[0.6rem] font-bold uppercase tracking-[0.35em] text-[#ff7373]">
+            <p className="text-[0.6rem] font-bold uppercase tracking-[0.35em] text-primary">
               Race Control
             </p>
             <h1 className="ff-display max-w-5xl text-[4rem] leading-[0.88] text-white md:text-[7rem]">
               Next race unavailable
             </h1>
-            <div className="h-[2px] w-12 bg-[#e10600]" />
+            <div className="h-[2px] w-12 bg-primary" />
             <p className="max-w-xl text-xs leading-6 text-white/50">{error}</p>
             <Button variant="secondary" onClick={() => void nextRaceQuery.refetch()}>
               Retry feed
@@ -400,7 +400,7 @@ export function HomePage() {
             <h1 className="ff-display max-w-6xl text-[5rem] leading-[0.88] text-white md:text-[9rem] lg:text-[11rem]">
               {raceName}
             </h1>
-            <div className="h-[2px] w-12 bg-[#e10600]" />
+            <div className="h-[2px] w-12 bg-primary" />
             <p className="text-[0.65rem] font-bold uppercase tracking-[0.28em] text-white/50">
               {statusText}
             </p>
@@ -417,175 +417,171 @@ export function HomePage() {
 
       {/* ── Below hero ── */}
       {session?.user && !sessionPending ? (
-        <div className="ff-dark-section">
-          <div className="ff-page">
-            <div className="ff-shell">
+        <div className="ff-page">
+          <div className="ff-shell">
 
-              {latestResult?.latestRound?.status === "scored" ? (
-                <div className="border-b border-white/6 pb-3">
-                  <div className="flex flex-wrap items-center gap-4">
-                    <span className="ff-kicker text-[#e10600]">Previous Round</span>
-                    <span className="font-semibold uppercase tracking-[0.06em] text-white">
-                      Round {latestResult.latestRound.round ?? "—"} · {latestResult.latestRound.raceName}
+            {latestResult?.latestRound?.status === "scored" ? (
+              <div className="pb-3">
+                <div className="flex flex-wrap items-center gap-4">
+                  <span className="ff-kicker text-primary">Previous Round</span>
+                  <span className="font-semibold uppercase tracking-[0.06em] text-on-surface">
+                    Round {latestResult.latestRound.round ?? "—"} · {latestResult.latestRound.raceName}
+                  </span>
+                  {typeof latestResult.latestRound.pointsTotal === "number" ? (
+                    <span className="text-sm font-black text-on-surface">
+                      {latestResult.latestRound.pointsTotal} PTS
                     </span>
-                    {typeof latestResult.latestRound.pointsTotal === "number" ? (
-                      <span className="text-sm font-black text-white">
-                        {latestResult.latestRound.pointsTotal} PTS
-                      </span>
-                    ) : null}
-                    {latestResult.leagueId && latestResult.latestRound.raceId ? (
-                      <Link
-                        to={`/league/${latestResult.leagueId}/races/${latestResult.latestRound.raceId}/review`}
-                        className="ml-auto text-sm font-semibold text-[#e10600] hover:underline"
-                      >
-                        View predictions →
-                      </Link>
-                    ) : null}
-                  </div>
+                  ) : null}
+                  {latestResult.leagueId && latestResult.latestRound.raceId ? (
+                    <Link
+                      to={`/league/${latestResult.leagueId}/races/${latestResult.latestRound.raceId}/review`}
+                      className="ml-auto text-sm font-semibold text-primary hover:underline"
+                    >
+                      View predictions →
+                    </Link>
+                  ) : null}
                 </div>
-              ) : null}
+              </div>
+            ) : null}
 
-              <section className="space-y-6">
-                {/* My Leagues */}
-                <Card className="border-white/6">
-                  <CardContent className="px-0 py-0">
-                    <div className="ff-dark-strip">
-                      <div>
-                        <p className="text-3xl font-semibold uppercase tracking-[0.04em] text-white">
-                          My Leagues
+            <section className="space-y-6">
+              {/* My Leagues */}
+              <Card>
+                <CardContent className="px-0 py-0">
+                  <div className="flex items-center justify-between gap-3 bg-surface-container-low px-5 py-3.5">
+                    <div>
+                      <p className="text-3xl font-semibold uppercase tracking-[0.04em] text-on-surface">
+                        My Leagues
+                      </p>
+                      <p className="mt-2 text-sm text-on-surface-variant">
+                        Active championships and current rank pressure.
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/leagues">Open hub</Link>
+                    </Button>
+                  </div>
+
+                  {myLeaguesQuery.isLoading ? (
+                    <div className="space-y-4 px-6 py-6">
+                      {[1, 2, 3].map((value) => (
+                        <div
+                          key={value}
+                          className="h-24 rounded-lg animate-pulse bg-surface-container-low"
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {myLeaguesQuery.error ? (
+                    <div className="px-6 py-6">
+                      <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
+                        {myLeaguesQuery.error instanceof Error
+                          ? myLeaguesQuery.error.message
+                          : "Failed to load leagues"}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {!myLeaguesQuery.isLoading && !myLeaguesQuery.error ? (
+                    leagues.length === 0 ? (
+                      <div className="px-6 py-10 text-center">
+                        <p className="text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">
+                          No Leagues Yet
                         </p>
-                        <p className="mt-2 text-sm text-white/40">
-                          Active championships and current rank pressure.
+                        <p className="mx-auto mt-3 max-w-2xl text-sm text-on-surface-variant">
+                          Start your own paddock or join with an invite to unlock predictions.
                         </p>
                       </div>
-                      <Button asChild variant="outline" size="sm">
-                        <Link to="/leagues">Open hub</Link>
-                      </Button>
-                    </div>
-
-                    {myLeaguesQuery.isLoading ? (
-                      <div className="space-y-4 px-6 py-6">
-                        {[1, 2, 3].map((value) => (
-                          <div
-                            key={value}
-                            className="h-24 animate-pulse border border-white/6 bg-white/4"
-                          />
+                    ) : (
+                      <div>
+                        {leagues.slice(0, 4).map((league, index) => (
+                          <LeagueListRow key={league.id} league={league} index={index} />
                         ))}
                       </div>
-                    ) : null}
+                    )
+                  ) : null}
+                </CardContent>
+              </Card>
 
-                    {myLeaguesQuery.error ? (
-                      <div className="px-6 py-6">
-                        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
-                          {myLeaguesQuery.error instanceof Error
-                            ? myLeaguesQuery.error.message
-                            : "Failed to load leagues"}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {!myLeaguesQuery.isLoading && !myLeaguesQuery.error ? (
-                      leagues.length === 0 ? (
-                        <div className="px-6 py-10 text-center">
-                          <p className="text-2xl font-semibold uppercase tracking-[0.04em] text-white">
-                            No Leagues Yet
-                          </p>
-                          <p className="mx-auto mt-3 max-w-2xl text-sm text-white/40">
-                            Start your own paddock or join with an invite to unlock predictions.
-                          </p>
-                        </div>
-                      ) : (
-                        <div>
-                          {leagues.slice(0, 4).map((league, index) => (
-                            <LeagueListRow key={league.id} league={league} index={index} dark />
-                          ))}
-                        </div>
-                      )
-                    ) : null}
+              {/* Quick action cards */}
+              <div className="grid gap-6 xl:grid-cols-3">
+                <Card>
+                  <CardContent className="space-y-5 px-6 py-6">
+                    <div className="space-y-3">
+                      <h2 className="text-3xl font-semibold uppercase tracking-[0.04em] text-on-surface">
+                        Invite Access
+                      </h2>
+                      <p className="text-sm leading-6 text-on-surface-variant">
+                        Paste an invite token or league link to jump straight into a grid.
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="homeInvite">League invite link or token</Label>
+                      <Input
+                        id="homeInvite"
+                        placeholder="Paste invite token or league link…"
+                        value={inviteInput}
+                        onChange={(event) => {
+                          setInviteInput(event.target.value);
+                          if (joinState !== "idle") {
+                            setJoinState("idle");
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-3">
+                      <Button
+                        className="w-full"
+                        onClick={handleJoinLeague}
+                        disabled={joinState === "joining"}
+                      >
+                        {joinState === "joining" ? "Joining…" : "Join league"}
+                      </Button>
+                      <p className="text-sm text-on-surface-variant">
+                        {joinState === "idle"
+                          ? "Drop in via invite or open an existing league directly."
+                          : joinState === "joined"
+                            ? "Redirecting…"
+                            : joinState}
+                      </p>
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Quick action cards */}
-                <div className="grid gap-6 xl:grid-cols-3">
-                  <Card className="border-white/6">
-                    <CardContent className="space-y-5 px-6 py-6">
-                      <div className="space-y-3">
-                        <h2 className="text-3xl font-semibold uppercase tracking-[0.04em] text-white">
-                          Invite Access
-                        </h2>
-                        <p className="text-sm leading-6 text-white/50">
-                          Paste an invite token or league link to jump straight into a grid.
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="homeInvite" className="text-white/60">
-                          League invite link or token
-                        </Label>
-                        <Input
-                          id="homeInvite"
-                          placeholder="Paste invite token or league link"
-                          value={inviteInput}
-                          onChange={(event) => {
-                            setInviteInput(event.target.value);
-                            if (joinState !== "idle") {
-                              setJoinState("idle");
-                            }
-                          }}
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <Button
-                          className="w-full"
-                          onClick={handleJoinLeague}
-                          disabled={joinState === "joining"}
-                        >
-                          {joinState === "joining" ? "Joining..." : "Join league"}
-                        </Button>
-                        <p className="text-sm text-white/40">
-                          {joinState === "idle"
-                            ? "Drop in via invite or open an existing league directly."
-                            : joinState === "joined"
-                              ? "Redirecting..."
-                              : joinState}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <Card>
+                  <CardContent className="space-y-5 px-6 py-6">
+                    <div className="space-y-3">
+                      <h2 className="text-3xl font-semibold uppercase tracking-[0.04em] text-on-surface">
+                        Join A League
+                      </h2>
+                      <p className="text-sm leading-6 text-on-surface-variant">
+                        Redeem an invite or browse public competitions already on the board.
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link to="/join">Browse leagues</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
 
-                  <Card className="border-white/6">
-                    <CardContent className="space-y-5 px-6 py-6">
-                      <div className="space-y-3">
-                        <h2 className="text-3xl font-semibold uppercase tracking-[0.04em] text-white">
-                          Join A League
-                        </h2>
-                        <p className="text-sm leading-6 text-white/50">
-                          Redeem an invite or browse public competitions already on the board.
-                        </p>
-                      </div>
-                      <Button asChild variant="outline" className="w-full">
-                        <Link to="/join">Browse leagues</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-white/6">
-                    <CardContent className="space-y-5 px-6 py-6">
-                      <div className="space-y-3">
-                        <h2 className="text-3xl font-semibold uppercase tracking-[0.04em] text-white">
-                          Create A League
-                        </h2>
-                        <p className="text-sm leading-6 text-white/50">
-                          Start a private grid for your group and shape the season narrative yourself.
-                        </p>
-                      </div>
-                      <Button asChild variant="outline" className="w-full">
-                        <Link to="/leagues/create">Create league</Link>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              </section>
-            </div>
+                <Card>
+                  <CardContent className="space-y-5 px-6 py-6">
+                    <div className="space-y-3">
+                      <h2 className="text-3xl font-semibold uppercase tracking-[0.04em] text-on-surface">
+                        Create A League
+                      </h2>
+                      <p className="text-sm leading-6 text-on-surface-variant">
+                        Start a private grid for your group and shape the season narrative yourself.
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" className="w-full">
+                      <Link to="/leagues/create">Create league</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </section>
           </div>
         </div>
       ) : !session?.user && !sessionPending ? (
@@ -594,7 +590,7 @@ export function HomePage() {
             <section id="how-to-play" className="space-y-6">
               <div className="space-y-3">
                 <p className="ff-kicker">How To Play</p>
-                <h2 className="ff-display text-4xl text-[#111318] md:text-5xl">
+                <h2 className="ff-display text-4xl text-on-surface md:text-5xl">
                   Predict The Weekend. Beat Your League.
                 </h2>
               </div>
@@ -606,9 +602,9 @@ export function HomePage() {
                   accent={
                     <div className="grid gap-3 sm:grid-cols-2">
                       {["P1", "P2", "P3", "Fastest Lap"].map((slot) => (
-                        <div key={slot} className="border border-[#d9dee5] bg-white p-4">
+                        <div key={slot} className="bg-surface-container-lowest p-4">
                           <p className="ff-kicker">{slot}</p>
-                          <p className="mt-2 text-xl font-black text-[#111318]">Driver Pick</p>
+                          <p className="mt-2 text-xl font-black text-on-surface">Driver Pick</p>
                         </div>
                       ))}
                     </div>
@@ -619,13 +615,13 @@ export function HomePage() {
                   body="Create a private competition for friends or jump into an invite link. Every weekend adds points to your running league table."
                   accent={
                     <div className="space-y-3">
-                      <div className="border border-[#d9dee5] bg-white p-4">
+                      <div className="bg-surface-container-lowest p-4">
                         <p className="ff-kicker">League Rank</p>
-                        <p className="mt-2 text-3xl font-black text-[#e9c400]">P4</p>
+                        <p className="mt-2 text-3xl font-black text-tertiary">P4</p>
                       </div>
-                      <div className="border border-[#d9dee5] bg-white p-4">
+                      <div className="bg-surface-container-lowest p-4">
                         <p className="ff-kicker">Weekend Score</p>
-                        <p className="mt-2 text-3xl font-black text-[#111318]">126 pts</p>
+                        <p className="mt-2 text-3xl font-black text-on-surface">126 pts</p>
                       </div>
                     </div>
                   }
@@ -635,13 +631,13 @@ export function HomePage() {
                   body="After the race, compare your picks against the actual results, see where the points came from, and track your season trend."
                   accent={
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between border border-[#d9dee5] bg-white p-4">
+                      <div className="flex items-center justify-between bg-surface-container-lowest p-4">
                         <span className="ff-kicker">Round review</span>
                         <Badge tone="success">Scored</Badge>
                       </div>
-                      <div className="border border-[#d9dee5] bg-white p-4">
+                      <div className="bg-surface-container-lowest p-4">
                         <p className="ff-kicker">Scored Round</p>
-                        <p className="mt-2 text-3xl font-black text-[#111318]">Review</p>
+                        <p className="mt-2 text-3xl font-black text-on-surface">Review</p>
                       </div>
                     </div>
                   }

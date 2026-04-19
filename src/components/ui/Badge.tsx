@@ -3,18 +3,18 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
 const badgeVariants = cva(
-  'ff-kicker inline-flex items-center rounded-none border px-2.5 py-1 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#f3f4f6]',
+  'font-headline inline-flex items-center rounded-full px-3 py-1 text-[0.65rem] font-extrabold uppercase tracking-[0.18em] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-surface',
   {
     variants: {
       variant: {
-        default: 'border-[#d9dee5] bg-white text-[#111318]',
-        secondary: 'border-[#cfd6df] bg-[#f4f6f8] text-[#2b313a]',
-        destructive: 'border-[rgba(180,35,24,0.22)] bg-[#fdeceb] text-[#9f291c]',
-        outline: 'border-[#cfd6df] bg-transparent text-[#4b5563]',
-        success: 'border-[rgba(20,128,74,0.2)] bg-[#e9f7ef] text-[#106c3f]',
-        warning: 'border-[rgba(183,121,31,0.22)] bg-[#fff4db] text-[#9b6518]',
-        info: 'border-[rgba(225,6,0,0.2)] bg-[#fff0ee] text-[#c80500]',
-        neutral: 'border-[#d7dde5] bg-[#eef1f4] text-[#45515f]'
+        default: 'bg-primary text-on-primary',
+        secondary: 'bg-surface-container-highest text-on-surface',
+        destructive: 'bg-error text-on-error',
+        outline: 'bg-surface-container-lowest text-on-surface-variant',
+        success: 'bg-[color-mix(in_srgb,var(--color-success)_14%,var(--color-surface-container-lowest))] text-success',
+        warning: 'bg-[color-mix(in_srgb,var(--color-warning)_14%,var(--color-surface-container-lowest))] text-warning',
+        info: 'bg-tertiary text-on-tertiary',
+        neutral: 'bg-surface-container-high text-on-surface-variant'
       }
     },
     defaultVariants: {

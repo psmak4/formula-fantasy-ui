@@ -1,0 +1,80 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  .sect { margin-top: 22px; }
+  .sect > h3 { font-family: 'Racing Sans One', sans-serif; font-size: 18px; letter-spacing: 0.04em; color: #a30a00; margin: 0 0 10px; }
+  .sect > .note { font-size: 14px; color: #3f3f46; margin: 0 0 14px; line-height: 1.5; font-family: 'Inter', sans-serif; }
+
+  /* Type scale — bigger + Racing Sans One */
+  .type-row { display: grid; grid-template-columns: 160px 1fr 130px; gap: 14px; align-items: baseline; padding: 16px 0; border-top: 1px solid #eceaea; }
+  .type-row .token { font-family: ui-monospace, monospace; font-size: 11px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: #71717a; }
+  .type-row .spec { font-family: ui-monospace, monospace; font-size: 11px; color: #71717a; text-align: right; line-height: 1.4; }
+
+  .ts-display-xl { font-family: 'Racing Sans One', sans-serif; font-size: 84px; line-height: 0.92; letter-spacing: 0.005em; text-transform: uppercase; color: #0e0d0b; }
+  .ts-display { font-family: 'Racing Sans One', sans-serif; font-size: 64px; line-height: 0.94; letter-spacing: 0.005em; text-transform: uppercase; color: #0e0d0b; }
+  .ts-h1 { font-family: 'Racing Sans One', sans-serif; font-size: 42px; line-height: 1.0; letter-spacing: 0.01em; color: #0e0d0b; }
+  .ts-h2 { font-family: 'Racing Sans One', sans-serif; font-size: 28px; line-height: 1.1; letter-spacing: 0.01em; color: #0e0d0b; }
+  .ts-section { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 20px; line-height: 1.2; letter-spacing: 0.02em; text-transform: uppercase; color: #0e0d0b; }
+  .ts-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 18px; letter-spacing: 0.02em; color: #0e0d0b; }
+  .ts-body { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 16px; line-height: 1.55; color: #3f3f46; }
+  .ts-body-sm { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 14px; line-height: 1.5; color: #3f3f46; }
+  .ts-label { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #52525b; }
+  .ts-num-xl { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 36px; font-variant-numeric: tabular-nums; color: #a30a00; }
+  .ts-num { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 20px; font-variant-numeric: tabular-nums; color: #0e0d0b; }
+
+  /* Sample hero showing new type in context */
+  .hero-demo { background: linear-gradient(100deg,#1a0600 0%,#0d0e14 70%); color: #f6f3ec; padding: 40px 32px; border-radius: 16px; position: relative; overflow: hidden; margin: 12px 0 4px; }
+  .hero-demo::before { content:''; position:absolute; top:0; right:-40px; bottom:0; width:55%; background: repeating-linear-gradient(115deg, rgba(163,10,0,0.14) 0 8px, transparent 8px 24px); }
+  .hero-demo .k { font-family:'Inter',sans-serif; font-weight:800; font-size:14px; letter-spacing:0.18em; text-transform:uppercase; color:#ff5544; position:relative; }
+  .hero-demo h1 { font-family:'Racing Sans One',sans-serif; font-size:86px; line-height:0.94; letter-spacing:0.005em; text-transform:uppercase; margin:10px 0 0; color:#f6f3ec; position:relative; }
+  .hero-demo .m { font-family:'Inter',sans-serif; font-size:15px; letter-spacing:0.14em; text-transform:uppercase; color:#c4c5cc; font-weight:600; margin-top:16px; position:relative; }
+
+  /* Side panel showing bigger list + numbers */
+  .list-demo { background:#fff; border:1px solid #e7e7eb; border-radius: 12px; padding: 18px 20px; margin-top:8px; }
+  .list-demo .row { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; padding: 14px 0; border-top: 1px solid #eceaea; }
+  .list-demo .row:first-of-type { border-top: 0; }
+  .list-demo .pos { font-family:'Racing Sans One',sans-serif; font-size:32px; color:#a30a00; min-width: 48px; }
+  .list-demo .name { font-family:'Inter',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.02em; text-transform:uppercase; color:#0e0d0b; }
+  .list-demo .sub { font-family:'Inter',sans-serif; font-size:13px; color:#71717a; margin-top:2px; letter-spacing:0.08em; text-transform:uppercase; }
+  .list-demo .pts { font-family:'Inter',sans-serif; font-weight:800; font-size:22px; font-variant-numeric:tabular-nums; color:#0e0d0b; }
+</style>
+
+<h2 style="font-family:'Racing Sans One',sans-serif; font-size:44px; color:#0e0d0b; letter-spacing:0.005em;">Foundations v2</h2>
+<p class="subtitle" style="font-size:16px; line-height:1.5;">Display tier now <strong>Racing Sans One</strong>. Overall scale bumped ~30% bigger across tiers. All pairs still hit WCAG AA.</p>
+
+<div class="sect">
+  <h3>Type scale</h3>
+  <p class="note">Racing Sans One is a single weight (400) display face with built-in racing slant — no italic or extra weights, so it's reserved for headlines. Body/UI uses Inter at larger sizes.</p>
+
+  <div class="type-row"><div class="token">display · xl</div><div class="ts-display-xl">Miami GP</div><div class="spec">Racing Sans One<br>84px / 0.92</div></div>
+  <div class="type-row"><div class="token">display</div><div class="ts-display">Leagues</div><div class="spec">Racing Sans One<br>64px / 0.94</div></div>
+  <div class="type-row"><div class="token">h1</div><div class="ts-h1">Leaderboard</div><div class="spec">Racing Sans One<br>42px / 1.0</div></div>
+  <div class="type-row"><div class="token">h2</div><div class="ts-h2">My Leagues</div><div class="spec">Racing Sans One<br>28px / 1.1</div></div>
+  <div class="type-row"><div class="token">section</div><div class="ts-section">Public Grids</div><div class="spec">Inter 800<br>20px UPPER</div></div>
+  <div class="type-row"><div class="token">title</div><div class="ts-title">Grand Prix Masters</div><div class="spec">Inter 700<br>18px</div></div>
+  <div class="type-row"><div class="token">body</div><div class="ts-body">Paste an invite token or league link to jump straight into a grid.</div><div class="spec">Inter 400<br>16px / 1.55</div></div>
+  <div class="type-row"><div class="token">body · sm</div><div class="ts-body-sm">Helper copy, captions, form hints.</div><div class="spec">Inter 400<br>14px / 1.5</div></div>
+  <div class="type-row"><div class="token">label</div><div class="ts-label">Members</div><div class="spec">Inter 800<br>12px UPPER</div></div>
+  <div class="type-row"><div class="token">num · xl</div><div class="ts-num-xl">1,284</div><div class="spec">Inter 800 tab<br>36px</div></div>
+  <div class="type-row"><div class="token">num</div><div class="ts-num">#1 · 128</div><div class="spec">Inter 700 tab<br>20px</div></div>
+</div>
+
+<div class="sect">
+  <h3>In context — race hero</h3>
+  <div class="hero-demo">
+    <div class="k">Round 4 · 2026 Season</div>
+    <h1>Miami<br>Grand Prix</h1>
+    <div class="m">Lights out · 02d 14h 32m</div>
+  </div>
+</div>
+
+<div class="sect">
+  <h3>In context — leaderboard list</h3>
+  <div class="list-demo">
+    <div class="row"><div class="pos">01</div><div><div class="name">Grand Prix Masters</div><div class="sub">Private · 128 members</div></div><div class="pts">1,284</div></div>
+    <div class="row"><div class="pos">02</div><div><div class="name">Apex Hunters</div><div class="sub">Public · 96 members</div></div><div class="pts">1,201</div></div>
+    <div class="row"><div class="pos">03</div><div><div class="name">Box Box Club</div><div class="sub">Public · 240 members</div></div><div class="pts">1,157</div></div>
+  </div>
+</div>

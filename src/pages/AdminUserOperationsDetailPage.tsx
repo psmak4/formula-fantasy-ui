@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { apiClient, ApiError } from "@/api/apiClient";
+import { apiClient } from "@/api/apiClient";
 import { setAuthToken } from "@/auth/tokenStore";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { formatAdminDateTime, getAdminPageErrorMessage, invalidateQueryKeys } from "@/lib/adminPage";
 
 type UserDetailResponse = {
   user: {
@@ -77,20 +78,8 @@ type UserDetailResponse = {
   }>;
 };
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
-  if (error instanceof Error) return error.message;
-  return "Unable to load user detail.";
-}
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
+const getErrorMessage = (error: unknown) => getAdminPageErrorMessage(error, "Unable to load user detail.");
+const formatDateTime = (value: string | null) => formatAdminDateTime(value);
 
 export function AdminUserOperationsDetailPage() {
   const params = useParams<{ userId: string }>();
@@ -134,8 +123,7 @@ export function AdminUserOperationsDetailPage() {
       }),
     onSuccess: async () => {
       setProfileForm((current) => ({ ...current, reason: "" }));
-      await queryClient.invalidateQueries({ queryKey: ["admin-user-detail", userId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      await invalidateQueryKeys(queryClient, [["admin-user-detail", userId], ["admin-users"]]);
     },
   });
 
@@ -147,8 +135,7 @@ export function AdminUserOperationsDetailPage() {
       }),
     onSuccess: async () => {
       setEmailReason("");
-      await queryClient.invalidateQueries({ queryKey: ["admin-user-detail", userId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      await invalidateQueryKeys(queryClient, [["admin-user-detail", userId], ["admin-users"]]);
     },
   });
 
@@ -164,8 +151,7 @@ export function AdminUserOperationsDetailPage() {
     onSuccess: async () => {
       setBanReason("");
       setBanExpiresInDays("");
-      await queryClient.invalidateQueries({ queryKey: ["admin-user-detail", userId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      await invalidateQueryKeys(queryClient, [["admin-user-detail", userId], ["admin-users"]]);
     },
   });
 
@@ -176,8 +162,7 @@ export function AdminUserOperationsDetailPage() {
       }),
     onSuccess: async () => {
       setEnforcementReason("");
-      await queryClient.invalidateQueries({ queryKey: ["admin-user-detail", userId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      await invalidateQueryKeys(queryClient, [["admin-user-detail", userId], ["admin-users"]]);
     },
   });
 
@@ -198,13 +183,13 @@ export function AdminUserOperationsDetailPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <Link to="/admin/users" className="ff-kicker text-[#ff7373] hover:text-white">
+        <Link to="/admin/users" className="ff-kicker text-primary hover:text-on-surface">
           Back To Users
         </Link>
         <div className="space-y-3">
           <p className="ff-kicker">User Detail</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">Account Operations</h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">Account Operations</h2>
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Operational view of one user across sessions, linked accounts, league memberships, and enforcement state.
           </p>
         </div>
@@ -213,20 +198,20 @@ export function AdminUserOperationsDetailPage() {
       {detailQuery.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[1, 2, 3, 4].map((value) => (
-            <div key={value} className="h-32 animate-pulse border border-white/8 bg-[#15161b]" />
+            <div key={value} className="h-32 rounded-lg animate-pulse bg-surface-container-low" />
           ))}
         </div>
       ) : null}
 
       {detailQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(detailQuery.error)}
         </div>
       ) : null}
 
       {detail ? (
         <>
-          <section className="overflow-hidden border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.18),transparent_24%),linear-gradient(135deg,#0d0e12_0%,#15171c_52%,#20232b_100%)]">
+          <section className="overflow-hidden bg-surface-container">
             <div className="grid gap-6 px-8 py-8 lg:grid-cols-[minmax(0,1.3fr)_320px]">
               <div className="space-y-5">
                 <div className="flex flex-wrap gap-2">
@@ -241,8 +226,8 @@ export function AdminUserOperationsDetailPage() {
                   </Badge>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="ff-display text-4xl text-white">{detail.user.displayName}</h3>
-                  <p className="text-sm leading-6 text-[#c2c4cb]">
+                  <h3 className="ff-display text-4xl text-on-surface">{detail.user.displayName}</h3>
+                  <p className="text-sm leading-6 text-on-surface-variant">
                     {detail.user.email} · Created {formatDateTime(detail.user.createdAt)}
                   </p>
                 </div>
@@ -254,24 +239,24 @@ export function AdminUserOperationsDetailPage() {
                 </div>
               </div>
 
-              <div className="space-y-4 border border-white/8 bg-black/20 p-5">
+              <div className="space-y-4 bg-surface-container-lowest p-5">
                 <p className="ff-kicker">Account Telemetry</p>
                 <div className="space-y-3">
-                  <div className="border border-white/8 bg-white/4 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Updated</p>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-white">
+                    <p className="mt-2 text-sm font-semibold leading-6 text-on-surface">
                       {formatDateTime(detail.user.updatedAt)}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/4 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Ban Expires</p>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-white">
+                    <p className="mt-2 text-sm font-semibold leading-6 text-on-surface">
                       {detail.user.banExpires ? formatDateTime(detail.user.banExpires) : "Never"}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/4 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Ban Reason</p>
-                    <p className="mt-2 text-sm leading-6 text-white">
+                    <p className="mt-2 text-sm leading-6 text-on-surface">
                       {detail.user.banReason ?? "None"}
                     </p>
                   </div>
@@ -280,11 +265,11 @@ export function AdminUserOperationsDetailPage() {
             </div>
           </section>
 
-          <Card className="border-[#5a1010] bg-[#2a0c0c]">
+          <Card className="bg-error-container">
             <CardContent className="space-y-5 px-6 py-6">
               <div>
-                <p className="ff-display text-3xl text-white">Enforcement</p>
-                <p className="mt-2 text-sm text-[#ffb1b1]">
+                <p className="ff-display text-3xl text-on-surface">Enforcement</p>
+                <p className="mt-2 text-sm text-on-error-container">
                   Ban, unban, and impersonation actions require reasons and should be treated as high-sensitivity operations.
                 </p>
               </div>
@@ -318,7 +303,7 @@ export function AdminUserOperationsDetailPage() {
                     }
                     onClick={() => void banUserMutation.mutateAsync()}
                   >
-                    {banUserMutation.isPending ? "Banning..." : "Ban User"}
+                    {banUserMutation.isPending ? "Banning…" : "Ban User"}
                   </Button>
                   <Button
                     variant="outline"
@@ -329,7 +314,7 @@ export function AdminUserOperationsDetailPage() {
                     }
                     onClick={() => void unbanUserMutation.mutateAsync()}
                   >
-                    {unbanUserMutation.isPending ? "Unbanning..." : "Unban User"}
+                    {unbanUserMutation.isPending ? "Unbanning…" : "Unban User"}
                   </Button>
                   <Button
                     disabled={
@@ -339,7 +324,7 @@ export function AdminUserOperationsDetailPage() {
                     }
                     onClick={() => void impersonateUserMutation.mutateAsync()}
                   >
-                    {impersonateUserMutation.isPending ? "Starting..." : "Impersonate User"}
+                    {impersonateUserMutation.isPending ? "Starting…" : "Impersonate User"}
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -352,17 +337,17 @@ export function AdminUserOperationsDetailPage() {
                 </div>
               </div>
               {banUserMutation.isError ? (
-                <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                   {getErrorMessage(banUserMutation.error)}
                 </div>
               ) : null}
               {unbanUserMutation.isError ? (
-                <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                   {getErrorMessage(unbanUserMutation.error)}
                 </div>
               ) : null}
               {impersonateUserMutation.isError ? (
-                <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                   {getErrorMessage(impersonateUserMutation.error)}
                 </div>
               ) : null}
@@ -370,11 +355,11 @@ export function AdminUserOperationsDetailPage() {
           </Card>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="bg-surface-container-low">
               <CardContent className="space-y-5 px-6 py-6">
                 <div>
-                  <p className="ff-display text-3xl text-white">Profile Corrections</p>
-                  <p className="mt-2 text-sm text-[#989aa2]">
+                  <p className="ff-display text-3xl text-on-surface">Profile Corrections</p>
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     Update display name or avatar URL with an audit reason.
                   </p>
                 </div>
@@ -419,21 +404,21 @@ export function AdminUserOperationsDetailPage() {
                   }
                   onClick={() => void updateProfileMutation.mutateAsync()}
                 >
-                  {updateProfileMutation.isPending ? "Saving..." : "Save Profile"}
+                  {updateProfileMutation.isPending ? "Saving…" : "Save Profile"}
                 </Button>
                 {updateProfileMutation.isError ? (
-                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {getErrorMessage(updateProfileMutation.error)}
                   </div>
                 ) : null}
               </CardContent>
             </Card>
 
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="bg-surface-container-low">
               <CardContent className="space-y-5 px-6 py-6">
                 <div>
-                  <p className="ff-display text-3xl text-white">Email Verification</p>
-                  <p className="mt-2 text-sm text-[#989aa2]">
+                  <p className="ff-display text-3xl text-on-surface">Email Verification</p>
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     Adjust verification state with an explicit audit reason.
                   </p>
                 </div>
@@ -472,11 +457,11 @@ export function AdminUserOperationsDetailPage() {
                   onClick={() => void updateEmailVerificationMutation.mutateAsync()}
                 >
                   {updateEmailVerificationMutation.isPending
-                    ? "Saving..."
+                    ? "Saving…"
                     : "Update Email Verification"}
                 </Button>
                 {updateEmailVerificationMutation.isError ? (
-                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {getErrorMessage(updateEmailVerificationMutation.error)}
                   </div>
                 ) : null}
@@ -484,10 +469,10 @@ export function AdminUserOperationsDetailPage() {
             </Card>
           </div>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="border-b border-white/6 px-6 py-5">
-                <p className="ff-display text-3xl text-white">Sessions</p>
+              <div className="px-6 py-5">
+                <p className="ff-display text-3xl text-on-surface">Sessions</p>
               </div>
               <div className="px-6 pb-6 pt-4">
                 <Table ariaLabel="User sessions">
@@ -513,7 +498,7 @@ export function AdminUserOperationsDetailPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-[#989aa2]">No sessions found.</TableCell>
+                        <TableCell colSpan={4} className="text-on-surface-variant">No sessions found.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -523,10 +508,10 @@ export function AdminUserOperationsDetailPage() {
           </Card>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="bg-surface-container-low">
               <CardContent className="px-0 py-0">
-                <div className="border-b border-white/6 px-6 py-5">
-                  <p className="ff-display text-3xl text-white">Linked Accounts</p>
+                <div className="px-6 py-5">
+                  <p className="ff-display text-3xl text-on-surface">Linked Accounts</p>
                 </div>
                 <div className="px-6 pb-6 pt-4">
                   <Table ariaLabel="Linked accounts">
@@ -548,7 +533,7 @@ export function AdminUserOperationsDetailPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={3} className="text-[#989aa2]">
+                          <TableCell colSpan={3} className="text-on-surface-variant">
                             No linked accounts found.
                           </TableCell>
                         </TableRow>
@@ -559,10 +544,10 @@ export function AdminUserOperationsDetailPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="bg-surface-container-low">
               <CardContent className="px-0 py-0">
-                <div className="border-b border-white/6 px-6 py-5">
-                  <p className="ff-display text-3xl text-white">League Memberships</p>
+                <div className="px-6 py-5">
+                  <p className="ff-display text-3xl text-on-surface">League Memberships</p>
                 </div>
                 <div className="px-6 pb-6 pt-4">
                   <Table ariaLabel="User leagues">
@@ -580,7 +565,7 @@ export function AdminUserOperationsDetailPage() {
                           <TableRow key={item.leagueId}>
                             <TableCell>
                               <Link
-                                className="font-semibold text-white hover:text-[#ff7373]"
+                                className="font-semibold text-on-surface hover:text-primary"
                                 to={`/admin/leagues/${item.leagueId}`}
                               >
                                 {item.leagueName}
@@ -595,7 +580,7 @@ export function AdminUserOperationsDetailPage() {
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={4} className="text-[#989aa2]">
+                          <TableCell colSpan={4} className="text-on-surface-variant">
                             No league memberships found.
                           </TableCell>
                         </TableRow>
@@ -607,10 +592,10 @@ export function AdminUserOperationsDetailPage() {
             </Card>
           </div>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="border-b border-white/6 px-6 py-5">
-                <p className="ff-display text-3xl text-white">Audit Log</p>
+              <div className="px-6 py-5">
+                <p className="ff-display text-3xl text-on-surface">Audit Log</p>
               </div>
               <div className="px-6 pb-6 pt-4">
                 <Table ariaLabel="User audit log">
@@ -634,7 +619,7 @@ export function AdminUserOperationsDetailPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-[#989aa2]">
+                        <TableCell colSpan={4} className="text-on-surface-variant">
                           No audit entries recorded for this user yet.
                         </TableCell>
                       </TableRow>
@@ -656,9 +641,9 @@ function SummaryCell(props: {
   accent?: "danger";
 }) {
   return (
-    <div className="border border-white/8 bg-black/20 px-4 py-4">
+    <div className="bg-surface-container-lowest px-4 py-4">
       <p className="ff-kicker">{props.label}</p>
-      <p className={`mt-2 text-3xl font-black ${props.accent === "danger" ? "text-[#ff7373]" : "text-white"}`}>
+      <p className={`mt-2 text-3xl font-black ${props.accent === "danger" ? "text-primary" : "text-on-surface"}`}>
         {props.value}
       </p>
     </div>

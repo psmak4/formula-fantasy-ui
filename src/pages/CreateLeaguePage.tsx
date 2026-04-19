@@ -1,13 +1,33 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
+import { Trophy, Flag, Shield, Star, Zap, Flame, Target, Crown, Rocket, Swords } from "lucide-react";
 import { apiClient } from "../api/apiClient";
 import { toastApiError } from "../lib/api-error";
+import { invalidateLeagueQueries } from "../lib/leagueJoin";
 import { AppPageHeader } from "../components/layout/AppPageHeader";
 import { Button } from "../components/ui/Button";
 import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+
+const ICON_OPTIONS = [
+  { name: "trophy", Icon: Trophy },
+  { name: "flag", Icon: Flag },
+  { name: "shield", Icon: Shield },
+  { name: "star", Icon: Star },
+  { name: "zap", Icon: Zap },
+  { name: "flame", Icon: Flame },
+  { name: "target", Icon: Target },
+  { name: "crown", Icon: Crown },
+  { name: "rocket", Icon: Rocket },
+  { name: "swords", Icon: Swords },
+] as const;
+
+const COLOR_OPTIONS = [
+  "#e91e8c", "#9c27b0", "#5c35cc", "#1565c0", "#00838f",
+  "#2e7d32", "#827717", "#e65100", "#6d4c41", "#546e7a",
+] as const;
 
 type LeagueVisibility = "private" | "public";
 
@@ -16,6 +36,8 @@ export function CreateLeaguePage() {
   const queryClient = useQueryClient();
   const [leagueName, setLeagueName] = useState("");
   const [visibility, setVisibility] = useState<LeagueVisibility>("private");
+  const [selectedIcon, setSelectedIcon] = useState<string>("trophy");
+  const [selectedColor, setSelectedColor] = useState<string>("#e65100");
   const [createState, setCreateState] = useState<
     "idle" | "creating" | "created" | string
   >("idle");
@@ -27,6 +49,8 @@ export function CreateLeaguePage() {
       const payload = {
         name: previewName,
         visibility,
+        icon: selectedIcon,
+        color: selectedColor,
       };
       return apiClient.post<{
         id?: string;
@@ -37,11 +61,8 @@ export function CreateLeaguePage() {
     onMutate: () => {
       setCreateState("creating");
     },
-    onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ["leagues-page"] });
-      queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] });
-      queryClient.invalidateQueries({ queryKey: ["public-leagues"] });
-
+    onSuccess: async (result) => {
+      await invalidateLeagueQueries(queryClient, { includePublicLeagues: true });
       const createdLeagueId = result.id ?? result.leagueId ?? result.league?.id;
       if (!createdLeagueId) {
         throw new Error("Create league succeeded but no league id returned");
@@ -76,35 +97,48 @@ export function CreateLeaguePage() {
         />
 
         <div className="space-y-6">
-          <Card className="ff-table-card border-[#d9dee5]">
+          <Card className="ff-table-card ">
             <CardContent className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
               <div className="space-y-2">
                 <p className="ff-kicker">Launch Preview</p>
-                <p className="text-sm text-[#989aa2]">
+                <p className="text-sm text-on-surface-variant">
                   {previewName} will launch as a {visibility} league with you as commissioner.
                 </p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[560px]">
-                <div className="border border-[#e1e6ec] bg-[#f8f9fb] px-4 py-4">
+                <div className="rounded-md bg-surface-container-low px-4 py-4">
                   <p className="ff-kicker">League</p>
-                  <p className="mt-2 text-base font-semibold text-[#111318]">{previewName}</p>
+                  <div className="mt-2 flex items-center gap-3">
+                    <div
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                      style={{ backgroundColor: selectedColor }}
+                    >
+                      {ICON_OPTIONS.find((opt) => opt.name === selectedIcon)?.Icon ? (
+                        (() => {
+                          const IconComp = ICON_OPTIONS.find((opt) => opt.name === selectedIcon)!.Icon;
+                          return <IconComp className="h-5 w-5 text-white" />;
+                        })()
+                      ) : null}
+                    </div>
+                    <p className="text-base font-semibold text-on-surface truncate">{previewName}</p>
+                  </div>
                 </div>
-                <div className="border border-[#e1e6ec] bg-[#f8f9fb] px-4 py-4">
+                <div className="rounded-md bg-surface-container-low px-4 py-4">
                   <p className="ff-kicker">Access</p>
-                  <p className="mt-2 text-2xl font-black text-[#e9c400]">
+                  <p className="mt-2 text-2xl font-black text-tertiary">
                     {visibility === "private" ? "Private" : "Public"}
                   </p>
                 </div>
-                <div className="border border-[#e1e6ec] bg-[#f8f9fb] px-4 py-4">
+                <div className="rounded-md bg-surface-container-low px-4 py-4">
                   <p className="ff-kicker">Commissioner</p>
-                  <p className="mt-2 text-2xl font-black text-[#111318]">You</p>
+                  <p className="mt-2 text-2xl font-black text-on-surface">You</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="ff-table-card border-[#d9dee5]">
+          <Card className="ff-table-card ">
             <CardContent className="space-y-6 px-6 py-6 md:px-7">
               <div className="ff-field-shell">
                 <Label htmlFor="leagueName">League name</Label>
@@ -114,11 +148,52 @@ export function CreateLeaguePage() {
                   maxLength={25}
                   value={leagueName}
                   onChange={(event) => setLeagueName(event.target.value)}
-                  className="h-14 text-xl text-[#111318] placeholder:text-[#7b8592] md:text-2xl"
+                  className="h-14 text-xl text-on-surface placeholder:text-on-surface-variant md:text-2xl"
                 />
-                <p className="text-sm text-[#777a84]">
+                <p className="text-sm text-on-surface-variant">
                   Max 25 characters. Keep it sharp and easy to spot in standings.
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="ff-kicker">League Icon</p>
+                <div className="flex flex-wrap gap-2">
+                  {ICON_OPTIONS.map(({ name, Icon }) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => setSelectedIcon(name)}
+                      className={`flex h-10 w-10 items-center justify-center rounded-md border-2 transition ${
+                        selectedIcon === name
+                          ? "bg-primary-container"
+                          : "bg-surface-container-lowest hover:bg-surface-container-low"
+                      }`}
+                      aria-label={name}
+                    >
+                      <Icon className="h-5 w-5 text-on-surface" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="ff-kicker">League Color</p>
+                <div className="flex flex-wrap gap-2">
+                  {COLOR_OPTIONS.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setSelectedColor(color)}
+                      style={{ backgroundColor: color }}
+                      className={`h-8 w-8 rounded-full transition ${
+                        selectedColor === color
+                          ? "ring-2 ring-on-surface ring-offset-2 ring-offset-surface"
+                          : ""
+                      }`}
+                      aria-label={color}
+                    />
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-5">
@@ -127,15 +202,15 @@ export function CreateLeaguePage() {
                   <button
                     type="button"
                     onClick={() => setVisibility("public")}
-                    className={`relative p-6 text-left transition ${
+                    className={`relative rounded-lg p-6 text-left transition ${
                       visibility === "public"
-                        ? "border border-[rgba(225,6,0,0.22)] bg-[#fff0ee] text-[#111318] shadow-[0_0_0_1px_rgba(225,6,0,0.08)]"
-                        : "border border-[#e1e6ec] bg-[#f8f9fb] text-[#45515f] hover:bg-[#eef1f4]"
+                        ? "bg-primary-container text-on-primary-container"
+                        : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high"
                     }`}
                   >
-                    <span className="ff-kicker text-[#c80500]">Public</span>
-                    <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">Open</p>
-                    <p className="mt-4 text-sm leading-6 text-[#9699a2]">
+                    <span className="ff-kicker text-primary">Public</span>
+                    <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">Open</p>
+                    <p className="mt-4 text-sm leading-6 text-on-surface-variant">
                       Anyone can find and join your league from the public list.
                     </p>
                   </button>
@@ -143,15 +218,15 @@ export function CreateLeaguePage() {
                   <button
                     type="button"
                     onClick={() => setVisibility("private")}
-                    className={`relative p-6 text-left transition ${
+                    className={`relative rounded-lg p-6 text-left transition ${
                       visibility === "private"
-                        ? "border border-[rgba(225,6,0,0.22)] bg-[#fff0ee] text-[#111318] shadow-[0_0_0_1px_rgba(225,6,0,0.08)]"
-                        : "border border-[#e1e6ec] bg-[#f8f9fb] text-[#45515f] hover:bg-[#eef1f4]"
+                        ? "bg-primary-container text-on-primary-container"
+                        : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high"
                     }`}
                   >
-                    <span className="ff-kicker text-[#c80500]">Private</span>
-                    <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.04em] text-[#111318]">Invite only</p>
-                    <p className="mt-4 text-sm leading-6 text-[#9699a2]">
+                    <span className="ff-kicker text-primary">Private</span>
+                    <p className="mt-4 text-2xl font-semibold uppercase tracking-[0.04em] text-on-surface">Invite only</p>
+                    <p className="mt-4 text-sm leading-6 text-on-surface-variant">
                       Players join with an invite link that you share after creation.
                     </p>
                   </button>
@@ -162,7 +237,7 @@ export function CreateLeaguePage() {
                 <p className="ff-kicker">
                   {visibility === "private" ? "Private league" : "Public league"}
                 </p>
-                <p className="text-sm leading-6 text-[#a3a6af]">
+                <p className="text-sm leading-6 text-on-surface-variant">
                   {visibility === "private"
                     ? "Private leagues are best for friend groups, office pools, or invite-only rivalries."
                     : "Public leagues are discoverable in the Join League page and can grow without manual invites."}
@@ -176,7 +251,7 @@ export function CreateLeaguePage() {
                   onClick={handleCreateLeague}
                   disabled={createState === "creating"}
                 >
-                  {createState === "creating" ? "Creating..." : "Create League"}
+                  {createState === "creating" ? "Creating…" : "Create League"}
                 </Button>
                 <Button asChild variant="outline" size="lg">
                   <Link to="/leagues">Cancel</Link>
@@ -185,7 +260,7 @@ export function CreateLeaguePage() {
               {createState !== "idle" &&
               createState !== "creating" &&
               createState !== "created" ? (
-                <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                <p className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                   {createState}
                 </p>
               ) : null}

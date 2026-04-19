@@ -1,0 +1,325 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink:#0e0d0b; --ink-muted:#3f3f46; --ink-soft:#71717a;
+    --paper:#f6f3ec; --surface:#fff; --divider:#e7e7eb;
+    --ferrari:#a30a00; --ferrari-400:#ff5544; --ferrari-50:#fbf1ea;
+    --indigo:#3b2fb0; --indigo-50:#eeecff;
+    --signal:#15803d; --warning:#b45309; --carbon:#0d0e14;
+  }
+  body { background:#d9d6ce; }
+  .pg *, .pg *:hover { transition:none !important; transform:none !important; }
+  .pg { background:var(--paper); max-width:1200px; margin:0 auto 50px; padding:20px 28px 48px; font-family:'Inter',sans-serif; color:var(--ink); border-radius:12px; }
+  .pg.narrow { max-width:960px; }
+  .pg-tag { font-family:'Racing Sans One',sans-serif; font-size:14px; letter-spacing:0.04em; text-transform:uppercase; color:#fff; background:var(--ferrari); padding:6px 14px; border-radius:6px; display:inline-block; }
+  .pg-label { text-align:center; margin-bottom:14px; }
+
+  .btn { font-family:'Inter',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 22px 14px 25px; border-radius:8px; border:0; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+  .btn-lg { font-size:16px; padding:16px 26px 16px 29px; width: 100%; justify-content:center; }
+  .btn-sm { font-size:13px; padding:10px 16px 10px 18px; }
+  .btn-primary { background:var(--ink); color:var(--paper); }
+  .btn-accent { background:var(--ferrari); color:#fff; }
+  .btn-outline { background:transparent; color:var(--ink); box-shadow:inset 0 0 0 2px var(--ink); }
+
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; background:var(--paper); box-shadow:inset 0 -3px 0 var(--ink); margin-bottom:28px; }
+  .nav .brand { font-family:'Racing Sans One',sans-serif; font-size:26px; color:var(--ink); letter-spacing:0.02em; text-transform:uppercase; }
+  .nav .links { display:flex; gap:4px; }
+  .nav .link { font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-muted); padding:10px 14px; border-radius:6px; padding-left:calc(14px + 0.14em); }
+  .nav .link.active { color:var(--ink); box-shadow:0 2px 0 var(--ferrari); }
+  .nav .avatar { width:40px; height:40px; border-radius:8px; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; padding-left:0.04em; }
+
+  .phead { display:flex; justify-content:space-between; align-items:flex-end; gap:32px; padding:12px 0 28px; border-bottom:1px solid var(--divider); margin-bottom:32px; }
+  .phead .kicker { font-size:12px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--ferrari); padding-left:0.18em; margin-top:8px; }
+  .phead h1 { font-family:'Racing Sans One',sans-serif; font-size:72px; line-height:0.94; letter-spacing:0.005em; text-transform:uppercase; margin:8px 0 0; }
+  .phead .tagline { font-size:16px; color:var(--ink-muted); margin-top:12px; max-width:560px; line-height:1.5; }
+
+  .kpi-strip { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .kpi { background:var(--surface); border:1px solid var(--divider); border-radius:12px; padding:20px; }
+  .kpi .k { font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em; }
+  .kpi .v { font-family:'Racing Sans One',sans-serif; font-size:46px; color:var(--ink); line-height:1; margin-top:10px; }
+  .kpi .v.red { color:var(--ferrari); }
+  .kpi .v.indigo { color:var(--indigo); }
+  .kpi .sub { font-size:12px; color:var(--ink-soft); margin-top:8px; letter-spacing:0.08em; text-transform:uppercase; font-weight:700; padding-left:0.08em; }
+  .kpi .sub.up { color:var(--signal); }
+  .kpi .sub.dn { color:var(--ferrari); }
+
+  /* Race recap timeline */
+  .sect { margin-top:36px; }
+  .sect-hd { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px; gap:16px; }
+  .sect-hd h2 { font-family:'Racing Sans One',sans-serif; font-size:36px; color:var(--ink); letter-spacing:0.005em; text-transform:uppercase; margin:0; line-height:1; }
+  .sect-hd .sub { font-size:14px; color:var(--ink-muted); margin-top:6px; line-height:1.5; }
+
+  .recap { background:var(--surface); border:1px solid var(--divider); border-radius:12px; padding:6px 0; }
+  .recap-row { display:grid; grid-template-columns:80px 1fr 90px 90px 90px; gap:16px; align-items:center; padding:18px 22px; border-top:1px solid var(--divider); }
+  .recap-row:first-child { border-top:0; }
+  .recap-row .rnd { font-family:'Racing Sans One',sans-serif; font-size:24px; color:var(--ferrari); line-height:1; }
+  .recap-row .loc { font-weight:700; font-size:17px; letter-spacing:0.02em; text-transform:uppercase; padding-left:0.02em; }
+  .recap-row .date { font-size:12px; color:var(--ink-soft); letter-spacing:0.1em; text-transform:uppercase; font-weight:700; margin-top:3px; padding-left:0.1em; }
+  .recap-row .label { font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em; }
+  .recap-row .num { font-weight:800; font-size:20px; font-variant-numeric:tabular-nums; margin-top:4px; }
+  .recap-row .num.red { color:var(--ferrari); }
+  .recap-row .num.indigo { color:var(--indigo); }
+  .recap-row .num.signal { color:var(--signal); }
+  .recap-row.upcoming { opacity:0.5; }
+
+  /* Chart placeholder */
+  .chart { background:var(--surface); border:1px solid var(--divider); border-radius:12px; padding:22px; height:220px; display:flex; flex-direction:column; }
+  .chart .hd { display:flex; justify-content:space-between; align-items:baseline; }
+  .chart-body { flex:1; display:flex; align-items:flex-end; gap:4px; margin-top:20px; }
+  .bar { flex:1; background:var(--ferrari); border-radius:3px 3px 0 0; position:relative; min-height:4px; }
+  .bar.indigo { background:var(--indigo); }
+  .bar.soft { background:var(--divider); }
+
+  /* AUTH page */
+  .auth { display:grid; grid-template-columns:1fr 1.1fr; min-height: 560px; border-radius:16px; overflow:hidden; border:1px solid var(--divider); background: var(--surface); }
+  .auth-left { background:linear-gradient(140deg,#1a0600 0%,#0d0e14 70%); color:var(--paper); padding:56px 48px; position:relative; overflow:hidden; }
+  .auth-left::before { content:''; position:absolute; inset:0; background:repeating-linear-gradient(115deg, rgba(163,10,0,0.18) 0 8px, transparent 8px 26px); -webkit-mask-image:linear-gradient(100deg, transparent 0%, transparent 35%, rgba(0,0,0,0.4) 55%, black 100%); mask-image:linear-gradient(100deg, transparent 0%, transparent 35%, rgba(0,0,0,0.4) 55%, black 100%); pointer-events:none; }
+  .auth-left .brand { font-family:'Racing Sans One',sans-serif; font-size:32px; letter-spacing:0.02em; text-transform:uppercase; position:relative; }
+  .auth-left h1 { font-family:'Racing Sans One',sans-serif; font-size:68px; line-height:0.94; letter-spacing:0.005em; text-transform:uppercase; margin:64px 0 18px; position:relative; }
+  .auth-left p { font-size:16px; line-height:1.55; color:#c4c5cc; max-width:420px; margin:0; position:relative; }
+  .auth-left .marks { display:flex; gap:20px; margin-top:36px; position:relative; }
+  .auth-left .marks .m { font-family:'Racing Sans One',sans-serif; font-size:42px; line-height:1; color:var(--ferrari-400); }
+  .auth-left .marks .m + div { font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#c4c5cc; font-weight:800; padding-left:0.14em; margin-top:6px; line-height:1.4; max-width:110px; }
+  .auth-right { padding:56px 48px; display:flex; flex-direction:column; justify-content:center; max-width: 480px; }
+  .auth-right .kicker { font-size:12px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--ferrari); padding-left:0.18em; }
+  .auth-right h2 { font-family:'Racing Sans One',sans-serif; font-size:48px; line-height:1; letter-spacing:0.005em; text-transform:uppercase; margin:10px 0 28px; }
+
+  .field { margin-bottom:18px; }
+  .field label { display:block; font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:8px; padding-left:0.14em; }
+  .field .input { width:100%; font-family:'Inter',sans-serif; font-size:16px; color:var(--ink); padding:14px 16px; background:var(--paper); border:2px solid var(--divider); border-radius:8px; outline:none; box-sizing:border-box; }
+  .field .input:focus { border-color:var(--ink); background:#fff; }
+  .hintrow { display:flex; justify-content:space-between; align-items:center; font-size:13px; margin:-4px 0 18px; }
+  .hintrow a { color:var(--ferrari); font-weight:700; }
+  .divider-x { text-align:center; font-size:11px; font-weight:800; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-soft); margin:22px 0; position:relative; padding-left:0.18em; }
+  .divider-x::before, .divider-x::after { content:''; position:absolute; top:50%; width:45%; height:1px; background:var(--divider); }
+  .divider-x::before { left:0; } .divider-x::after { right:0; }
+  .social { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+  .social .btn-s { background:var(--surface); border:2px solid var(--divider); color:var(--ink); font-weight:700; font-size:14px; letter-spacing:0.08em; text-transform:uppercase; padding:13px 14px 13px 16px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+  .footnote { font-size:13px; color:var(--ink-muted); margin-top:24px; text-align:center; }
+  .footnote a { color:var(--ferrari); font-weight:700; }
+
+  /* JOIN page */
+  .join-shell { display:grid; grid-template-columns:1fr; gap:24px; margin-top:24px; }
+  .join-invite { background:var(--ink); color:var(--paper); padding:32px; border-radius:12px; display:grid; grid-template-columns:1fr auto; gap:22px; align-items:center; }
+  .join-invite .k { font-family:'Racing Sans One',sans-serif; font-size:28px; color:var(--ferrari-400); letter-spacing:0.01em; text-transform:uppercase; }
+  .join-invite .sub { font-size:14px; color:#c4c5cc; margin-top:6px; line-height:1.5; max-width:480px; }
+  .join-invite input { background:transparent; border:0; border-bottom:2px solid #c4c5cc; color:var(--paper); font-size:16px; padding:12px 0; outline:none; width:100%; margin-top:14px; font-family:'Inter',sans-serif; }
+</style>
+
+<h2 style="font-family:'Racing Sans One',sans-serif; font-size:40px; color:#0e0d0b; letter-spacing:0.005em; text-transform:uppercase;">Final pages</h2>
+<p class="subtitle" style="font-size:15px; line-height:1.55; margin:8px 0 24px;">My Results, Sign-in, and Join — closing out the page mockups.</p>
+
+<!-- MY RESULTS -->
+<div class="pg-label"><div class="pg-tag">My Results</div></div>
+<div class="pg">
+  <div class="nav">
+    <div class="brand">Formula Fantasy</div>
+    <div class="links">
+      <div class="link">Home</div>
+      <div class="link">Leagues</div>
+      <div class="link active">My Results</div>
+      <div class="link">Calendar</div>
+    </div>
+    <div class="avatar">TD</div>
+  </div>
+
+  <div class="phead">
+    <div>
+      <div class="kicker">Season 2026 · 4 rounds raced</div>
+      <h1>My Results</h1>
+      <div class="tagline">Points, podium hits, and prediction accuracy across every grand prix and every league you are racing in.</div>
+    </div>
+    <button class="btn btn-outline btn-sm">Season: 2026 ▾</button>
+  </div>
+
+  <div class="kpi-strip">
+    <div class="kpi"><div class="k">Total points</div><div class="v red">1,284</div><div class="sub up">+84 vs last race</div></div>
+    <div class="kpi"><div class="k">Best finish</div><div class="v">#1</div><div class="sub">in 3 of 4 leagues</div></div>
+    <div class="kpi"><div class="k">Podium hits</div><div class="v indigo">18<span style="font-size:26px; color:var(--ink-soft);">/24</span></div><div class="sub">75% accuracy</div></div>
+    <div class="kpi"><div class="k">Pole picks</div><div class="v">3<span style="font-size:26px; color:var(--ink-soft);">/4</span></div><div class="sub up">streak · 2</div></div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>Points per round</h2>
+        <div class="sub">Your results each race, weighted by league.</div>
+      </div>
+    </div>
+    <div class="chart">
+      <div class="hd"><div style="font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em;">Points</div><div style="font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); padding-left:0.14em;">2026 season</div></div>
+      <div class="chart-body">
+        <div class="bar" style="height:58%;"></div>
+        <div class="bar indigo" style="height:72%;"></div>
+        <div class="bar" style="height:44%;"></div>
+        <div class="bar indigo" style="height:86%;"></div>
+        <div class="bar soft" style="height:30%;"></div>
+        <div class="bar soft" style="height:30%;"></div>
+        <div class="bar soft" style="height:30%;"></div>
+        <div class="bar soft" style="height:30%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>Season timeline</h2>
+        <div class="sub">Race-by-race breakdown.</div>
+      </div>
+    </div>
+    <div class="recap">
+      <div class="recap-row">
+        <div class="rnd">R01</div>
+        <div><div class="loc">Bahrain Grand Prix</div><div class="date">Mar 14 · Podium 1-3 VER LEC RUS</div></div>
+        <div><div class="label">Picks</div><div class="num signal">+62</div></div>
+        <div><div class="label">Δ Rank</div><div class="num indigo">#4</div></div>
+        <div><div class="label">Hits</div><div class="num">4/6</div></div>
+      </div>
+      <div class="recap-row">
+        <div class="rnd">R02</div>
+        <div><div class="loc">Saudi Arabian GP</div><div class="date">Mar 21 · Podium 1-3 VER HAM NOR</div></div>
+        <div><div class="label">Picks</div><div class="num signal">+78</div></div>
+        <div><div class="label">Δ Rank</div><div class="num indigo">#2</div></div>
+        <div><div class="label">Hits</div><div class="num">5/6</div></div>
+      </div>
+      <div class="recap-row">
+        <div class="rnd">R03</div>
+        <div><div class="loc">Australian GP</div><div class="date">Apr 04 · Podium 1-3 NOR VER RUS</div></div>
+        <div><div class="label">Picks</div><div class="num signal">+60</div></div>
+        <div><div class="label">Δ Rank</div><div class="num indigo">#1</div></div>
+        <div><div class="label">Hits</div><div class="num">3/6</div></div>
+      </div>
+      <div class="recap-row">
+        <div class="rnd">R04</div>
+        <div><div class="loc">Miami Grand Prix</div><div class="date">Upcoming · Sun Apr 25 · Picks due 22h</div></div>
+        <div><div class="label">Picks</div><div class="num red">Locked</div></div>
+        <div><div class="label">Δ Rank</div><div class="num indigo">#1</div></div>
+        <div><div class="label">Hits</div><div class="num">—</div></div>
+      </div>
+      <div class="recap-row upcoming">
+        <div class="rnd">R05</div>
+        <div><div class="loc">Emilia Romagna GP</div><div class="date">May 09 · Imola</div></div>
+        <div><div class="label">Picks</div><div class="num">—</div></div>
+        <div><div class="label">Δ Rank</div><div class="num">—</div></div>
+        <div><div class="label">Hits</div><div class="num">—</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- AUTH -->
+<div class="pg-label"><div class="pg-tag">Sign in</div></div>
+<div class="pg narrow" style="padding: 32px;">
+  <div class="auth">
+    <div class="auth-left">
+      <div class="brand">Formula Fantasy</div>
+      <h1>Pick the grid.<br>Win the race.</h1>
+      <p>A season-long fantasy F1 game built for friends and rivals. Set a podium, stack points, talk trash. No guesswork — only strategy.</p>
+      <div class="marks">
+        <div><div class="m">24</div><div>Rounds per season</div></div>
+        <div><div class="m">128</div><div>Racers per league</div></div>
+        <div><div class="m">6</div><div>Pick types</div></div>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="kicker">Welcome back</div>
+      <h2>Sign in</h2>
+      <div class="social">
+        <button class="btn-s">Google</button>
+        <button class="btn-s">GitHub</button>
+      </div>
+      <div class="divider-x">or continue with email</div>
+      <div class="field">
+        <label>Email</label>
+        <input class="input" value="test@formulafantasy.dev">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input class="input" type="password" value="password">
+      </div>
+      <div class="hintrow">
+        <label style="color:var(--ink-muted); font-size:13px; display:flex; align-items:center; gap:8px;"><input type="checkbox" checked style="accent-color:var(--ink);"> Remember me</label>
+        <a href="#">Forgot password?</a>
+      </div>
+      <button class="btn btn-accent btn-lg">Sign in →</button>
+      <div class="footnote">New here? <a href="#">Create an account</a></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- JOIN -->
+<div class="pg-label"><div class="pg-tag">Join league</div></div>
+<div class="pg">
+  <div class="nav">
+    <div class="brand">Formula Fantasy</div>
+    <div class="links">
+      <div class="link">Home</div>
+      <div class="link active">Leagues</div>
+      <div class="link">My Results</div>
+      <div class="link">Calendar</div>
+    </div>
+    <div class="avatar">TD</div>
+  </div>
+
+  <div class="phead">
+    <div>
+      <div class="kicker">League access</div>
+      <h1>Join a League</h1>
+      <div class="tagline">Drop in with a private invite token, paste a league link, or browse the public grids already racing.</div>
+    </div>
+  </div>
+
+  <div class="join-shell">
+    <div class="join-invite">
+      <div>
+        <div class="k">Got an invite?</div>
+        <div class="sub">Paste the token a friend sent you, or drop in the full invite URL. We'll find the right grid automatically.</div>
+        <input placeholder="ff-a9c24e-…  or  formula-fantasy.com/invite/…">
+      </div>
+      <button class="btn btn-accent">Join now</button>
+    </div>
+
+    <div class="sect" style="margin-top:8px;">
+      <div class="sect-hd">
+        <div>
+          <h2>Public grids</h2>
+          <div class="sub">Open leagues anyone can join this season.</div>
+        </div>
+        <button class="btn btn-sm btn-outline">Filter</button>
+      </div>
+
+      <div style="background:var(--surface); border:1px solid var(--divider); border-radius:12px; padding:6px 0;">
+        <div style="display:grid; grid-template-columns:60px 1fr 110px 100px 120px; gap:16px; padding:12px 20px; font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); border-bottom:1px solid var(--divider); padding-left:calc(20px + 0.14em);">
+          <div>#</div><div>League</div><div>Members</div><div>Started</div><div></div>
+        </div>
+        <div style="display:grid; grid-template-columns:60px 1fr 110px 100px 120px; gap:16px; align-items:center; padding:16px 20px; border-top:1px solid var(--divider);">
+          <div style="font-family:'Racing Sans One',sans-serif; font-size:24px; color:var(--ferrari); line-height:1;">01</div>
+          <div><div style="font-weight:700; font-size:17px; letter-spacing:0.02em; text-transform:uppercase; padding-left:0.02em;">Only The Best Play Here</div><div style="font-size:12px; color:var(--ink-soft); margin-top:4px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; padding-left:0.1em;">Public · No buy-in</div></div>
+          <div style="font-weight:800; font-size:18px; font-variant-numeric:tabular-nums;">240</div>
+          <div style="font-size:13px; color:var(--ink-muted); letter-spacing:0.08em; text-transform:uppercase; font-weight:700; padding-left:0.08em;">Rd 1</div>
+          <div><button class="btn btn-sm btn-accent" style="width:100%;">Join</button></div>
+        </div>
+        <div style="display:grid; grid-template-columns:60px 1fr 110px 100px 120px; gap:16px; align-items:center; padding:16px 20px; border-top:1px solid var(--divider);">
+          <div style="font-family:'Racing Sans One',sans-serif; font-size:24px; color:var(--ferrari); line-height:1;">02</div>
+          <div><div style="font-weight:700; font-size:17px; letter-spacing:0.02em; text-transform:uppercase; padding-left:0.02em;">Full Throttle Fantasy</div><div style="font-size:12px; color:var(--ink-soft); margin-top:4px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; padding-left:0.1em;">Public · Free to join</div></div>
+          <div style="font-weight:800; font-size:18px; font-variant-numeric:tabular-nums;">186</div>
+          <div style="font-size:13px; color:var(--ink-muted); letter-spacing:0.08em; text-transform:uppercase; font-weight:700; padding-left:0.08em;">Rd 2</div>
+          <div><button class="btn btn-sm btn-accent" style="width:100%;">Join</button></div>
+        </div>
+        <div style="display:grid; grid-template-columns:60px 1fr 110px 100px 120px; gap:16px; align-items:center; padding:16px 20px; border-top:1px solid var(--divider);">
+          <div style="font-family:'Racing Sans One',sans-serif; font-size:24px; color:var(--ferrari); line-height:1;">03</div>
+          <div><div style="font-weight:700; font-size:17px; letter-spacing:0.02em; text-transform:uppercase; padding-left:0.02em;">Podium Picks Community</div><div style="font-size:12px; color:var(--ink-soft); margin-top:4px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; padding-left:0.1em;">Public · Joined</div></div>
+          <div style="font-weight:800; font-size:18px; font-variant-numeric:tabular-nums;">412</div>
+          <div style="font-size:13px; color:var(--ink-muted); letter-spacing:0.08em; text-transform:uppercase; font-weight:700; padding-left:0.08em;">Rd 4</div>
+          <div><button class="btn btn-sm btn-outline" style="width:100%;">View</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

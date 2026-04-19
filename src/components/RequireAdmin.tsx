@@ -38,7 +38,7 @@ export function RequireAdmin({ children }: RequireAdminProps) {
         aria-live="polite"
         aria-busy="true"
       >
-        <p className="text-sm text-[#989aa2]">Checking admin access…</p>
+        <p className="text-sm text-on-surface-variant">Checking admin access…</p>
       </div>
     );
   }

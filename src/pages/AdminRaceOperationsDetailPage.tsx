@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/Table";
+import { invalidateQueryKeys } from "@/lib/adminPage";
 import {
   buildCorrectionPayload,
   DetailResponse,
@@ -79,6 +80,11 @@ export function AdminRaceOperationsDetailPage() {
     reason: "",
   });
   const [raceResultCreatePreview, setRaceResultCreatePreview] = useState<SourceRepairPreviewResponse["preview"] | undefined>(undefined);
+  const invalidateAdminRaceQueries = async () =>
+    invalidateQueryKeys(queryClient, [["admin-operations-race-detail", raceId], ["admin-operations-races"]]);
+  const toNullableNumber = (value: string) => (value.trim().length > 0 ? Number(value) : null);
+  const toNullableBoolean = (value: "true" | "false" | "unknown") =>
+    (value === "unknown" ? null : value === "true");
 
   const previewMutation = useMutation({
     mutationFn: async (payload: ReturnType<typeof buildCorrectionPayload>) =>
@@ -96,8 +102,7 @@ export function AdminRaceOperationsDetailPage() {
       ),
     onSuccess: async () => {
       setReason("");
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const qualifyingRepairMutation = useMutation({
@@ -111,14 +116,13 @@ export function AdminRaceOperationsDetailPage() {
         `/admin/operations/races/${raceId}/source-repairs/qualifying/${payload.resultId}`,
         {
           seasonEntryId: Number(payload.seasonEntryId),
-          gridPosition: payload.gridPosition.trim().length > 0 ? Number(payload.gridPosition) : null,
+          gridPosition: toNullableNumber(payload.gridPosition),
           reason: payload.reason.trim(),
         }
       ),
     onSuccess: async () => {
       setQualifyingPreviews({});
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const qualifyingPreviewMutation = useMutation({
@@ -132,7 +136,7 @@ export function AdminRaceOperationsDetailPage() {
         `/admin/operations/races/${raceId}/source-repairs/qualifying/${payload.resultId}/preview`,
         {
           seasonEntryId: Number(payload.seasonEntryId),
-          gridPosition: payload.gridPosition.trim().length > 0 ? Number(payload.gridPosition) : null,
+          gridPosition: toNullableNumber(payload.gridPosition),
           reason: payload.reason.trim(),
         }
       ),
@@ -141,21 +145,20 @@ export function AdminRaceOperationsDetailPage() {
     mutationFn: async (payload: { seasonEntryId: string; gridPosition: string; reason: string }) =>
       apiClient.post(`/admin/operations/races/${raceId}/source-repairs/qualifying/create`, {
         seasonEntryId: Number(payload.seasonEntryId),
-        gridPosition: payload.gridPosition.trim().length > 0 ? Number(payload.gridPosition) : null,
+        gridPosition: toNullableNumber(payload.gridPosition),
         reason: payload.reason.trim(),
       }),
     onSuccess: async () => {
       setQualifyingCreatePreview(undefined);
       setQualifyingDeletePreviews({});
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const qualifyingCreatePreviewMutation = useMutation({
     mutationFn: async (payload: { seasonEntryId: string; gridPosition: string; reason: string }) =>
       apiClient.post<SourceRepairPreviewResponse>(`/admin/operations/races/${raceId}/source-repairs/qualifying/create/preview`, {
         seasonEntryId: Number(payload.seasonEntryId),
-        gridPosition: payload.gridPosition.trim().length > 0 ? Number(payload.gridPosition) : null,
+        gridPosition: toNullableNumber(payload.gridPosition),
         reason: payload.reason.trim(),
       }),
   });
@@ -167,8 +170,7 @@ export function AdminRaceOperationsDetailPage() {
     onSuccess: async () => {
       setQualifyingPreviews({});
       setQualifyingDeletePreviews({});
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const qualifyingDeletePreviewMutation = useMutation({
@@ -191,17 +193,15 @@ export function AdminRaceOperationsDetailPage() {
         `/admin/operations/races/${raceId}/source-repairs/race-results/${payload.resultId}`,
         {
           seasonEntryId: Number(payload.seasonEntryId),
-          finishPosition: payload.finishPosition.trim().length > 0 ? Number(payload.finishPosition) : null,
-          classifiedPosition: payload.classifiedPosition.trim().length > 0 ? Number(payload.classifiedPosition) : null,
-          isFastestLap:
-            payload.isFastestLap === "unknown" ? null : payload.isFastestLap === "true",
+          finishPosition: toNullableNumber(payload.finishPosition),
+          classifiedPosition: toNullableNumber(payload.classifiedPosition),
+          isFastestLap: toNullableBoolean(payload.isFastestLap),
           reason: payload.reason.trim(),
         }
       ),
     onSuccess: async () => {
       setRaceResultPreviews({});
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const raceResultPreviewMutation = useMutation({
@@ -217,10 +217,9 @@ export function AdminRaceOperationsDetailPage() {
         `/admin/operations/races/${raceId}/source-repairs/race-results/${payload.resultId}/preview`,
         {
           seasonEntryId: Number(payload.seasonEntryId),
-          finishPosition: payload.finishPosition.trim().length > 0 ? Number(payload.finishPosition) : null,
-          classifiedPosition: payload.classifiedPosition.trim().length > 0 ? Number(payload.classifiedPosition) : null,
-          isFastestLap:
-            payload.isFastestLap === "unknown" ? null : payload.isFastestLap === "true",
+          finishPosition: toNullableNumber(payload.finishPosition),
+          classifiedPosition: toNullableNumber(payload.classifiedPosition),
+          isFastestLap: toNullableBoolean(payload.isFastestLap),
           reason: payload.reason.trim(),
         }
       ),
@@ -229,25 +228,24 @@ export function AdminRaceOperationsDetailPage() {
     mutationFn: async (payload: { seasonEntryId: string; finishPosition: string; classifiedPosition: string; isFastestLap: "true" | "false" | "unknown"; reason: string }) =>
       apiClient.post(`/admin/operations/races/${raceId}/source-repairs/race-results/create`, {
         seasonEntryId: Number(payload.seasonEntryId),
-        finishPosition: payload.finishPosition.trim().length > 0 ? Number(payload.finishPosition) : null,
-        classifiedPosition: payload.classifiedPosition.trim().length > 0 ? Number(payload.classifiedPosition) : null,
-        isFastestLap: payload.isFastestLap === "unknown" ? null : payload.isFastestLap === "true",
+        finishPosition: toNullableNumber(payload.finishPosition),
+        classifiedPosition: toNullableNumber(payload.classifiedPosition),
+        isFastestLap: toNullableBoolean(payload.isFastestLap),
         reason: payload.reason.trim(),
       }),
     onSuccess: async () => {
       setRaceResultCreatePreview(undefined);
       setRaceResultDeletePreviews({});
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const raceResultCreatePreviewMutation = useMutation({
     mutationFn: async (payload: { seasonEntryId: string; finishPosition: string; classifiedPosition: string; isFastestLap: "true" | "false" | "unknown"; reason: string }) =>
       apiClient.post<SourceRepairPreviewResponse>(`/admin/operations/races/${raceId}/source-repairs/race-results/create/preview`, {
         seasonEntryId: Number(payload.seasonEntryId),
-        finishPosition: payload.finishPosition.trim().length > 0 ? Number(payload.finishPosition) : null,
-        classifiedPosition: payload.classifiedPosition.trim().length > 0 ? Number(payload.classifiedPosition) : null,
-        isFastestLap: payload.isFastestLap === "unknown" ? null : payload.isFastestLap === "true",
+        finishPosition: toNullableNumber(payload.finishPosition),
+        classifiedPosition: toNullableNumber(payload.classifiedPosition),
+        isFastestLap: toNullableBoolean(payload.isFastestLap),
         reason: payload.reason.trim(),
       }),
   });
@@ -259,8 +257,7 @@ export function AdminRaceOperationsDetailPage() {
     onSuccess: async () => {
       setRaceResultPreviews({});
       setRaceResultDeletePreviews({});
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-race-detail", raceId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-operations-races"] });
+      await invalidateAdminRaceQueries();
     },
   });
   const raceResultDeletePreviewMutation = useMutation({
@@ -397,58 +394,58 @@ export function AdminRaceOperationsDetailPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <Link to="/admin" className="ff-kicker text-[#ff7373] hover:text-white">
+        <Link to="/admin" className="ff-kicker text-primary hover:text-on-surface">
           Back To Race Ops
         </Link>
         <div className="space-y-3">
           <p className="ff-kicker">Race Detail</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">
             Round Mission Control
           </h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Audit view for one race, including base inputs, active overrides, and recent scoring runs.
           </p>
         </div>
       </div>
 
-      {detailQuery.isLoading ? <p className="text-[#989aa2]">Loading race detail...</p> : null}
+      {detailQuery.isLoading ? <p className="text-on-surface-variant">Loading race detail…</p> : null}
       {detailQuery.isError ? (
-        <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+        <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
           {getErrorMessage(detailQuery.error)}
         </p>
       ) : null}
 
       {detail ? (
         <>
-          <Card className="overflow-hidden border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.18),transparent_24%),linear-gradient(135deg,#0d0e12_0%,#15171c_52%,#20232b_100%)]">
-            <CardHeader className="border-b border-white/8">
+          <Card className="overflow-hidden bg-surface-container">
+            <CardHeader className="">
               <CardTitle className="text-3xl md:text-4xl">
                 {detail.race.seasonYear} Round {detail.race.round}: {detail.race.name}
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 px-8 py-7 text-sm text-[#d0d3d9] md:grid-cols-3">
-              <div className="border border-white/8 bg-black/20 p-4">
+            <CardContent className="grid gap-4 px-8 py-7 text-sm text-on-surface md:grid-cols-3">
+              <div className="bg-surface-container-lowest p-4">
                 <p className="ff-kicker">Race Start</p>
-                <p className="mt-2 text-sm font-semibold text-white">{formatDateTime(detail.race.raceStartAt)}</p>
+                <p className="mt-2 text-sm font-semibold text-on-surface">{formatDateTime(detail.race.raceStartAt)}</p>
               </div>
-              <div className="border border-white/8 bg-black/20 p-4">
+              <div className="bg-surface-container-lowest p-4">
                 <p className="ff-kicker">Scoring Runs</p>
-                <p className="mt-2 text-3xl font-black text-white">{detail.scoringRuns.length}</p>
+                <p className="mt-2 text-3xl font-black text-on-surface">{detail.scoringRuns.length}</p>
               </div>
-              <div className="border border-white/8 bg-black/20 p-4">
+              <div className="bg-surface-container-lowest p-4">
                 <p className="ff-kicker">Workflow</p>
-                <p className="mt-2 text-sm leading-6 text-white">Corrections are staged below through unified repair and source-repair workspaces.</p>
+                <p className="mt-2 text-sm leading-6 text-on-surface">Corrections are staged below through unified repair and source-repair workspaces.</p>
               </div>
             </CardContent>
           </Card>
 
           {detail.resultWorkspace && formState ? (
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardHeader>
               <CardTitle>Round Repair Workspace</CardTitle>
             </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border border-[#594b11] bg-[#2b2508] p-4 text-sm text-[#f3db53]">
+                <div className="bg-tertiary-container p-4 text-sm text-on-tertiary-container">
                   Use this workspace to stage corrections against the ingested round inputs used for scoring. Setting a
                   field back to its ingested value will revoke that override on apply rather than mutating source rows.
                 </div>
@@ -461,7 +458,7 @@ export function AdminRaceOperationsDetailPage() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="space-y-2">
-                    <p className="ff-kicker text-[#d0d3d9]">Safety Car</p>
+                    <p className="ff-kicker text-on-surface">Safety Car</p>
                     <Select value={formState.safetyCarDeployed} onValueChange={(value) => setFieldValue("safetyCarDeployed", value as "true" | "false" | "unknown")}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select safety car state" />
@@ -549,7 +546,7 @@ export function AdminRaceOperationsDetailPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <p className="ff-kicker text-[#d0d3d9]">Classified Finishers</p>
+                    <p className="ff-kicker text-on-surface">Classified Finishers</p>
                     <Input value={formState.classifiedFinishersCount} onChange={(event) => setFieldValue("classifiedFinishersCount", event.target.value)} />
                     <FieldComparison
                       rawLabel={String(detail.resultWorkspace.raw.classifiedFinishersCount)}
@@ -578,7 +575,7 @@ export function AdminRaceOperationsDetailPage() {
                       void previewMutation.mutateAsync(buildCorrectionPayload(formState));
                     }}
                   >
-                    {previewMutation.isPending ? "Previewing..." : "Preview Correction"}
+                    {previewMutation.isPending ? "Previewing…" : "Preview Correction"}
                   </Button>
                   <Button
                     disabled={applyMutation.isPending || reason.trim().length < 8}
@@ -589,12 +586,12 @@ export function AdminRaceOperationsDetailPage() {
                       });
                     }}
                   >
-                    {applyMutation.isPending ? "Applying..." : "Apply Correction"}
+                    {applyMutation.isPending ? "Applying…" : "Apply Correction"}
                   </Button>
                 </div>
 
                 {previewMutation.data ? (
-                  <div className="border border-white/8 bg-white/3 p-4 text-sm text-[#d0d3d9]">
+                  <div className="bg-surface-container-lowest p-4 text-sm text-on-surface">
                     Preview: {previewMutation.data.preview.summary.leaguesProcessed} leagues,{" "}
                     {previewMutation.data.preview.summary.totalChangedEntries} changed entries,{" "}
                     {previewMutation.data.preview.summary.totalPointsDelta >= 0 ? "+" : ""}
@@ -602,12 +599,12 @@ export function AdminRaceOperationsDetailPage() {
                   </div>
                 ) : null}
                 {previewMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(previewMutation.error)}
                   </p>
                 ) : null}
                 {applyMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(applyMutation.error)}
                   </p>
                 ) : null}
@@ -616,19 +613,19 @@ export function AdminRaceOperationsDetailPage() {
           ) : null}
 
           {detail.sourceWorkspace ? (
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="bg-surface-container-low">
               <CardHeader>
                 <CardTitle>Raw Source Repair</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="border border-[#594b11] bg-[#2b2508] p-4 text-sm text-[#f3db53]">
+                <div className="bg-tertiary-container p-4 text-sm text-on-tertiary-container">
                   Use this section when ingestion attached the wrong season entry or source values. These changes update
                   underlying qualifying and race-result rows, write an audit record, and then rescore the race.
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="ff-display text-2xl text-white">Qualifying Results</h3>
-                  <div className="grid gap-3 border border-white/8 bg-white/3 p-4 md:grid-cols-[minmax(0,1.2fr)_140px_minmax(0,1fr)_auto_auto]">
+                  <h3 className="ff-display text-2xl text-on-surface">Qualifying Results</h3>
+                  <div className="grid gap-3 bg-surface-container-lowest p-4 md:grid-cols-[minmax(0,1.2fr)_140px_minmax(0,1fr)_auto_auto]">
                     <Select
                       value={qualifyingCreateDraft.seasonEntryId}
                       onValueChange={(value) => {
@@ -684,12 +681,12 @@ export function AdminRaceOperationsDetailPage() {
                     </Button>
                   </div>
                   {qualifyingCreatePreview ? (
-                    <p className="text-xs text-[#989aa2]">
+                    <p className="text-xs text-on-surface-variant">
                       Add preview: {qualifyingCreatePreview.summary.leaguesProcessed} leagues, {qualifyingCreatePreview.summary.totalChangedEntries} changed entries, {qualifyingCreatePreview.summary.totalPointsDelta >= 0 ? "+" : ""}{qualifyingCreatePreview.summary.totalPointsDelta} points.
                     </p>
                   ) : null}
                   {qualifyingWarnings.create.length > 0 ? (
-                    <p className="text-xs text-[#f3db53]">{qualifyingWarnings.create.join(" ")}</p>
+                    <p className="text-xs text-warning">{qualifyingWarnings.create.join(" ")}</p>
                   ) : null}
                   <Table ariaLabel="Qualifying source repair">
                     <TableHeader>
@@ -811,7 +808,7 @@ export function AdminRaceOperationsDetailPage() {
                                 </Button>
                               </div>
                               {qualifyingPreviews[row.resultId] ? (
-                                <p className="mt-2 text-xs text-[#989aa2]">
+                                <p className="mt-2 text-xs text-on-surface-variant">
                                   Preview: {qualifyingPreviews[row.resultId]!.summary.leaguesProcessed} leagues,{" "}
                                   {qualifyingPreviews[row.resultId]!.summary.totalChangedEntries} changed entries,{" "}
                                   {qualifyingPreviews[row.resultId]!.summary.totalPointsDelta >= 0 ? "+" : ""}
@@ -819,7 +816,7 @@ export function AdminRaceOperationsDetailPage() {
                                 </p>
                               ) : null}
                               {qualifyingDeletePreviews[row.resultId] ? (
-                                <p className="mt-2 text-xs text-[#989aa2]">
+                                <p className="mt-2 text-xs text-on-surface-variant">
                                   Remove preview: {qualifyingDeletePreviews[row.resultId]!.summary.leaguesProcessed} leagues,{" "}
                                   {qualifyingDeletePreviews[row.resultId]!.summary.totalChangedEntries} changed entries,{" "}
                                   {qualifyingDeletePreviews[row.resultId]!.summary.totalPointsDelta >= 0 ? "+" : ""}
@@ -827,7 +824,7 @@ export function AdminRaceOperationsDetailPage() {
                                 </p>
                               ) : null}
                               {warnings.length > 0 ? (
-                                <p className="mt-2 text-xs text-[#f3db53]">{warnings.join(" ")}</p>
+                                <p className="mt-2 text-xs text-warning">{warnings.join(" ")}</p>
                               ) : null}
                             </TableCell>
                           </TableRow>
@@ -838,8 +835,8 @@ export function AdminRaceOperationsDetailPage() {
                 </div>
 
                 <div className="space-y-3">
-                  <h3 className="ff-display text-2xl text-white">Race Results</h3>
-                  <div className="grid gap-3 border border-white/8 bg-white/3 p-4 md:grid-cols-[minmax(0,1.2fr)_100px_110px_120px_minmax(0,1fr)_auto_auto]">
+                  <h3 className="ff-display text-2xl text-on-surface">Race Results</h3>
+                  <div className="grid gap-3 bg-surface-container-lowest p-4 md:grid-cols-[minmax(0,1.2fr)_100px_110px_120px_minmax(0,1fr)_auto_auto]">
                     <Select
                       value={raceResultCreateDraft.seasonEntryId}
                       onValueChange={(value) => {
@@ -919,12 +916,12 @@ export function AdminRaceOperationsDetailPage() {
                     </Button>
                   </div>
                   {raceResultCreatePreview ? (
-                    <p className="text-xs text-[#989aa2]">
+                    <p className="text-xs text-on-surface-variant">
                       Add preview: {raceResultCreatePreview.summary.leaguesProcessed} leagues, {raceResultCreatePreview.summary.totalChangedEntries} changed entries, {raceResultCreatePreview.summary.totalPointsDelta >= 0 ? "+" : ""}{raceResultCreatePreview.summary.totalPointsDelta} points.
                     </p>
                   ) : null}
                   {raceResultWarnings.create.length > 0 ? (
-                    <p className="text-xs text-[#f3db53]">{raceResultWarnings.create.join(" ")}</p>
+                    <p className="text-xs text-warning">{raceResultWarnings.create.join(" ")}</p>
                   ) : null}
                   <Table ariaLabel="Race result source repair">
                     <TableHeader>
@@ -1074,7 +1071,7 @@ export function AdminRaceOperationsDetailPage() {
                                 </Button>
                               </div>
                               {raceResultPreviews[row.resultId] ? (
-                                <p className="mt-2 text-xs text-[#989aa2]">
+                                <p className="mt-2 text-xs text-on-surface-variant">
                                   Preview: {raceResultPreviews[row.resultId]!.summary.leaguesProcessed} leagues,{" "}
                                   {raceResultPreviews[row.resultId]!.summary.totalChangedEntries} changed entries,{" "}
                                   {raceResultPreviews[row.resultId]!.summary.totalPointsDelta >= 0 ? "+" : ""}
@@ -1082,7 +1079,7 @@ export function AdminRaceOperationsDetailPage() {
                                 </p>
                               ) : null}
                               {raceResultDeletePreviews[row.resultId] ? (
-                                <p className="mt-2 text-xs text-[#989aa2]">
+                                <p className="mt-2 text-xs text-on-surface-variant">
                                   Remove preview: {raceResultDeletePreviews[row.resultId]!.summary.leaguesProcessed} leagues,{" "}
                                   {raceResultDeletePreviews[row.resultId]!.summary.totalChangedEntries} changed entries,{" "}
                                   {raceResultDeletePreviews[row.resultId]!.summary.totalPointsDelta >= 0 ? "+" : ""}
@@ -1090,7 +1087,7 @@ export function AdminRaceOperationsDetailPage() {
                                 </p>
                               ) : null}
                               {warnings.length > 0 ? (
-                                <p className="mt-2 text-xs text-[#f3db53]">{warnings.join(" ")}</p>
+                                <p className="mt-2 text-xs text-warning">{warnings.join(" ")}</p>
                               ) : null}
                             </TableCell>
                           </TableRow>
@@ -1101,32 +1098,32 @@ export function AdminRaceOperationsDetailPage() {
                 </div>
 
                 {qualifyingRepairMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(qualifyingRepairMutation.error)}
                   </p>
                 ) : null}
                 {qualifyingPreviewMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(qualifyingPreviewMutation.error)}
                   </p>
                 ) : null}
                 {qualifyingDeletePreviewMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(qualifyingDeletePreviewMutation.error)}
                   </p>
                 ) : null}
                 {raceResultRepairMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(raceResultRepairMutation.error)}
                   </p>
                 ) : null}
                 {raceResultPreviewMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(raceResultPreviewMutation.error)}
                   </p>
                 ) : null}
                 {raceResultDeletePreviewMutation.isError ? (
-                  <p className="border border-[#7a0d0d] bg-[#350909] px-3 py-2 text-sm text-[#ff8e8e]">
+                  <p className="bg-error-container px-3 py-2 text-sm text-on-error-container">
                     {getErrorMessage(raceResultDeletePreviewMutation.error)}
                   </p>
                 ) : null}
@@ -1134,7 +1131,7 @@ export function AdminRaceOperationsDetailPage() {
             </Card>
           ) : null}
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardHeader>
               <CardTitle>Recent Scoring Runs</CardTitle>
             </CardHeader>
@@ -1156,7 +1153,7 @@ export function AdminRaceOperationsDetailPage() {
                       <TableCell className="font-mono text-xs">
                         {run.scoringRunId.slice(0, 8)}
                         {run.isCurrent ? (
-                          <span className="ml-2 inline-block border border-[#205038] bg-[#102317] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#6ee7a8]">
+                          <span className="ml-2 inline-block bg-surface-container-low px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success">
                             current
                           </span>
                         ) : null}
@@ -1171,7 +1168,7 @@ export function AdminRaceOperationsDetailPage() {
                       <TableCell>{run.reason ?? "None recorded"}</TableCell>
                       <TableCell>
                         <div>{formatDateTime(run.createdAt)}</div>
-                        <div className="mt-1 text-[11px] text-[#7f828b]">
+                        <div className="mt-1 text-[11px] text-on-surface-variant">
                           {formatRunInputSnapshot(run.inputSnapshot, detail.resultWorkspace.driverOptions)}
                         </div>
                       </TableCell>
@@ -1182,7 +1179,7 @@ export function AdminRaceOperationsDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardHeader>
               <CardTitle>Audit Log</CardTitle>
             </CardHeader>
@@ -1208,7 +1205,7 @@ export function AdminRaceOperationsDetailPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-[#989aa2]">
+                      <TableCell colSpan={4} className="text-on-surface-variant">
                         No audit entries recorded for this race yet.
                       </TableCell>
                     </TableRow>

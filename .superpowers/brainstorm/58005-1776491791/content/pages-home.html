@@ -1,0 +1,190 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink:#0e0d0b; --ink-muted:#3f3f46; --ink-soft:#71717a;
+    --paper:#f6f3ec; --surface:#fff; --divider:#e7e7eb;
+    --ferrari:#a30a00; --ferrari-400:#ff5544; --ferrari-50:#fbf1ea;
+    --indigo:#3b2fb0; --indigo-300:#8c83ff; --indigo-50:#eeecff;
+    --signal:#15803d; --warning:#b45309;
+    --carbon:#0d0e14; --carbon-2:#1a1c25;
+  }
+  body { background: #d9d6ce; }
+
+  /* Page frame */
+  .pg { background: var(--paper); max-width: 1200px; margin: 0 auto 60px; padding: 20px 28px 48px; font-family: 'Inter', sans-serif; color: var(--ink); border-radius: 12px; box-shadow: 0 2px 0 rgba(0,0,0,0.06); }
+  .pg-tag { font-family: 'Racing Sans One', sans-serif; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; background: var(--ferrari); padding: 6px 14px; border-radius: 6px; display: inline-block; margin: 0 auto 10px; position: sticky; top: 0; }
+  .pg-label { text-align: center; margin-bottom: 14px; }
+
+  /* NAV */
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; background:var(--paper); box-shadow:inset 0 -3px 0 var(--ink); margin-bottom: 28px; }
+  .nav .brand { font-family:'Racing Sans One',sans-serif; font-size:26px; color:var(--ink); letter-spacing:0.02em; text-transform:uppercase; }
+  .nav .links { display:flex; gap:4px; }
+  .nav .link { font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-muted); padding:10px 14px; border-radius:6px; cursor:pointer; }
+  .nav .link.active { color:var(--ink); box-shadow: 0 2px 0 var(--ferrari); }
+  .nav .avatar { width:40px; height:40px; border-radius:8px; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; }
+
+  /* HERO */
+  .hero { background:linear-gradient(100deg,#1a0600 0%,#0d0e14 70%); color:var(--paper); padding:56px 44px; border-radius:16px; position:relative; overflow:hidden; }
+  .hero::before { content:''; position:absolute; top:0; right:-40px; bottom:0; width:55%; background:repeating-linear-gradient(115deg, rgba(163,10,0,0.16) 0 8px, transparent 8px 26px); }
+  .hero::after { content:''; position:absolute; top:0; left:0; right:0; height:6px; background:repeating-linear-gradient(90deg, var(--ferrari) 0 16px, transparent 16px 32px); }
+  .hero .top { display: flex; justify-content: space-between; align-items: center; position: relative; }
+  .hero .k { font-weight:800; font-size:14px; letter-spacing:0.18em; text-transform:uppercase; color:var(--ferrari-400); }
+  .hero .chip-live { background: var(--ferrari); color:#fff; padding:6px 14px; border-radius:6px; font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; display: inline-flex; align-items: center; gap: 6px; }
+  .hero .chip-live::before { content:''; width:6px; height:6px; border-radius:50%; background:#fff; box-shadow: 0 0 0 4px rgba(255,255,255,0.2); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
+  .hero h1 { font-family:'Racing Sans One',sans-serif; font-size:96px; line-height:0.92; letter-spacing:0.005em; text-transform:uppercase; margin:16px 0 0; position:relative; }
+  .hero .venue { font-size:15px; letter-spacing:0.14em; text-transform:uppercase; color:#c4c5cc; font-weight:700; margin-top:14px; position:relative; }
+  .hero .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin-top:32px; position:relative; }
+  .hero .stat { background:rgba(255,255,255,0.06); padding:16px 20px; border-left:3px solid var(--ferrari-400); border-radius:4px; }
+  .hero .stat .sl { font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:#c4c5cc; font-weight:800; }
+  .hero .stat .sv { font-family:'Inter',sans-serif; font-weight:800; font-size:26px; color:var(--paper); font-variant-numeric:tabular-nums; margin-top:6px; }
+  .hero .cta { position: relative; margin-top: 32px; display: flex; gap: 12px; }
+  .hero .btn-primary { background:var(--ferrari); color:#fff; font-weight:700; font-size:15px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 22px; border-radius:8px; border:0; cursor:pointer; }
+  .hero .btn-ghost { background:transparent; color:var(--paper); font-weight:700; font-size:15px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 22px; border-radius:8px; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3); cursor:pointer; }
+
+  /* SECTION */
+  .sect { margin-top: 40px; }
+  .sect-hd { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; }
+  .sect-hd h2 { font-family:'Racing Sans One',sans-serif; font-size:42px; color:var(--ink); letter-spacing:0.005em; text-transform:uppercase; margin:0; line-height:1; }
+  .sect-hd .sub { font-size:14px; color:var(--ink-muted); margin-top: 6px; }
+  .sect-hd .action { font-weight:700; font-size:13px; letter-spacing:0.14em; text-transform:uppercase; color:var(--ferrari); cursor:pointer; }
+
+  /* Data rows */
+  .row { display:grid; grid-template-columns:64px 1fr 120px 100px 40px; gap:18px; align-items:center; padding:18px 20px; background:var(--surface); border:1px solid var(--divider); border-radius:12px; }
+  .row + .row { margin-top:8px; }
+  .row .pos { font-family:'Racing Sans One',sans-serif; font-size:38px; color:var(--ferrari); line-height:1; }
+  .row .title { font-family:'Inter',sans-serif; font-weight:700; font-size:18px; letter-spacing:0.02em; text-transform:uppercase; color:var(--ink); }
+  .row .meta { font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-top:4px; }
+  .row .vlabel { font-size:11px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); }
+  .row .val { font-weight:800; font-size:24px; font-variant-numeric:tabular-nums; color:var(--ink); margin-top:4px; }
+  .row .val.indigo { color:var(--indigo); }
+  .row .arr { color: var(--ink-soft); font-size: 20px; text-align: right; }
+
+  /* Dashboard */
+  .dash { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
+  .dash-col { display: flex; flex-direction: column; gap: 16px; }
+
+  .card { background: var(--surface); border: 1px solid var(--divider); border-radius: 12px; padding: 22px; }
+  .card .k { font-size:12px; font-weight:800; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-soft); }
+  .card .big { font-family:'Racing Sans One',sans-serif; font-size:58px; color:var(--ink); line-height:1; margin-top:12px; }
+  .card .big.red { color: var(--ferrari); }
+  .card .big.indigo { color: var(--indigo); }
+  .card .sub { font-size:14px; color:var(--ink-muted); margin-top:10px; }
+
+  /* Invite strip */
+  .invite { background: var(--ink); color: var(--paper); border-radius: 12px; padding: 22px 24px; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+  .invite .k { font-family:'Racing Sans One',sans-serif; font-size:22px; color: var(--ferrari-400); letter-spacing:0.01em; text-transform:uppercase; }
+  .invite .sub { font-size:14px; color:#c4c5cc; margin-top:4px; }
+  .invite input { background: transparent; border: 0; border-bottom: 2px solid #c4c5cc; color: var(--paper); font-size:16px; padding: 10px 0; outline: none; width: 100%; margin-top: 14px; font-family: 'Inter', sans-serif; }
+  .invite input::placeholder { color:#71717a; }
+  .invite .go { background: var(--ferrari); color:#fff; font-weight:700; font-size:15px; letter-spacing:0.1em; text-transform:uppercase; padding:14px 24px; border-radius:8px; border:0; }
+</style>
+
+<h2 class="display-font" style="font-size:40px; color:#0e0d0b;">Page mockups</h2>
+<p class="subtitle" style="font-size:16px; line-height:1.55; font-family:'Inter',sans-serif; margin-bottom:24px;">Scroll through three key pages. Same shell, same type, different density.</p>
+
+<!-- HOME -->
+<div class="pg-label"><div class="pg-tag">Home (signed in)</div></div>
+<div class="pg">
+  <div class="nav">
+    <div class="brand">Formula Fantasy</div>
+    <div class="links">
+      <div class="link active">Home</div>
+      <div class="link">Leagues</div>
+      <div class="link">My Results</div>
+      <div class="link">Calendar</div>
+    </div>
+    <div class="avatar">TD</div>
+  </div>
+
+  <div class="hero">
+    <div class="top"><div class="k">Round 4 · 2026 Season</div><div class="chip-live">Picks Open</div></div>
+    <h1>Miami<br>Grand Prix</h1>
+    <div class="venue">Miami Intl Autodrome · 57 laps · Sunday 20:00 UTC</div>
+    <div class="stats">
+      <div class="stat"><div class="sl">Picks lock in</div><div class="sv">01d 22h 14m</div></div>
+      <div class="stat"><div class="sl">My season rank</div><div class="sv">#1 of 128</div></div>
+      <div class="stat"><div class="sl">Points this season</div><div class="sv">1,284</div></div>
+    </div>
+    <div class="cta">
+      <button class="btn-primary">Submit picks →</button>
+      <button class="btn-ghost">Race preview</button>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>My leagues</h2>
+        <div class="sub">Four active championships. Open a league to set picks or review the table.</div>
+      </div>
+      <div class="action">See all →</div>
+    </div>
+    <div class="row">
+      <div class="pos">01</div>
+      <div><div class="title">Grand Prix Masters</div><div class="meta">Private · 128 members</div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,284</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#1</div></div>
+      <div class="arr">→</div>
+    </div>
+    <div class="row">
+      <div class="pos">02</div>
+      <div><div class="title">Apex Hunters</div><div class="meta">Public · 96 members</div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,201</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#3</div></div>
+      <div class="arr">→</div>
+    </div>
+    <div class="row">
+      <div class="pos">03</div>
+      <div><div class="title">Box Box Club</div><div class="meta">Public · 240 members</div></div>
+      <div><div class="vlabel">Points</div><div class="val">1,157</div></div>
+      <div><div class="vlabel">My rank</div><div class="val indigo">#12</div></div>
+      <div class="arr">→</div>
+    </div>
+  </div>
+
+  <div class="sect">
+    <div class="sect-hd">
+      <div>
+        <h2>Quick stats</h2>
+        <div class="sub">Season to date across all your leagues.</div>
+      </div>
+    </div>
+    <div class="dash">
+      <div class="dash-col">
+        <div class="invite">
+          <div>
+            <div class="k">Got an invite?</div>
+            <div class="sub">Paste a token or league link to jump straight into a grid.</div>
+            <input placeholder="ff-a9c24e-…  or  formula-fantasy.com/invite/…">
+          </div>
+          <button class="go">Join →</button>
+        </div>
+        <div class="card">
+          <div class="k">Last race · Saudi Arabian GP</div>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:14px;">
+            <div><div class="k" style="font-size:11px;">Picked P1</div><div style="font-family:'Racing Sans One',sans-serif; font-size:26px; color:var(--ink); margin-top:6px; line-height:1;">VER</div></div>
+            <div><div class="k" style="font-size:11px;">Actual P1</div><div style="font-family:'Racing Sans One',sans-serif; font-size:26px; color:var(--ferrari); margin-top:6px; line-height:1;">VER</div></div>
+            <div><div class="k" style="font-size:11px;">Points</div><div style="font-family:'Racing Sans One',sans-serif; font-size:26px; color:var(--indigo); margin-top:6px; line-height:1;">+84</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="dash-col">
+        <div class="card">
+          <div class="k">Season points</div>
+          <div class="big red">1,284</div>
+          <div class="sub">+84 from Saudi Arabia · best in your top league</div>
+        </div>
+        <div class="card">
+          <div class="k">Prediction accuracy</div>
+          <div class="big indigo">67%</div>
+          <div class="sub">24 of 36 podium slots correct this season</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

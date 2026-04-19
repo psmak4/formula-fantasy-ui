@@ -8,6 +8,7 @@ import { Card, CardContent } from "../components/ui/Card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { toastApiError } from "../lib/api-error";
+import { invalidateLeagueQueries, leagueInitials, parseInviteTokenOrLeagueId } from "../lib/leagueJoin";
 
 type PublicLeague = {
   id: string;
@@ -34,48 +35,6 @@ const leagueIconBackgrounds = [
   "bg-amber-600",
 ];
 
-function leagueInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "L";
-  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
-  return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
-}
-
-function parseInviteTokenOrLeagueId(raw: string): {
-  token?: string;
-  leagueId?: string;
-} {
-  const input = raw.trim();
-  if (!input) return {};
-
-  const readFromPath = (value: string) => {
-    const leagueFromPath = value.match(/\/league\/([^/?#]+)/)?.[1];
-    const inviteFromPath = value.match(/\/invite\/([^/?#]+)/)?.[1];
-    if (leagueFromPath) return { leagueId: leagueFromPath };
-    if (inviteFromPath) return { token: inviteFromPath };
-    return null;
-  };
-
-  if (!input.includes("://")) {
-    const fromPath = readFromPath(input);
-    return fromPath ?? { token: input };
-  }
-
-  try {
-    const url = new URL(input);
-    const fromPath = readFromPath(url.pathname);
-    if (fromPath) return fromPath;
-
-    const inviteFromQuery =
-      url.searchParams.get("invite") ?? url.searchParams.get("token");
-    if (inviteFromQuery) return { token: inviteFromQuery };
-  } catch {
-    return { token: input };
-  }
-
-  return { token: input };
-}
-
 function PublicLeagueRow({
   league,
   index,
@@ -91,15 +50,15 @@ function PublicLeagueRow({
     <div className="ff-data-row md:grid-cols-[minmax(0,1.5fr)_140px_110px]">
       <div className="flex items-center gap-4">
         <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center border border-white/10 text-base font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center text-base font-black text-white ${leagueIconBackgrounds[index % leagueIconBackgrounds.length]}`}
         >
           {String(index + 1).padStart(2, "0")}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
+          <p className="truncate text-xl font-semibold uppercase tracking-[0.04em] text-on-surface">
             {league.name}
           </p>
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-[#7f828b]">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant">
             <span>{league.visibility ?? "public"}</span>
             <span>{leagueInitials(league.name)}</span>
           </div>
@@ -108,7 +67,7 @@ function PublicLeagueRow({
 
       <div className="text-left md:text-center">
         <p className="ff-kicker">Members</p>
-        <p className="mt-2 text-3xl font-black text-[#111318]">
+        <p className="mt-2 text-3xl font-black text-on-surface">
           {league.memberCount ?? 0}
         </p>
       </div>
@@ -124,7 +83,7 @@ function PublicLeagueRow({
             disabled={joining}
             onClick={() => onJoin(league.id)}
           >
-            {joining ? "Joining..." : "Join"}
+            {joining ? "Joining…" : "Join"}
           </Button>
         )}
       </div>
@@ -154,11 +113,7 @@ export function JoinLeaguePage() {
       );
     },
     onSuccess: async (result) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["leagues-page"] }),
-        queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] }),
-        queryClient.invalidateQueries({ queryKey: ["public-leagues"] }),
-      ]);
+      await invalidateLeagueQueries(queryClient, { includePublicLeagues: true });
       navigate(`/league/${result.leagueId}`);
     },
     onError: (err: unknown) => {
@@ -178,10 +133,7 @@ export function JoinLeaguePage() {
       setJoinState("joining");
     },
     onSuccess: async (result) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["leagues-page"] }),
-        queryClient.invalidateQueries({ queryKey: ["home-my-leagues"] }),
-      ]);
+      await invalidateLeagueQueries(queryClient);
       const joinedLeagueId = result.leagueId;
       if (!joinedLeagueId) {
         throw new Error("Invite join succeeded but no league id returned");
@@ -256,7 +208,7 @@ export function JoinLeaguePage() {
                       joinPublicLeagueMutation.isPending
                     }
                   >
-                    {joinState === "joining" ? "Joining..." : "Join"}
+                    {joinState === "joining" ? "Joining…" : "Join"}
                   </Button>
                 </div>
               </div>
@@ -264,16 +216,16 @@ export function JoinLeaguePage() {
           />
 
           {joinState !== "idle" && joinState !== "joining" ? (
-            <p className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+            <p className="bg-error-container px-4 py-3 text-sm text-on-error-container">
               {joinState}
             </p>
           ) : null}
         </div>
 
-        <Card className="ff-table-card border-[#d9dee5]">
+        <Card className="ff-table-card ">
               <CardContent className="px-0 py-0">
-                <div className="flex items-center justify-between border-b border-[#e4e8ee] px-5 py-4">
-                  <p className="text-xl font-semibold uppercase tracking-[0.04em] text-[#111318]">Public Grids</p>
+                <div className="flex items-center justify-between  px-5 py-4">
+                  <p className="text-xl font-semibold uppercase tracking-[0.04em] text-on-surface">Public Grids</p>
                 </div>
 
                 {publicLeaguesQuery.isLoading ? (
@@ -281,7 +233,7 @@ export function JoinLeaguePage() {
                     {[1, 2, 3, 4].map((value) => (
                       <div
                         key={value}
-                        className="h-24 animate-pulse border border-[#e1e6ec] bg-[#f8f9fb]"
+                        className="rounded-md h-24 animate-pulse bg-surface-container-low"
                       />
                     ))}
                   </div>
@@ -289,7 +241,7 @@ export function JoinLeaguePage() {
 
                 {loadError ? (
                   <div className="px-5 py-5">
-                    <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                    <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                       {loadError}
                     </div>
                   </div>
@@ -298,11 +250,11 @@ export function JoinLeaguePage() {
               {!publicLeaguesQuery.isLoading && !loadError ? (
                   leagues.length === 0 ? (
                     <div className="px-5 py-5">
-                      <div className="border border-[#e1e6ec] bg-[#f8f9fb] px-6 py-10 text-center">
-                        <p className="text-xl font-semibold uppercase tracking-[0.04em] text-[#111318]">
+                      <div className="rounded-xl bg-surface-container-low px-6 py-10 text-center">
+                        <p className="text-xl font-semibold uppercase tracking-[0.04em] text-on-surface">
                           No Public Leagues Yet
                         </p>
-                        <p className="mx-auto mt-3 max-w-2xl text-sm text-[#9699a2]">
+                        <p className="mx-auto mt-3 max-w-2xl text-sm text-on-surface-variant">
                           Create a league or join with a private invite link instead.
                         </p>
                       </div>
@@ -323,8 +275,8 @@ export function JoinLeaguePage() {
                 ) : null}
 
                 {hasPagination ? (
-                  <div className="flex items-center justify-between gap-4 border-t border-[#e4e8ee] px-5 py-5">
-                    <p className="ff-kicker text-[#6f727b]">
+                  <div className="flex items-center justify-between gap-4  px-5 py-5">
+                    <p className="ff-kicker text-on-surface-variant">
                       Page {page} of {totalPages}
                     </p>
                     <div className="flex items-center gap-2">

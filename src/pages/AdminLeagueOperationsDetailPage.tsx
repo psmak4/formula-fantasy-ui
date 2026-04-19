@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router-dom";
-import { apiClient, ApiError } from "@/api/apiClient";
+import { apiClient } from "@/api/apiClient";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/Table";
+import { formatAdminDateTime, getAdminPageErrorMessage, invalidateQueryKeys } from "@/lib/adminPage";
 
 type LeagueDetailResponse = {
   league: {
@@ -75,21 +76,8 @@ type LeagueDetailResponse = {
   }>;
 };
 
-function getErrorMessage(error: unknown): string {
-  if (error instanceof ApiError) return error.message;
-  if (error instanceof Error) return error.message;
-  return "Unable to load league operations.";
-}
-
-function formatDateTime(value: string | null): string {
-  if (!value) return "Not available";
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
+const getErrorMessage = (error: unknown) => getAdminPageErrorMessage(error, "Unable to load league operations.");
+const formatDateTime = (value: string | null) => formatAdminDateTime(value);
 
 export function AdminLeagueOperationsDetailPage() {
   const params = useParams<{ leagueId: string }>();
@@ -132,8 +120,7 @@ export function AdminLeagueOperationsDetailPage() {
       }),
     onSuccess: async () => {
       setLeagueForm((current) => ({ ...current, reason: "" }));
-      await queryClient.invalidateQueries({ queryKey: ["admin-league-detail", leagueId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-leagues"] });
+      await invalidateQueryKeys(queryClient, [["admin-league-detail", leagueId], ["admin-leagues"]]);
     },
   });
 
@@ -145,8 +132,7 @@ export function AdminLeagueOperationsDetailPage() {
       }),
     onSuccess: async () => {
       setTransferReason("");
-      await queryClient.invalidateQueries({ queryKey: ["admin-league-detail", leagueId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-leagues"] });
+      await invalidateQueryKeys(queryClient, [["admin-league-detail", leagueId], ["admin-leagues"]]);
     },
   });
 
@@ -157,8 +143,7 @@ export function AdminLeagueOperationsDetailPage() {
       }),
     onSuccess: async (_data, variables) => {
       setMemberReasons((current) => ({ ...current, [variables.userId]: "" }));
-      await queryClient.invalidateQueries({ queryKey: ["admin-league-detail", leagueId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-leagues"] });
+      await invalidateQueryKeys(queryClient, [["admin-league-detail", leagueId], ["admin-leagues"]]);
     },
   });
 
@@ -169,8 +154,7 @@ export function AdminLeagueOperationsDetailPage() {
       }),
     onSuccess: async (_data, variables) => {
       setInviteReasons((current) => ({ ...current, [variables.inviteId]: "" }));
-      await queryClient.invalidateQueries({ queryKey: ["admin-league-detail", leagueId] });
-      await queryClient.invalidateQueries({ queryKey: ["admin-leagues"] });
+      await invalidateQueryKeys(queryClient, [["admin-league-detail", leagueId], ["admin-leagues"]]);
     },
   });
 
@@ -182,13 +166,13 @@ export function AdminLeagueOperationsDetailPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-3">
-        <Link to="/admin/leagues" className="ff-kicker text-[#ff7373] hover:text-white">
+        <Link to="/admin/leagues" className="ff-kicker text-primary hover:text-on-surface">
           Back To Leagues
         </Link>
         <div className="space-y-3">
           <p className="ff-kicker">League Detail</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">League Operations</h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">League Operations</h2>
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Operational view of membership, invites, ownership, and scoring coverage for a single league.
           </p>
         </div>
@@ -197,20 +181,20 @@ export function AdminLeagueOperationsDetailPage() {
       {detailQuery.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {[1, 2, 3, 4].map((value) => (
-            <div key={value} className="h-32 animate-pulse border border-white/8 bg-[#15161b]" />
+            <div key={value} className="h-32 rounded-lg animate-pulse bg-surface-container-low" />
           ))}
         </div>
       ) : null}
 
       {detailQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(detailQuery.error)}
         </div>
       ) : null}
 
       {detail ? (
         <>
-          <section className="overflow-hidden border border-white/8 bg-[radial-gradient(circle_at_top_left,rgba(204,0,0,0.18),transparent_24%),linear-gradient(135deg,#0d0e12_0%,#15171c_52%,#20232b_100%)]">
+          <section className="overflow-hidden bg-surface-container">
             <div className="grid gap-6 px-8 py-8 lg:grid-cols-[minmax(0,1.3fr)_320px]">
               <div className="space-y-5">
                 <div className="flex flex-wrap gap-2">
@@ -220,8 +204,8 @@ export function AdminLeagueOperationsDetailPage() {
                   <Badge tone="neutral">{detail.league.gameMode}</Badge>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="ff-display text-4xl text-white">{detail.league.name}</h3>
-                  <p className="text-sm leading-6 text-[#c2c4cb]">
+                  <h3 className="ff-display text-4xl text-on-surface">{detail.league.name}</h3>
+                  <p className="text-sm leading-6 text-on-surface-variant">
                     Owner {detail.league.owner.displayName} · Created {formatDateTime(detail.league.createdAt)}
                   </p>
                 </div>
@@ -233,22 +217,22 @@ export function AdminLeagueOperationsDetailPage() {
                 </div>
               </div>
 
-              <div className="space-y-4 border border-white/8 bg-black/20 p-5">
+              <div className="space-y-4 bg-surface-container-lowest p-5">
                 <p className="ff-kicker">Scoring Telemetry</p>
                 <div className="space-y-3">
-                  <div className="border border-white/8 bg-white/4 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Total Runs</p>
-                    <p className="mt-2 text-3xl font-black text-white">{detail.scoring.totalRuns}</p>
+                    <p className="mt-2 text-3xl font-black text-on-surface">{detail.scoring.totalRuns}</p>
                   </div>
-                  <div className="border border-white/8 bg-white/4 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Current Success</p>
-                    <p className="mt-2 text-3xl font-black text-[#6ee7a8]">
+                    <p className="mt-2 text-3xl font-black text-success">
                       {detail.scoring.currentSuccessRuns}
                     </p>
                   </div>
-                  <div className="border border-white/8 bg-white/4 p-4">
+                  <div className="bg-surface-container-lowest p-4">
                     <p className="ff-kicker">Latest Run</p>
-                    <p className="mt-2 text-sm font-semibold leading-6 text-white">
+                    <p className="mt-2 text-sm font-semibold leading-6 text-on-surface">
                       {formatDateTime(detail.scoring.latestRunAt)}
                     </p>
                   </div>
@@ -258,11 +242,11 @@ export function AdminLeagueOperationsDetailPage() {
           </section>
 
           <div className="grid gap-6 xl:grid-cols-2">
-            <Card className="border-white/8 bg-[#15161b]">
+            <Card className="bg-surface-container-low">
               <CardContent className="space-y-5 px-6 py-6">
                 <div>
-                  <p className="ff-display text-3xl text-white">League Settings</p>
-                  <p className="mt-2 text-sm text-[#989aa2]">
+                  <p className="ff-display text-3xl text-on-surface">League Settings</p>
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     Update name or visibility with an audit reason.
                   </p>
                 </div>
@@ -310,21 +294,21 @@ export function AdminLeagueOperationsDetailPage() {
                   disabled={updateLeagueMutation.isPending || leagueForm.reason.trim().length < 8}
                   onClick={() => void updateLeagueMutation.mutateAsync()}
                 >
-                  {updateLeagueMutation.isPending ? "Saving..." : "Save League Settings"}
+                  {updateLeagueMutation.isPending ? "Saving…" : "Save League Settings"}
                 </Button>
                 {updateLeagueMutation.isError ? (
-                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {getErrorMessage(updateLeagueMutation.error)}
                   </div>
                 ) : null}
               </CardContent>
             </Card>
 
-            <Card className="border-[#5a1010] bg-[#2a0c0c]">
+            <Card className="bg-error-container">
               <CardContent className="space-y-5 px-6 py-6">
                 <div>
-                  <p className="ff-display text-3xl text-white">Transfer Ownership</p>
-                  <p className="mt-2 text-sm text-[#ffb1b1]">
+                  <p className="ff-display text-3xl text-on-surface">Transfer Ownership</p>
+                  <p className="mt-2 text-sm text-on-error-container">
                     Ownership changes require a new owner and an audit reason.
                   </p>
                 </div>
@@ -360,10 +344,10 @@ export function AdminLeagueOperationsDetailPage() {
                   }
                   onClick={() => void transferMutation.mutateAsync()}
                 >
-                  {transferMutation.isPending ? "Transferring..." : "Transfer Ownership"}
+                  {transferMutation.isPending ? "Transferring…" : "Transfer Ownership"}
                 </Button>
                 {transferMutation.isError ? (
-                  <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {getErrorMessage(transferMutation.error)}
                   </div>
                 ) : null}
@@ -371,10 +355,10 @@ export function AdminLeagueOperationsDetailPage() {
             </Card>
           </div>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="border-b border-white/6 px-6 py-5">
-                <p className="ff-display text-3xl text-white">Members</p>
+              <div className="px-6 py-5">
+                <p className="ff-display text-3xl text-on-surface">Members</p>
               </div>
               <div className="px-6 pb-6 pt-4">
                 <Table ariaLabel="League members">
@@ -393,8 +377,8 @@ export function AdminLeagueOperationsDetailPage() {
                       <TableRow key={member.userId}>
                         <TableCell>
                           <div className="space-y-1">
-                            <div className="font-semibold text-white">{member.displayName}</div>
-                            <div className="font-mono text-[11px] text-[#7f828b]">{member.userId}</div>
+                            <div className="font-semibold text-on-surface">{member.displayName}</div>
+                            <div className="font-mono text-[11px] text-on-surface-variant">{member.userId}</div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -415,7 +399,7 @@ export function AdminLeagueOperationsDetailPage() {
                               placeholder="Reason required"
                             />
                           ) : (
-                            <span className="text-xs text-[#7f828b]">Transfer ownership first</span>
+                            <span className="text-xs text-on-surface-variant">Transfer ownership first</span>
                           )}
                         </TableCell>
                         <TableCell className="text-right">
@@ -443,7 +427,7 @@ export function AdminLeagueOperationsDetailPage() {
                   </TableBody>
                 </Table>
                 {removeMemberMutation.isError ? (
-                  <div className="mt-4 border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="mt-4 bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {getErrorMessage(removeMemberMutation.error)}
                   </div>
                 ) : null}
@@ -451,10 +435,10 @@ export function AdminLeagueOperationsDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="border-b border-white/6 px-6 py-5">
-                <p className="ff-display text-3xl text-white">Invites</p>
+              <div className="px-6 py-5">
+                <p className="ff-display text-3xl text-on-surface">Invites</p>
               </div>
               <div className="px-6 pb-6 pt-4">
                 <Table ariaLabel="League invites">
@@ -501,7 +485,7 @@ export function AdminLeagueOperationsDetailPage() {
                                 placeholder="Reason required"
                               />
                             ) : (
-                              <span className="text-xs text-[#7f828b]">Only pending invites are revocable</span>
+                              <span className="text-xs text-on-surface-variant">Only pending invites are revocable</span>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -528,13 +512,13 @@ export function AdminLeagueOperationsDetailPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-[#989aa2]">No invites found.</TableCell>
+                        <TableCell colSpan={6} className="text-on-surface-variant">No invites found.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
                 </Table>
                 {revokeInviteMutation.isError ? (
-                  <div className="mt-4 border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+                  <div className="mt-4 bg-error-container px-4 py-3 text-sm text-on-error-container">
                     {getErrorMessage(revokeInviteMutation.error)}
                   </div>
                 ) : null}
@@ -542,10 +526,10 @@ export function AdminLeagueOperationsDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="border-b border-white/6 px-6 py-5">
-                <p className="ff-display text-3xl text-white">Audit Log</p>
+              <div className="px-6 py-5">
+                <p className="ff-display text-3xl text-on-surface">Audit Log</p>
               </div>
               <div className="px-6 pb-6 pt-4">
                 <Table ariaLabel="League audit log">
@@ -569,7 +553,7 @@ export function AdminLeagueOperationsDetailPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={4} className="text-[#989aa2]">
+                        <TableCell colSpan={4} className="text-on-surface-variant">
                           No audit entries recorded for this league yet.
                         </TableCell>
                       </TableRow>
@@ -587,9 +571,9 @@ export function AdminLeagueOperationsDetailPage() {
 
 function SummaryCell(props: { label: string; value: number; accent?: "danger" }) {
   return (
-    <div className="border border-white/8 bg-black/20 px-4 py-4">
+    <div className="bg-surface-container-lowest px-4 py-4">
       <p className="ff-kicker">{props.label}</p>
-      <p className={`mt-2 text-3xl font-black ${props.accent === "danger" ? "text-[#ff7373]" : "text-white"}`}>
+      <p className={`mt-2 text-3xl font-black ${props.accent === "danger" ? "text-primary" : "text-on-surface"}`}>
         {props.value}
       </p>
     </div>

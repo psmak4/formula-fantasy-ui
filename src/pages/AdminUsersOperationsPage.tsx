@@ -73,13 +73,13 @@ export function AdminUsersOperationsPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-4">
           <p className="ff-kicker">Identity Control</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">User Management</h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">User Management</h2>
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Operational view of account status, verification, active sessions, and league footprint. Enforcement and impersonation remain on the user detail page.
           </p>
         </div>
 
-        <div className="border border-white/8 bg-[#15161b] px-5 py-4 text-sm text-[#d0d3d9] xl:max-w-sm">
+        <div className="bg-surface-container-low px-5 py-4 text-sm text-on-surface-variant xl:max-w-sm">
           <p className="ff-kicker">Directory Scope</p>
           <p className="mt-2 leading-6">
             This list is optimized for scanning status and opening a detail view. Mutations stay on per-user control pages.
@@ -92,14 +92,14 @@ export function AdminUsersOperationsPage() {
           {[1, 2, 3, 4].map((value) => (
             <div
               key={value}
-              className="h-32 animate-pulse border border-white/8 bg-[#15161b]"
+              className="h-32 rounded-lg animate-pulse bg-surface-container-low"
             />
           ))}
         </div>
       ) : null}
 
       {usersQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(usersQuery.error)}
         </div>
       ) : null}
@@ -123,16 +123,16 @@ export function AdminUsersOperationsPage() {
             />
           </div>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="flex flex-col gap-3 border-b border-white/6 px-6 py-5 md:flex-row md:items-end md:justify-between">
+              <div className="flex flex-col gap-3 px-6 py-5 md:flex-row md:items-end md:justify-between">
                 <div>
-                  <p className="ff-display text-3xl text-white">User Directory</p>
-                  <p className="mt-2 text-sm text-[#989aa2]">
+                  <p className="ff-display text-3xl text-on-surface">User Directory</p>
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     Account state, verification, active sessions, and league footprint across all users.
                   </p>
                 </div>
-                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
+                <span className="ff-kicker bg-surface-container-high px-3 py-2 text-on-surface-variant">
                   Active sessions {totals.sessions}
                 </span>
               </div>
@@ -157,12 +157,12 @@ export function AdminUsersOperationsPage() {
                           <TableCell>
                             <div className="space-y-1">
                               <Link
-                                className="font-semibold text-white hover:text-[#ff7373]"
+                                className="font-semibold text-on-surface hover:text-primary"
                                 to={`/admin/users/${user.userId}`}
                               >
                                 {user.displayName}
                               </Link>
-                              <div className="font-mono text-[11px] text-[#7f828b]">
+                              <div className="font-mono text-[11px] text-on-surface-variant">
                                 {user.userId}
                               </div>
                             </div>
@@ -187,7 +187,7 @@ export function AdminUsersOperationsPage() {
                           <TableCell>
                             <div className="space-y-1">
                               <div>{user.counts.leagues}</div>
-                              <div className="text-xs text-[#7f828b]">
+                              <div className="text-xs text-on-surface-variant">
                                 Owns {user.counts.ownedLeagues}
                               </div>
                             </div>
@@ -197,7 +197,7 @@ export function AdminUsersOperationsPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-[#989aa2]">
+                        <TableCell colSpan={7} className="text-on-surface-variant">
                           No users found.
                         </TableCell>
                       </TableRow>
@@ -221,17 +221,17 @@ function MetricCard(props: {
 }) {
   const accentClass =
     props.accent === "danger"
-      ? "text-[#ff7373]"
+      ? "text-primary"
       : props.accent === "warning"
-        ? "text-[#f3db53]"
-        : "text-white";
+        ? "text-warning"
+        : "text-on-surface";
 
   return (
-    <Card className="border-white/8 bg-[#15161b]">
+    <Card className="bg-surface-container-low">
       <CardContent className="space-y-2 px-6 py-6">
         <p className="ff-kicker">{props.title}</p>
         <p className={`text-5xl font-black ${accentClass}`}>{props.value}</p>
-        <p className="text-sm leading-6 text-[#989aa2]">{props.subtitle}</p>
+        <p className="text-sm leading-6 text-on-surface-variant">{props.subtitle}</p>
       </CardContent>
     </Card>
   );

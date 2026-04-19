@@ -75,15 +75,15 @@ export function AdminLeagueOperationsPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-4">
           <p className="ff-kicker">League Control</p>
-          <h2 className="ff-display text-4xl text-white md:text-5xl">
+          <h2 className="ff-display text-4xl text-on-surface md:text-5xl">
             League Administration
           </h2>
-          <p className="max-w-3xl text-sm leading-6 text-[#989aa2] md:text-base">
+          <p className="max-w-3xl text-sm leading-6 text-on-surface-variant md:text-base">
             Monitor leagues, inspect owner and invite state, and open detailed operational pages when membership or ownership needs correction.
           </p>
         </div>
 
-        <div className="border border-white/8 bg-[#15161b] px-5 py-4 text-sm text-[#d0d3d9] xl:max-w-sm">
+        <div className="bg-surface-container-low px-5 py-4 text-sm text-on-surface-variant xl:max-w-sm">
           <p className="ff-kicker">Directory Scope</p>
           <p className="mt-2 leading-6">
             This index is table-first by design. Detail pages remain the place for audited mutations and ownership changes.
@@ -96,14 +96,14 @@ export function AdminLeagueOperationsPage() {
           {[1, 2, 3, 4].map((value) => (
             <div
               key={value}
-              className="h-32 animate-pulse border border-white/8 bg-[#15161b]"
+              className="h-32 rounded-lg animate-pulse bg-surface-container-low"
             />
           ))}
         </div>
       ) : null}
 
       {leaguesQuery.isError ? (
-        <div className="border border-[#7a0d0d] bg-[#350909] px-4 py-3 text-sm text-[#ff8e8e]">
+        <div className="bg-error-container px-4 py-3 text-sm text-on-error-container">
           {getErrorMessage(leaguesQuery.error)}
         </div>
       ) : null}
@@ -129,16 +129,16 @@ export function AdminLeagueOperationsPage() {
             />
           </div>
 
-          <Card className="border-white/8 bg-[#15161b]">
+          <Card className="bg-surface-container-low">
             <CardContent className="px-0 py-0">
-              <div className="flex flex-col gap-3 border-b border-white/6 px-6 py-5 md:flex-row md:items-end md:justify-between">
+              <div className="flex flex-col gap-3 px-6 py-5 md:flex-row md:items-end md:justify-between">
                 <div>
-                  <p className="ff-display text-3xl text-white">League Directory</p>
-                  <p className="mt-2 text-sm text-[#989aa2]">
+                  <p className="ff-display text-3xl text-on-surface">League Directory</p>
+                  <p className="mt-2 text-sm text-on-surface-variant">
                     Ownership, visibility, membership, and invite footprint across all leagues.
                   </p>
                 </div>
-                <span className="ff-kicker bg-white/6 px-3 py-2 text-[#d0d3d9]">
+                <span className="ff-kicker bg-surface-container-high px-3 py-2 text-on-surface-variant">
                   Total entries {totals.entries}
                 </span>
               </div>
@@ -163,20 +163,20 @@ export function AdminLeagueOperationsPage() {
                           <TableCell>
                             <div className="space-y-1">
                               <Link
-                                className="font-semibold text-white hover:text-[#ff7373]"
+                                className="font-semibold text-on-surface hover:text-primary"
                                 to={`/admin/leagues/${league.leagueId}`}
                               >
                                 {league.name}
                               </Link>
-                              <div className="font-mono text-[11px] text-[#7f828b]">
+                              <div className="font-mono text-[11px] text-on-surface-variant">
                                 {league.leagueId}
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
                             <div className="space-y-1">
-                              <div className="text-white">{league.owner.displayName}</div>
-                              <div className="font-mono text-[11px] text-[#7f828b]">
+                              <div className="text-on-surface">{league.owner.displayName}</div>
+                              <div className="font-mono text-[11px] text-on-surface-variant">
                                 {league.owner.userId}
                               </div>
                             </div>
@@ -194,7 +194,7 @@ export function AdminLeagueOperationsPage() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-[#989aa2]">
+                        <TableCell colSpan={7} className="text-on-surface-variant">
                           No leagues found.
                         </TableCell>
                       </TableRow>
@@ -212,11 +212,11 @@ export function AdminLeagueOperationsPage() {
 
 function MetricCard(props: { title: string; value: number | string; subtitle: string }) {
   return (
-    <Card className="border-white/8 bg-[#15161b]">
+    <Card className="bg-surface-container-low">
       <CardContent className="space-y-2 px-6 py-6">
         <p className="ff-kicker">{props.title}</p>
-        <p className="text-5xl font-black text-white">{props.value}</p>
-        <p className="text-sm leading-6 text-[#989aa2]">{props.subtitle}</p>
+        <p className="text-5xl font-black text-on-surface">{props.value}</p>
+        <p className="text-sm leading-6 text-on-surface-variant">{props.subtitle}</p>
       </CardContent>
     </Card>
   );

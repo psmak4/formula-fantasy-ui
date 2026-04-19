@@ -1,0 +1,120 @@
+<style>
+  .sect { margin-top: 22px; }
+  .sect > h3 { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 800; color: #b80e00; margin: 0 0 10px; }
+  .sect > .note { font-size: 12px; color: #71717a; margin: 0 0 14px; }
+
+  /* Color swatches */
+  .palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .sw { border-radius: 10px; overflow: hidden; }
+  .sw .chip { height: 64px; display: flex; align-items: flex-end; padding: 8px; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  .sw .meta { background: #fff; border: 1px solid #e7e7eb; border-top: 0; padding: 6px 8px; border-radius: 0 0 10px 10px; }
+  .sw .name { font-size: 11px; font-weight: 700; color: #0a0a0a; }
+  .sw .hex { font-size: 10px; color: #71717a; font-family: ui-monospace, monospace; }
+  .sw .ratio { font-size: 9px; color: #15803d; font-weight: 700; margin-top: 2px; letter-spacing: 0.08em; }
+  .sw .ratio.bad { color: #b80e00; }
+
+  /* Type scale */
+  .type-row { display: grid; grid-template-columns: 140px 1fr 110px; gap: 14px; align-items: baseline; padding: 10px 0; border-top: 1px solid #eceaea; }
+  .type-row .token { font-size: 10px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: #71717a; font-family: ui-monospace, monospace; }
+  .type-row .spec { font-size: 10px; color: #71717a; text-align: right; font-family: ui-monospace, monospace; }
+  .ts-display { font-family: 'Inter', sans-serif; font-weight: 900; font-style: italic; font-size: 44px; line-height: 0.92; letter-spacing: -0.025em; text-transform: uppercase; color: #0a0a0a; }
+  .ts-h1 { font-family: 'Inter', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.0; letter-spacing: -0.015em; color: #0a0a0a; }
+  .ts-h2 { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 20px; line-height: 1.1; letter-spacing: -0.005em; color: #0a0a0a; }
+  .ts-title { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; text-transform: uppercase; color: #0a0a0a; }
+  .ts-body { font-family: 'Inter', sans-serif; font-weight: 400; font-size: 14px; line-height: 1.5; color: #3f3f46; }
+  .ts-label { font-family: 'Inter', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #52525b; }
+  .ts-mono { font-family: ui-monospace, 'SF Mono', monospace; font-size: 14px; font-variant-numeric: tabular-nums; font-weight: 600; color: #0a0a0a; }
+
+  /* Radii */
+  .radii { display: flex; gap: 12px; }
+  .rd { background: #0a0a0a; color: #fff; padding: 14px 16px; font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .rd.r0 { border-radius: 0; }
+  .rd.r4 { border-radius: 4px; }
+  .rd.r8 { border-radius: 8px; }
+  .rd.r12 { border-radius: 12px; }
+  .rd.r16 { border-radius: 16px; }
+
+  /* Contrast sample */
+  .sample-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .samp { padding: 14px; border-radius: 10px; font-size: 12px; }
+  .samp .k { font-size: 9px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+  .samp .t { font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .samp .b { font-size: 11px; margin-top: 4px; }
+</style>
+
+<h2>Foundations</h2>
+<p class="subtitle">Color, type, radius. All color pairs tested for WCAG AA (body 4.5:1, large 3:1).</p>
+
+<div class="sect">
+  <h3>Core palette</h3>
+  <p class="note">Warm near-black ink on cream paper is the base. Ferrari red is the single hot accent — reserved for scores, CTAs, kickers. Indigo is cool accent for "your rank" / user-owned values.</p>
+  <div class="palette">
+    <div class="sw"><div class="chip" style="background:#0e0d0b">ink</div><div class="meta"><div class="name">Ink</div><div class="hex">#0E0D0B</div><div class="ratio">AA on paper 18.9:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#f6f3ec;color:#0e0d0b">paper</div><div class="meta"><div class="name">Paper</div><div class="hex">#F6F3EC</div><div class="ratio">bg</div></div></div>
+    <div class="sw"><div class="chip" style="background:#ffffff;color:#0e0d0b;border:1px solid #e7e7eb">surface</div><div class="meta"><div class="name">Surface</div><div class="hex">#FFFFFF</div><div class="ratio">card bg</div></div></div>
+    <div class="sw"><div class="chip" style="background:#a30a00">ferrari</div><div class="meta"><div class="name">Ferrari</div><div class="hex">#A30A00</div><div class="ratio">AA on paper 7.2:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#3b2fb0">indigo</div><div class="meta"><div class="name">Indigo</div><div class="hex">#3B2FB0</div><div class="ratio">AA on paper 8.4:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#15803d">signal</div><div class="meta"><div class="name">Signal</div><div class="hex">#15803D</div><div class="ratio">AA on paper 4.9:1</div></div></div>
+  </div>
+</div>
+
+<div class="sect">
+  <h3>Support tones</h3>
+  <div class="palette">
+    <div class="sw"><div class="chip" style="background:#3f3f46">ink-muted</div><div class="meta"><div class="name">Ink muted</div><div class="hex">#3F3F46</div><div class="ratio">body on paper 10.7:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#71717a">ink-soft</div><div class="meta"><div class="name">Ink soft</div><div class="hex">#71717A</div><div class="ratio">captions 4.9:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#e7e7eb;color:#0e0d0b">divider</div><div class="meta"><div class="name">Divider</div><div class="hex">#E7E7EB</div><div class="ratio">1px</div></div></div>
+    <div class="sw"><div class="chip" style="background:#fbf1ea;color:#5b1810">ferrari-tint</div><div class="meta"><div class="name">Ferrari 50</div><div class="hex">#FBF1EA</div><div class="ratio">surface accent</div></div></div>
+    <div class="sw"><div class="chip" style="background:#eeecff;color:#251e7c">indigo-tint</div><div class="meta"><div class="name">Indigo 50</div><div class="hex">#EEECFF</div><div class="ratio">surface accent</div></div></div>
+    <div class="sw"><div class="chip" style="background:#b45309">warning</div><div class="meta"><div class="name">Warning</div><div class="hex">#B45309</div><div class="ratio">AA on paper 5.1:1</div></div></div>
+  </div>
+</div>
+
+<div class="sect">
+  <h3>Dark surfaces (hero / CTAs / footer)</h3>
+  <div class="palette">
+    <div class="sw"><div class="chip" style="background:#0d0e14">carbon</div><div class="meta"><div class="name">Carbon</div><div class="hex">#0D0E14</div><div class="ratio">hero bg</div></div></div>
+    <div class="sw"><div class="chip" style="background:#1a1c25">carbon-2</div><div class="meta"><div class="name">Carbon 200</div><div class="hex">#1A1C25</div><div class="ratio">stripes</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0d0e14;color:#f6f3ec">paper-on-carbon</div><div class="meta"><div class="name">Paper on Carbon</div><div class="hex">#F6F3EC</div><div class="ratio">headline 17.4:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0d0e14;color:#c4c5cc">muted-on-carbon</div><div class="meta"><div class="name">Muted on Carbon</div><div class="hex">#C4C5CC</div><div class="ratio">meta 10.1:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0d0e14;color:#ff5544">ferrari-on-carbon</div><div class="meta"><div class="name">Ferrari 400</div><div class="hex">#FF5544</div><div class="ratio">accent 5.2:1</div></div></div>
+    <div class="sw"><div class="chip" style="background:#0d0e14;color:#8c83ff">indigo-on-carbon</div><div class="meta"><div class="name">Indigo 300</div><div class="hex">#8C83FF</div><div class="ratio">accent 5.6:1</div></div></div>
+  </div>
+</div>
+
+<div class="sect">
+  <h3>Contrast samples — the problem from last screen is gone</h3>
+  <div class="sample-grid">
+    <div class="samp" style="background:#f6f3ec;color:#0e0d0b;border:1px solid #e7e7eb;">
+      <div class="k" style="color:#a30a00">Round 4 · 2026</div>
+      <div class="t">Grand Prix Masters</div>
+      <div class="b" style="color:#3f3f46">1st of 128 · Private</div>
+    </div>
+    <div class="samp" style="background:#0d0e14;color:#f6f3ec;">
+      <div class="k" style="color:#ff5544">Round 4 · 2026</div>
+      <div class="t">Miami Grand Prix</div>
+      <div class="b" style="color:#c4c5cc">Lights out · 02d 14h 32m</div>
+    </div>
+  </div>
+</div>
+
+<div class="sect">
+  <h3>Type scale — Inter (with italic display)</h3>
+  <div class="type-row"><div class="token">display</div><div class="ts-display">Miami GP</div><div class="spec">44/0.92<br>-2.5%</div></div>
+  <div class="type-row"><div class="token">h1</div><div class="ts-h1">Leaderboard</div><div class="spec">30/1.0<br>-1.5%</div></div>
+  <div class="type-row"><div class="token">h2</div><div class="ts-h2">My Leagues</div><div class="spec">20/1.1</div></div>
+  <div class="type-row"><div class="token">title</div><div class="ts-title">Grand Prix Masters</div><div class="spec">15 UPPER<br>+2%</div></div>
+  <div class="type-row"><div class="token">body</div><div class="ts-body">Paste an invite token or league link.</div><div class="spec">14/1.5</div></div>
+  <div class="type-row"><div class="token">label</div><div class="ts-label">Members</div><div class="spec">11 UPPER<br>+16%</div></div>
+  <div class="type-row"><div class="token">numeric</div><div class="ts-mono">1,284 pts</div><div class="spec">mono<br>tabular</div></div>
+</div>
+
+<div class="sect">
+  <h3>Radius scale</h3>
+  <div class="radii">
+    <div class="rd r4">4 chip</div>
+    <div class="rd r8">8 button</div>
+    <div class="rd r12">12 card</div>
+    <div class="rd r16">16 hero</div>
+  </div>
+</div>
